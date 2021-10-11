@@ -54,12 +54,15 @@ public class Window {
             final IntBuffer pHeight = stack.mallocInt(1);
 
             GLFW.glfwGetWindowSize(this.id, pWidth, pHeight);
-            final GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+            final GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+            if (vidMode == null) {
+                throw new RuntimeException("Could not get video mode for primary monitor"); // TODO: Implement an exception for this
+            }
 
             GLFW.glfwSetWindowPos(
                     this.id,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
+                    (vidMode.width() - pWidth.get(0)) / 2,
+                    (vidMode.height() - pHeight.get(0)) / 2
             );
         } // the stack frame is popped automatically
     }
