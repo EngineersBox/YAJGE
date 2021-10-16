@@ -3,6 +3,7 @@ package com.engineersbox.yajge.engine;
 import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.engine.util.Timer;
+import com.engineersbox.yajge.logging.LoggerCompat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,6 +23,7 @@ public class Engine implements Runnable {
                   final int height,
                   final boolean vSync,
                   final EngineLogic gameLogic) throws Exception {
+        LoggerCompat.registerGLFWLogger(LOGGER);
         window = new Window(windowTitle, width, height, vSync);
         this.gameLogic = gameLogic;
         timer = new Timer();
