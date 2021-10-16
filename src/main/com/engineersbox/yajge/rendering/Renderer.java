@@ -4,7 +4,7 @@ import com.engineersbox.yajge.element.object.SceneObject;
 import com.engineersbox.yajge.element.transform.Transform;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.rendering.shader.ShaderProgram;
-import com.engineersbox.yajge.resources.ResLoader;
+import com.engineersbox.yajge.resources.ResourceLoader;
 import org.joml.Matrix4f;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -22,8 +22,8 @@ public class Renderer {
 
     public void init(final Window window) throws Exception {
         this.shaderProgram = new ShaderProgram();
-        this.shaderProgram.createVertexShader(ResLoader.load("shaders/vertex.vert"));
-        this.shaderProgram.createFragmentShader(ResLoader.load("shaders/fragment.frag"));
+        this.shaderProgram.createVertexShader(ResourceLoader.load("shaders/vertex.vert"));
+        this.shaderProgram.createFragmentShader(ResourceLoader.load("shaders/fragment.frag"));
         this.shaderProgram.link();
         this.shaderProgram.createUniform("projectionMatrix");
         this.shaderProgram.createUniform("worldMatrix");
