@@ -1,71 +1,94 @@
 package com.engineersbox.yajge.engine;
 
-import com.engineersbox.yajge.rendering.Renderer;
+import com.engineersbox.yajge.engine.core.IGameLogic;
+import com.engineersbox.yajge.engine.core.Window;
+import com.engineersbox.yajge.engine.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.io.IoBuilder;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
 
-import java.io.PrintStream;
+public class Engine implements Runnable {
 
-public class Engine {
+    public static final int TARGET_FPS = 75;
+    public static final int TARGET_UPS = 30;
 
     private static final Logger LOGGER = LogManager.getLogger(Engine.class);
 
-    private final Renderer renderer;
+    private final Window window;
+    private final Timer timer;
+    private final IGameLogic gameLogic;
 
-    private boolean running = false;
-    private boolean paused = false;
-    private boolean shutdownRequested = false;
-
-    public Engine() {
-        init();
-        this.renderer = new Renderer();
+    public Engine(final String windowTitle,
+                  final int width,
+                  final int height,
+                  final boolean vSync,
+                  final IGameLogic gameLogic) throws Exception {
+        window = new Window(windowTitle, width, height, vSync);
+        this.gameLogic = gameLogic;
+        timer = new Timer();
     }
 
-    @SuppressWarnings("java:S2095")
-    private void init() {
-        GLFWErrorCallback.createPrint(new PrintStream(IoBuilder.forLogger(LOGGER).buildOutputStream())).set();
-        if (!GLFW.glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
-    }
-
+    @Override
     public void run() {
-        if (this.running) {
-            return;
-        }
-        while (!shutdownRequested) {
-            // TODO: Call updates to various engine elements here
-            this.shutdownRequested = this.renderer.run();
-        }
-    }
-
-    public void pause() {
-        if (!this.running) {
-            return;
+        try {
+            init();
+            gameLoop();
+        } catch (final Exception e) {
+            LOGGER.error(e);
         }
     }
 
-    public void resume() {
-        if (!this.running) {
-            return;
+    protected void init() throws Exception {
+        window.init();
+        timer.init();
+        gameLogic.init();
+    }
+
+    protected void gameLoop() {
+        float elapsedTime;
+        float accumulator = 0f;
+        final float interval = 1f / TARGET_UPS;
+
+        boolean running = true;
+        while (running && !window.windowShouldClose()) {
+            elapsedTime = timer.getElapsedTime();
+            accumulator += elapsedTime;
+
+            input();
+
+            while (accumulator >= interval) {
+                update(interval);
+                accumulator -= interval;
+            }
+
+            render();
+
+            if (!window.isvSync()) {
+                sync();
+            }
         }
     }
 
-    public void shutdown() {
-        if (!this.running) {
-            return;
+    private void sync() {
+        float loopSlot = 1f / TARGET_FPS;
+        double endTime = timer.getLastLoopTime() + loopSlot;
+        while (timer.getTime() < endTime) {
+            try {
+                Thread.sleep(1);
+            } catch (final InterruptedException ie) {
+            }
         }
-        this.shutdownRequested = true;
     }
 
-    public boolean isPaused() {
-        return isRunning() && this.paused;
+    protected void input() {
+        gameLogic.input(window);
     }
 
-    public boolean isRunning() {
-        return this.running;
+    protected void update(final float interval) {
+        gameLogic.update(interval);
+    }
+
+    protected void render() {
+        gameLogic.render(window);
+        window.update();
     }
 }

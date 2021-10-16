@@ -436,7 +436,7 @@
 							<shadedArtifactAttached>true</shadedArtifactAttached>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.engineersbox.yajge.Main</mainClass>
+									<mainClass>com.engineersbox.yajge.testGame.Main</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -446,4 +446,39 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>windows-profile</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<properties>
+				<native.target>natives-windows</native.target>
+			</properties>
+		</profile>
+		<profile>
+			<id>linux-profile</id>
+			<activation>
+				<os>
+					<family>Linux</family>
+				</os>
+			</activation>
+			<properties>
+				<native.target>natives-linux</native.target>
+			</properties>
+		</profile>
+		<profile>
+			<id>OSX-profile</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<properties>
+				<native.target>natives-macos</native.target>
+			</properties>
+		</profile>
+	</profiles>
 </project>
