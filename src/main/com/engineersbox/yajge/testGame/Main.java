@@ -2,6 +2,7 @@ package com.engineersbox.yajge.testGame;
 
 import com.engineersbox.yajge.engine.Engine;
 import com.engineersbox.yajge.engine.core.IGameLogic;
+import com.engineersbox.yajge.rendering.primitive.Mesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
