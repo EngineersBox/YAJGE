@@ -9,16 +9,16 @@ import org.joml.Matrix4f;
 import static org.lwjgl.opengl.GL20.*;
 import org.lwjgl.system.MemoryStack;
 
-public class ShaderProgram {
+public class Shader {
 
-    private static final Logger LOGGER = LogManager.getLogger(ShaderProgram.class);
+    private static final Logger LOGGER = LogManager.getLogger(Shader.class);
 
     private final int programId;
     private int vertexShaderId;
     private int fragmentShaderId;
     private final Map<String, Integer> uniforms;
 
-    public ShaderProgram() throws Exception {
+    public Shader() throws Exception {
         this.programId = glCreateProgram();
         if (this.programId == 0) {
             throw new Exception("Could not create Shader");
@@ -69,6 +69,7 @@ public class ShaderProgram {
         return shaderId;
     }
 
+    @SuppressWarnings("java:S2629")
     public void link() throws Exception {
         glLinkProgram(this.programId);
         if (glGetProgrami(this.programId, GL_LINK_STATUS) == 0) {
