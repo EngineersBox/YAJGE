@@ -1,8 +1,7 @@
 package com.engineersbox.yajge.testGame;
 
 import com.engineersbox.yajge.engine.Engine;
-import com.engineersbox.yajge.engine.core.IGameLogic;
-import com.engineersbox.yajge.rendering.primitive.Mesh;
+import com.engineersbox.yajge.engine.core.EngineLogic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,7 +11,7 @@ public class Main {
 
     public static void main(final String[] args) {
         try {
-            final IGameLogic gameLogic = new TestGame();
+            final EngineLogic gameLogic = new TestGame();
             final Engine engine = new Engine(
                     "YAJGE",
                     600,

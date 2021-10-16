@@ -1,6 +1,6 @@
 package com.engineersbox.yajge.engine;
 
-import com.engineersbox.yajge.engine.core.IGameLogic;
+import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.engine.util.Timer;
 import org.apache.logging.log4j.LogManager;
@@ -15,13 +15,13 @@ public class Engine implements Runnable {
 
     private final Window window;
     private final Timer timer;
-    private final IGameLogic gameLogic;
+    private final EngineLogic gameLogic;
 
     public Engine(final String windowTitle,
                   final int width,
                   final int height,
                   final boolean vSync,
-                  final IGameLogic gameLogic) throws Exception {
+                  final EngineLogic gameLogic) throws Exception {
         window = new Window(windowTitle, width, height, vSync);
         this.gameLogic = gameLogic;
         timer = new Timer();

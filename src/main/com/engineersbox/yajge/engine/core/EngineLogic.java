@@ -1,6 +1,6 @@
 package com.engineersbox.yajge.engine.core;
 
-public interface IGameLogic {
+public interface EngineLogic {
 
     void init(final Window window) throws Exception;
     void input(final Window window);

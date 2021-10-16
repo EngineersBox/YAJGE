@@ -1,7 +1,7 @@
 package com.engineersbox.yajge.testGame;
 
 import com.engineersbox.yajge.element.object.SceneObject;
-import com.engineersbox.yajge.engine.core.IGameLogic;
+import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
@@ -11,7 +11,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 
-public class TestGame implements IGameLogic {
+public class TestGame implements EngineLogic {
 
     private int displxInc = 0;
     private int displyInc = 0;
@@ -28,7 +28,6 @@ public class TestGame implements IGameLogic {
     @Override
     public void init(final Window window) throws Exception {
         renderer.init(window);
-        // Create the Mesh
         float[] positions = new float[]{
                 -0.5f,  0.5f,  0.5f,
                 -0.5f, -0.5f,  0.5f,
@@ -78,14 +77,12 @@ public class TestGame implements IGameLogic {
     @Override
     public void update(float interval) {
         for (final SceneObject sceneObject : this.sceneObjects) {
-            // Update position
             final Vector3f itemPos = sceneObject.getPosition();
             final float posx = itemPos.x + displxInc * 0.01f;
             final float posy = itemPos.y + displyInc * 0.01f;
             final float posz = itemPos.z + displzInc * 0.01f;
             sceneObject.setPosition(posx, posy, posz);
 
-            // Update scale
             float scale = sceneObject.getScale();
             scale += scaleInc * 0.05f;
             if ( scale < 0 ) {
@@ -93,7 +90,6 @@ public class TestGame implements IGameLogic {
             }
             sceneObject.setScale(scale);
 
-            // Update rotation angle
             float rotation = sceneObject.getRotation().z + 1.5f;
             if (rotation > 360) {
                 rotation = 0;
