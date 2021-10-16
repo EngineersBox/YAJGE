@@ -21,6 +21,8 @@
 		<lwjgl.version>3.2.3</lwjgl.version>
 		<joml.version>1.10.2</joml.version>
 		<lwjgl.natives>natives-windows</lwjgl.natives>
+		<jaxb-api.version>2.3.1</jaxb-api.version>
+		<jaxb-runtime.version>3.0.2</jaxb-runtime.version>
 
 		<!-- Maven Compiler Version -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -46,6 +48,19 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- JAXB API -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb-api.version}</version>
+		</dependency>
+		<!-- JAXB Runtime -->
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>${jaxb-runtime.version}</version>
+			<scope>runtime</scope>
+		</dependency>
 		<!-- Jupiter API for writing tests -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

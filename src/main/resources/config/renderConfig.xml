@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<render version="1">
+    <fov>60.0f</fov>
+    <zNear>0.01f</zNear>
+    <zFar>1000.0f</zFar>
+</render>

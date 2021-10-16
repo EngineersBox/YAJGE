@@ -6,6 +6,9 @@ import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.rendering.shader.Shader;
 import com.engineersbox.yajge.resources.ResourceLoader;
 import org.joml.Matrix4f;
+
+import java.util.stream.Stream;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
