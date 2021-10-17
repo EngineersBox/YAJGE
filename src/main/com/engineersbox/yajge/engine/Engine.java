@@ -3,6 +3,7 @@ package com.engineersbox.yajge.engine;
 import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.engine.util.Timer;
+import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.logging.LoggerCompat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +18,7 @@ public class Engine implements Runnable {
     private final Window window;
     private final Timer timer;
     private final EngineLogic gameLogic;
+    private final MouseInput mouseInput;
 
     public Engine(final String windowTitle,
                   final int width,
@@ -24,9 +26,10 @@ public class Engine implements Runnable {
                   final boolean vSync,
                   final EngineLogic gameLogic) throws Exception {
         LoggerCompat.registerGLFWLogger(LOGGER);
-        window = new Window(windowTitle, width, height, vSync);
+        this.window = new Window(windowTitle, width, height, vSync);
         this.gameLogic = gameLogic;
-        timer = new Timer();
+        this.mouseInput = new MouseInput();
+        this.timer = new Timer();
     }
 
     @Override
@@ -40,9 +43,10 @@ public class Engine implements Runnable {
     }
 
     protected void init() throws Exception {
-        window.init();
-        timer.init();
-        gameLogic.init(this.window);
+        this.window.init();
+        this.timer.init();
+        this.mouseInput.init(this.window);
+        this.gameLogic.init(this.window);
     }
 
     protected void gameLoop() {
@@ -51,7 +55,7 @@ public class Engine implements Runnable {
         final float interval = 1f / TARGET_UPS;
 
         boolean running = true;
-        while (running && !window.windowShouldClose()) {
+        while (running && !this.window.windowShouldClose()) {
             elapsedTime = timer.getElapsedTime();
             accumulator += elapsedTime;
 
@@ -64,33 +68,35 @@ public class Engine implements Runnable {
 
             render();
 
-            if (!window.isvSync()) {
+            if (!this.window.isvSync()) {
                 sync();
             }
         }
     }
 
     private void sync() {
-        float loopSlot = 1f / TARGET_FPS;
-        double endTime = timer.getLastLoopTime() + loopSlot;
-        while (timer.getTime() < endTime) {
+        final float loopSlot = 1f / TARGET_FPS;
+        final double endTime = this.timer.getLastLoopTime() + loopSlot;
+        while (this.timer.getTime() < endTime) {
             try {
                 Thread.sleep(1);
-            } catch (final InterruptedException ie) {
+            } catch (final InterruptedException e) {
+                LOGGER.error(e);
             }
         }
     }
 
     protected void input() {
-        gameLogic.input(window);
+        this.mouseInput.input(this.window);
+        this.gameLogic.input(this.window, this.mouseInput);
     }
 
     protected void update(final float interval) {
-        gameLogic.update(interval);
+        this.gameLogic.update(interval, this.mouseInput);
     }
 
     protected void render() {
-        gameLogic.render(window);
-        window.update();
+        this.gameLogic.render(window);
+        this.window.update();
     }
 }

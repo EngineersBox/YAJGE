@@ -64,7 +64,6 @@ public class Window {
 
     public void init() {
         LoggerCompat.registerGLFWLogger(LOGGER);
-
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -74,7 +73,6 @@ public class Window {
             throw new RuntimeException("Failed to create the GLFW window"); // TODO: Implement an exception for this
         }
         createCallbacks();
-
         final GLFWVidMode primaryMonitorResolution = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(
                 windowHandle,
@@ -98,7 +96,11 @@ public class Window {
         glClearColor(r, g, b, alpha);
     }
 
-    public boolean isKeyPressed(final int keyCode) {
+    public long getWindowHandle() {
+        return this.windowHandle;
+    }
+
+    public boolean isKeyPressed(int keyCode) {
         return glfwGetKey(this.windowHandle, keyCode) == GLFW_PRESS;
     }
 
@@ -122,7 +124,7 @@ public class Window {
         return this.resized;
     }
 
-    public void setResized(final boolean resized) {
+    public void setResized(boolean resized) {
         this.resized = resized;
     }
 
@@ -130,7 +132,7 @@ public class Window {
         return this.vSync;
     }
 
-    public void setvSync(final boolean vSync) {
+    public void setvSync(boolean vSync) {
         this.vSync = vSync;
     }
 

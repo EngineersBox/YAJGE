@@ -4,9 +4,9 @@ import com.engineersbox.yajge.element.object.SceneObject;
 import com.engineersbox.yajge.element.transform.Transform;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.rendering.resources.shader.Shader;
+import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.ResourceLoader;
 import org.joml.Matrix4f;
-
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
@@ -14,11 +14,12 @@ public class Renderer {
     private static final float FOV = (float) Math.toRadians(60.0f);
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
+
     private final Transform transform;
     private Shader shader;
 
     public Renderer() {
-        transform = new Transform();
+        this.transform = new Transform();
     }
 
     public void init(final Window window) throws Exception {
@@ -27,7 +28,7 @@ public class Renderer {
         this.shader.createFragmentShader(ResourceLoader.load("game/shaders/fragment.frag"));
         this.shader.link();
         this.shader.createUniform("projectionMatrix");
-        this.shader.createUniform("worldMatrix");
+        this.shader.createUniform("modelViewMatrix");
         this.shader.createUniform("texture_sampler");
     }
 
@@ -36,6 +37,7 @@ public class Renderer {
     }
 
     public void render(final Window window,
+                       final Camera camera,
                        final SceneObject[] sceneObjects) {
         clear();
         if (window.isResized()) {
@@ -51,23 +53,19 @@ public class Renderer {
                 Z_FAR
         );
         this.shader.setUniform("projectionMatrix", projectionMatrix);
+        final Matrix4f viewMatrix = transform.getViewMatrix(camera);
         this.shader.setUniform("texture_sampler", 0);
         for (final SceneObject sceneObject : sceneObjects) {
-            final Matrix4f worldMatrix = this.transform.getWorldMatrix(
-                    sceneObject.getPosition(),
-                    sceneObject.getRotation(),
-                    sceneObject.getScale()
-            );
-            this.shader.setUniform("worldMatrix", worldMatrix);
+            final Matrix4f viewModelMatrix = this.transform.getViewModelMatrix(sceneObject, viewMatrix);
+            this.shader.setUniform("viewModelMatrix", viewModelMatrix);
             sceneObject.getMesh().render();
         }
-
         this.shader.unbind();
     }
 
     public void cleanup() {
-        if (this.shader != null) {
-            this.shader.cleanup();
+        if (shader != null) {
+            shader.cleanup();
         }
     }
 }

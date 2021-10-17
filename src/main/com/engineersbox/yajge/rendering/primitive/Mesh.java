@@ -33,11 +33,8 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 public class Mesh {
 
     private final int vaoId;
-
     private final List<Integer> vboIdList;
-
     private final int vertexCount;
-
     private final Texture texture;
 
     public Mesh(final float[] positions,
@@ -49,16 +46,13 @@ public class Mesh {
         IntBuffer indicesBuffer = null;
         try {
             this.texture = texture;
-            vertexCount = indices.length;
-            vboIdList = new ArrayList<>();
-
-            vaoId = glGenVertexArrays();
+            this.vertexCount = indices.length;
+            this.vboIdList = new ArrayList<>();
+            this.vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);
-
             posBuffer = createPosBuffer(positions);
             texCoordsBuffer = createTexCoordsBuffer(texCoords);
             indicesBuffer = createIndexBuffer(indices);
-
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         } finally {
@@ -88,7 +82,7 @@ public class Mesh {
 
     private FloatBuffer createTexCoordsBuffer(final float[] texCoords) {
         final int vboId = glGenBuffers();
-        vboIdList.add(vboId);
+        this.vboIdList.add(vboId);
         final FloatBuffer texCoordsBuffer = MemoryUtil.memAllocFloat(texCoords.length);
         texCoordsBuffer.put(texCoords).flip();
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -100,7 +94,7 @@ public class Mesh {
 
     private IntBuffer createIndexBuffer(final int[] indices) {
         final int vboId = glGenBuffers();
-        vboIdList.add(vboId);
+        this.vboIdList.add(vboId);
         final IntBuffer indicesBuffer = MemoryUtil.memAllocInt(indices.length);
         indicesBuffer.put(indices).flip();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
