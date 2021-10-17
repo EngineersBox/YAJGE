@@ -3,11 +3,9 @@ package com.engineersbox.yajge.rendering;
 import com.engineersbox.yajge.element.object.SceneObject;
 import com.engineersbox.yajge.element.transform.Transform;
 import com.engineersbox.yajge.engine.core.Window;
-import com.engineersbox.yajge.rendering.shader.Shader;
+import com.engineersbox.yajge.rendering.resources.shader.Shader;
 import com.engineersbox.yajge.resources.ResourceLoader;
 import org.joml.Matrix4f;
-
-import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -25,12 +23,12 @@ public class Renderer {
 
     public void init(final Window window) throws Exception {
         this.shader = new Shader();
-        this.shader.createVertexShader(ResourceLoader.load("shaders/vertex.vert"));
-        this.shader.createFragmentShader(ResourceLoader.load("shaders/fragment.frag"));
+        this.shader.createVertexShader(ResourceLoader.load("game/shaders/vertex.vert"));
+        this.shader.createFragmentShader(ResourceLoader.load("game/shaders/fragment.frag"));
         this.shader.link();
         this.shader.createUniform("projectionMatrix");
         this.shader.createUniform("worldMatrix");
-        window.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        this.shader.createUniform("texture_sampler");
     }
 
     public void clear() {
@@ -53,6 +51,7 @@ public class Renderer {
                 Z_FAR
         );
         this.shader.setUniform("projectionMatrix", projectionMatrix);
+        this.shader.setUniform("texture_sampler", 0);
         for (final SceneObject sceneObject : sceneObjects) {
             final Matrix4f worldMatrix = this.transform.getWorldMatrix(
                     sceneObject.getPosition(),

@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.rendering.shader;
+package com.engineersbox.yajge.rendering.resources.shader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,20 +26,23 @@ public class Shader {
         this.uniforms = new HashMap<>();
     }
 
-    public void createUniform(final String uniformName) throws Exception {
-        final int uniformLocation = glGetUniformLocation(programId, uniformName);
+    public void createUniform(String uniformName) throws Exception {
+        int uniformLocation = glGetUniformLocation(programId, uniformName);
         if (uniformLocation < 0) {
-            throw new Exception("Could not find uniform:" + uniformName);
+            throw new Exception("Could not find uniform: " + uniformName);
         }
-        this.uniforms.put(uniformName, uniformLocation);
+        uniforms.put(uniformName, uniformLocation);
     }
 
-    public void setUniform(final String uniformName,
-                           final Matrix4f value) {
+    public void setUniform(String name, Matrix4f value) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            glUniformMatrix4fv(this.uniforms.get(uniformName), false,
+            glUniformMatrix4fv(uniforms.get(name), false,
                     value.get(stack.mallocFloat(16)));
         }
+    }
+
+    public void setUniform(String name, int value) {
+        glUniform1i(uniforms.get(name), value);
     }
 
     public void createVertexShader(final String shaderCode) throws Exception {
@@ -56,16 +59,12 @@ public class Shader {
         if (shaderId == 0) {
             throw new Exception("Error creating shader. Type: " + shaderType);
         }
-
         glShaderSource(shaderId, shaderCode);
         glCompileShader(shaderId);
-
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
             throw new Exception("Error compiling Shader code: " + glGetShaderInfoLog(shaderId, 1024));
         }
-
         glAttachShader(this.programId, shaderId);
-
         return shaderId;
     }
 
@@ -75,14 +74,12 @@ public class Shader {
         if (glGetProgrami(this.programId, GL_LINK_STATUS) == 0) {
             throw new Exception("Error linking Shader code: " + glGetProgramInfoLog(this.programId, 1024));
         }
-
         if (this.vertexShaderId != 0) {
             glDetachShader(this.programId, this.vertexShaderId);
         }
         if (this.fragmentShaderId != 0) {
             glDetachShader(this.programId, this.fragmentShaderId);
         }
-
         glValidateProgram(this.programId);
         if (glGetProgrami(this.programId, GL_VALIDATE_STATUS) == 0) {
             LOGGER.warn("Warning while validating shader code: {}", glGetProgramInfoLog(this.programId, 1024));

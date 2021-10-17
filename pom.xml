@@ -23,6 +23,7 @@
 		<lwjgl.natives>natives-windows</lwjgl.natives>
 		<jaxb-api.version>2.3.1</jaxb-api.version>
 		<jaxb-runtime.version>3.0.2</jaxb-runtime.version>
+		<pngdecoder.version>1.0</pngdecoder.version>
 
 		<!-- Maven Compiler Version -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -48,6 +49,12 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- PNG Decoder -->
+		<dependency>
+			<groupId>org.l33tlabs.twl</groupId>
+			<artifactId>pngdecoder</artifactId>
+			<version>${pngdecoder.version}</version>
+		</dependency>
 		<!-- JAXB API -->
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
