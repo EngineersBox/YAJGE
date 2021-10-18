@@ -40,8 +40,13 @@ public class Transform {
         final Vector3f cameraPos = camera.getPosition();
         final Vector3f rotation = camera.getRotation();
         this.viewMatrix.identity();
-        this.viewMatrix.rotate((float) Math.toRadians(rotation.x), new Vector3f(1, 0, 0))
-                .rotate((float)Math.toRadians(rotation.y), new Vector3f(0, 1, 0));
+        this.viewMatrix.rotate(
+                (float) Math.toRadians(rotation.x),
+                new Vector3f(1, 0, 0)
+        ).rotate(
+                (float) Math.toRadians(rotation.y),
+                new Vector3f(0, 1, 0)
+        );
         this.viewMatrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         return this.viewMatrix;
     }

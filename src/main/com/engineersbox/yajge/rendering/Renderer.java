@@ -3,6 +3,7 @@ package com.engineersbox.yajge.rendering;
 import com.engineersbox.yajge.element.object.SceneObject;
 import com.engineersbox.yajge.element.transform.Transform;
 import com.engineersbox.yajge.engine.core.Window;
+import com.engineersbox.yajge.rendering.primitive.Mesh;
 import com.engineersbox.yajge.rendering.resources.shader.Shader;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.ResourceLoader;
@@ -24,12 +25,14 @@ public class Renderer {
 
     public void init(final Window window) throws Exception {
         this.shader = new Shader();
-        this.shader.createVertexShader(ResourceLoader.load("game/shaders/vertex.vert"));
-        this.shader.createFragmentShader(ResourceLoader.load("game/shaders/fragment.frag"));
+        this.shader.createVertexShader(ResourceLoader.loadAsString("game/shaders/vertex.vert"));
+        this.shader.createFragmentShader(ResourceLoader.loadAsString("game/shaders/fragment.frag"));
         this.shader.link();
         this.shader.createUniform("projectionMatrix");
         this.shader.createUniform("viewModelMatrix");
-        this.shader.createUniform("texture_sampler");
+        this.shader.createUniform("textureSampler");
+        this.shader.createUniform("colour");
+        this.shader.createUniform("useColour");
     }
 
     public void clear() {
@@ -54,10 +57,13 @@ public class Renderer {
         );
         this.shader.setUniform("projectionMatrix", projectionMatrix);
         final Matrix4f viewMatrix = transform.getViewMatrix(camera);
-        this.shader.setUniform("texture_sampler", 0);
+        this.shader.setUniform("textureSampler", 0);
         for (final SceneObject sceneObject : sceneObjects) {
             final Matrix4f viewModelMatrix = this.transform.getViewModelMatrix(sceneObject, viewMatrix);
             this.shader.setUniform("viewModelMatrix", viewModelMatrix);
+            final Mesh mesh = sceneObject.getMesh();
+            this.shader.setUniform("colour", mesh.getColour());
+            this.shader.setUniform("useColour", mesh.isTextured() ? 0 : 1);
             sceneObject.getMesh().render();
         }
         this.shader.unbind();

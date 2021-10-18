@@ -28,7 +28,7 @@ public class Texture {
         return this.id;
     }
 
-    private static int loadTexture(final String fileName) throws Exception {
+    private static int loadTexture(final String fileName) {
         final int width;
         final int height;
         final ByteBuffer imageBuffer;
@@ -47,7 +47,9 @@ public class Texture {
             width = w.get();
             height = h.get();
         }
-        return createAndBindTexture(width, height, imageBuffer);
+        final int textureId = createAndBindTexture(width, height, imageBuffer);
+        stbi_image_free(imageBuffer);
+        return textureId;
     }
 
     private static int createAndBindTexture(final int width,
@@ -68,7 +70,6 @@ public class Texture {
                 imageBuffer
         );
         glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(imageBuffer);
         return textureId;
     }
 
