@@ -12,6 +12,10 @@ import org.joml.Vector3f;
 
 public class OBJLoader {
 
+    private OBJLoader() {
+        throw new IllegalStateException("Static loader class");
+    }
+
     private static final String SPACES_REGEX = "\\s+";
 
     private static final String OBJ_GEOMETRIC_VERTEX_SYMBOL = "v";
@@ -58,12 +62,10 @@ public class OBJLoader {
 
         final List<Integer> indices = new ArrayList<>();
         final float[] posArr = new float[positions.size() * 3];
-        int i = 0;
-        for (final Vector3f pos : positions) {
-            posArr[i * 3] = pos.x;
-            posArr[i * 3 + 1] = pos.y;
-            posArr[i * 3 + 2] = pos.z;
-            i++;
+        for (int i = 0; i < positions.size(); i++) {
+            posArr[i * 3] = positions.get(i).x;
+            posArr[i * 3 + 1] = positions.get(i).y;
+            posArr[i * 3 + 2] = positions.get(i).z;
         }
         final float[] textCoordArr = new float[positions.size() * 2];
         final float[] normArr = new float[positions.size() * 3];
@@ -71,8 +73,7 @@ public class OBJLoader {
         for (final Face face : faces) {
             final IdxGroup[] faceVertexIndices = face.getFaceVertexIndices();
             for (final IdxGroup indValue : faceVertexIndices) {
-                processFaceVertex(indValue, texCoords, normals,
-                        indices, textCoordArr, normArr);
+                processFaceVertex(indValue, texCoords, normals, indices, textCoordArr, normArr);
             }
         }
         int[] indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
