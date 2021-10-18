@@ -2,7 +2,6 @@ package com.engineersbox.yajge.engine.core;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-import com.engineersbox.yajge.logging.LoggerCompat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -63,7 +62,6 @@ public class Window {
     }
 
     public void init() {
-        LoggerCompat.registerGLFWLogger(LOGGER);
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -80,7 +78,7 @@ public class Window {
                 (primaryMonitorResolution.height() - height) / 2
         );
         glfwMakeContextCurrent(this.windowHandle);
-        if (isvSync()) {
+        if (isVSyncEnabled()) {
             glfwSwapInterval(1);
         }
         glfwShowWindow(this.windowHandle);
@@ -128,11 +126,11 @@ public class Window {
         this.resized = resized;
     }
 
-    public boolean isvSync() {
+    public boolean isVSyncEnabled() {
         return this.vSync;
     }
 
-    public void setvSync(boolean vSync) {
+    public void setVSync(boolean vSync) {
         this.vSync = vSync;
     }
 

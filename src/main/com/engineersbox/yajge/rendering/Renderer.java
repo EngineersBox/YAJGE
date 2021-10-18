@@ -28,7 +28,7 @@ public class Renderer {
         this.shader.createFragmentShader(ResourceLoader.load("game/shaders/fragment.frag"));
         this.shader.link();
         this.shader.createUniform("projectionMatrix");
-        this.shader.createUniform("modelViewMatrix");
+        this.shader.createUniform("viewModelMatrix");
         this.shader.createUniform("texture_sampler");
     }
 
