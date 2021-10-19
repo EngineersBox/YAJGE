@@ -1,6 +1,7 @@
 package com.engineersbox.yajge.rendering.primitive;
 
-import com.engineersbox.yajge.rendering.resources.textures.Texture;
+import com.engineersbox.yajge.rendering.resources.materials.Material;
+import com.engineersbox.yajge.rendering.resources.materials.Texture;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
@@ -38,8 +39,7 @@ public class Mesh {
     private final int vaoId;
     private final List<Integer> vboIdList;
     private final int vertexCount;
-    private Texture texture;
-    private Vector3f colour;
+    private Material material;
 
     public Mesh(final float[] positions,
                 final float[] textCoords,
@@ -50,7 +50,6 @@ public class Mesh {
         FloatBuffer vecNormalsBuffer = null;
         IntBuffer indicesBuffer = null;
         try {
-            this.colour = Mesh.DEFAULT_COLOUR;
             this.vertexCount = indices.length;
             this.vboIdList = new ArrayList<>();
             this.vaoId = glGenVertexArrays();
@@ -100,38 +99,11 @@ public class Mesh {
         return indicesBuffer;
     }
 
-    public boolean isTextured() {
-        return this.texture != null;
-    }
-
-    public Texture getTexture() {
-        return this.texture;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public void setColour(Vector3f colour) {
-        this.colour = colour;
-    }
-
-    public Vector3f getColour() {
-        return this.colour;
-    }
-
-    public int getVaoId() {
-        return this.vaoId;
-    }
-
-    public int getVertexCount() {
-        return this.vertexCount;
-    }
-
     public void render() {
-        if (this.texture != null) {
+        final Texture texture = this.material.getTexture();
+        if (texture != null) {
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, this.texture.getId());
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
         glBindVertexArray(getVaoId());
         glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
@@ -145,10 +117,27 @@ public class Mesh {
         for (final int vboId : this.vboIdList) {
             glDeleteBuffers(vboId);
         }
-        if (this.texture != null) {
-            this.texture.cleanup();
+        final Texture texture = this.material.getTexture();
+        if (texture != null) {
+            texture.cleanup();
         }
         glBindVertexArray(0);
         glDeleteVertexArrays(this.vaoId);
+    }
+
+    public Material getMaterial() {
+        return this.material;
+    }
+
+    public void setMaterial(Material material) {
+        this.material = material;
+    }
+
+    public int getVaoId() {
+        return this.vaoId;
+    }
+
+    public int getVertexCount() {
+        return this.vertexCount;
     }
 }

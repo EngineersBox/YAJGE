@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.rendering.resources.textures;
+package com.engineersbox.yajge.rendering.resources.materials;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

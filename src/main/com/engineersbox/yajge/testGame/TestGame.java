@@ -5,42 +5,61 @@ import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
+import com.engineersbox.yajge.rendering.lighting.Attenuation;
+import com.engineersbox.yajge.rendering.lighting.PointLight;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
-
-import com.engineersbox.yajge.rendering.resources.textures.Texture;
+import com.engineersbox.yajge.rendering.resources.materials.Material;
+import com.engineersbox.yajge.rendering.resources.materials.Texture;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.primitive.OBJLoader;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class TestGame implements EngineLogic {
 
-    private static final float MOUSE_SENSITIVITY = 0.5f;
+    private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 0.05f;
 
     private final Vector3f cameraInc;
     private final Renderer renderer;
     private final Camera camera;
     private SceneObject[] sceneObjects;
+    private Vector3f ambientLight;
+    private PointLight pointLight;
 
     public TestGame() {
-        renderer = new Renderer();
-        camera = new Camera();
-        cameraInc = new Vector3f();
+        this.renderer = new Renderer();
+        this.camera = new Camera();
+        this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
     }
 
     @Override
-    public void init(final Window window) throws Exception {
+    public void init(Window window) throws Exception {
         this.renderer.init(window);
+
+        final float reflectance = 1f;
+        //Mesh mesh = OBJLoader.loadMesh("/models/bunny.obj");
+        //Material material = new Material(new Vector3f(0.2f, 0.5f, 0.5f), reflectance);
 
         final Mesh mesh = OBJLoader.loadMesh("src/main/resources/game/models/cube.obj");
         final Texture texture = new Texture("src/main/resources/game/textures/grassblock.png");
-        mesh.setTexture(texture);
+        final Material material = new Material(texture, reflectance);
+
+        mesh.setMaterial(material);
         final SceneObject sceneObject = new SceneObject(mesh);
         sceneObject.setScale(0.5f);
         sceneObject.setPosition(0, 0, -2);
         this.sceneObjects = new SceneObject[]{sceneObject};
+
+        this.ambientLight = new Vector3f(0.3f, 0.3f, 0.3f);
+        this.pointLight = new PointLight(
+                new Vector3f(1, 1, 1),
+                new Vector3f(0, 0, 1),
+                1.0f
+        );
+        this.pointLight.setAttenuation(new Attenuation(0.0f, 0.0f, 1.0f));
     }
 
     @Override
@@ -61,6 +80,12 @@ public class TestGame implements EngineLogic {
             this.cameraInc.y = -1;
         } else if (window.isKeyPressed(GLFW_KEY_SPACE)) {
             this.cameraInc.y = 1;
+        }
+        final float lightPos = pointLight.getPosition().z;
+        if (window.isKeyPressed(GLFW_KEY_N)) {
+            this.pointLight.getPosition().z = lightPos + 0.1f;
+        } else if (window.isKeyPressed(GLFW_KEY_M)) {
+            this.pointLight.getPosition().z = lightPos - 0.1f;
         }
     }
 
@@ -84,14 +109,14 @@ public class TestGame implements EngineLogic {
 
     @Override
     public void render(final Window window) {
-        this.renderer.render(window, this.camera, this.sceneObjects);
+        this.renderer.render(window, camera, sceneObjects, ambientLight, pointLight);
     }
 
     @Override
     public void cleanup() {
         this.renderer.cleanup();
-        for (final SceneObject gameItem : this.sceneObjects) {
-            gameItem.getMesh().cleanUp();
+        for (final SceneObject sceneObject : this.sceneObjects) {
+            sceneObject.getMesh().cleanUp();
         }
     }
 }
