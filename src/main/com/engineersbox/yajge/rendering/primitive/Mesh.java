@@ -1,8 +1,7 @@
 package com.engineersbox.yajge.rendering.primitive;
 
-import com.engineersbox.yajge.rendering.resources.materials.Material;
-import com.engineersbox.yajge.rendering.resources.materials.Texture;
-import org.joml.Vector3f;
+import com.engineersbox.yajge.rendering.assets.materials.Material;
+import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -33,8 +32,6 @@ import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Mesh {
-
-    private static final Vector3f DEFAULT_COLOUR = new Vector3f(1.0f, 1.0f, 1.0f);
 
     private final int vaoId;
     private final List<Integer> vboIdList;
@@ -129,7 +126,7 @@ public class Mesh {
         return this.material;
     }
 
-    public void setMaterial(Material material) {
+    public void setMaterial(final Material material) {
         this.material = material;
     }
 

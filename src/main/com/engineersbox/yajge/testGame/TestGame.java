@@ -6,10 +6,11 @@ import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.lighting.Attenuation;
+import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.lighting.PointLight;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
-import com.engineersbox.yajge.rendering.resources.materials.Material;
-import com.engineersbox.yajge.rendering.resources.materials.Texture;
+import com.engineersbox.yajge.rendering.assets.materials.Material;
+import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.primitive.OBJLoader;
 import org.joml.Vector2f;
@@ -28,6 +29,7 @@ public class TestGame implements EngineLogic {
     private SceneObject[] sceneObjects;
     private Vector3f ambientLight;
     private PointLight pointLight;
+    private DirectionalLight directionalLight;
 
     public TestGame() {
         this.renderer = new Renderer();
@@ -43,8 +45,8 @@ public class TestGame implements EngineLogic {
         //Mesh mesh = OBJLoader.loadMesh("/models/bunny.obj");
         //Material material = new Material(new Vector3f(0.2f, 0.5f, 0.5f), reflectance);
 
-        final Mesh mesh = OBJLoader.loadMesh("src/main/resources/game/models/cube.obj");
-        final Texture texture = new Texture("src/main/resources/game/textures/grassblock.png");
+        final Mesh mesh = OBJLoader.loadMesh("assets/game/models/cube.obj");
+        final Texture texture = new Texture("assets/game/textures/grassblock.png");
         final Material material = new Material(texture, reflectance);
 
         mesh.setMaterial(material);
@@ -54,12 +56,17 @@ public class TestGame implements EngineLogic {
         this.sceneObjects = new SceneObject[]{sceneObject};
 
         this.ambientLight = new Vector3f(0.3f, 0.3f, 0.3f);
-        this.pointLight = new PointLight(
-                new Vector3f(1, 1, 1),
-                new Vector3f(0, 0, 1),
-                1.0f
-        );
+
+        Vector3f lightColour = new Vector3f(1, 1, 1);
+        Vector3f lightPosition = new Vector3f(0, 0, 1);
+        float lightIntensity = 1.0f;
+
+        this.pointLight = new PointLight(lightColour, lightPosition, lightIntensity);
         this.pointLight.setAttenuation(new Attenuation(0.0f, 0.0f, 1.0f));
+
+        lightPosition = new Vector3f(-1, 0, 0);
+        lightColour = new Vector3f(1, 1, 1);
+        this.directionalLight = new DirectionalLight(lightColour, lightPosition, lightIntensity);
     }
 
     @Override
@@ -109,7 +116,14 @@ public class TestGame implements EngineLogic {
 
     @Override
     public void render(final Window window) {
-        this.renderer.render(window, camera, sceneObjects, ambientLight, pointLight);
+        this.renderer.render(
+                window,
+                this.camera,
+                this.sceneObjects,
+                this.ambientLight,
+                this.pointLight,
+                this.directionalLight
+        );
     }
 
     @Override

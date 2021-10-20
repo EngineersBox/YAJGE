@@ -3,9 +3,10 @@ package com.engineersbox.yajge.rendering;
 import com.engineersbox.yajge.element.object.SceneObject;
 import com.engineersbox.yajge.element.transform.Transform;
 import com.engineersbox.yajge.engine.core.Window;
+import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.lighting.PointLight;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
-import com.engineersbox.yajge.rendering.resources.shader.Shader;
+import com.engineersbox.yajge.rendering.assets.shader.Shader;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.ResourceLoader;
 import org.joml.Matrix4f;
@@ -31,16 +32,17 @@ public class Renderer {
 
     public void init(final Window window) throws Exception {
         this.shader = new Shader();
-        this.shader.createVertexShader(ResourceLoader.loadAsString("game/shaders/vertex.vert"));
-        this.shader.createFragmentShader(ResourceLoader.loadAsString("game/shaders/fragment.frag"));
+        this.shader.createVertexShader(ResourceLoader.loadAsString("assets/game/lighting/shaders/final.vert"));
+        this.shader.createFragmentShader(ResourceLoader.loadAsString("assets/game/lighting/shaders/final.frag"));
         this.shader.link();
         this.shader.createUniform("projectionMatrix");
         this.shader.createUniform("viewModelMatrix");
         this.shader.createUniform("textureSampler");
-        this.shader.createMaterialUniform("material");
+        this.shader.createMaterialUniforms("material");
         this.shader.createUniform("specularPower");
         this.shader.createUniform("ambientLight");
-        this.shader.createPointLightUniform("pointLight");
+        this.shader.createPointLightUniforms("pointLight");
+        this.shader.createDirectionalLightUniforms("directionalLight");
     }
 
     public void clear() {
@@ -51,7 +53,8 @@ public class Renderer {
                        final Camera camera,
                        final SceneObject[] sceneObjects,
                        final Vector3f ambientLight,
-                       final PointLight pointLight) {
+                       final PointLight pointLight,
+                       final DirectionalLight directionalLight) {
         clear();
         if (window.isResized()) {
             glViewport(0, 0, window.getWidth(), window.getHeight());
@@ -66,10 +69,11 @@ public class Renderer {
                 Z_FAR
         );
         this.shader.setUniform("projectionMatrix", projectionMatrix);
-
         final Matrix4f viewMatrix = this.transform.getViewMatrix(camera);
+
         this.shader.setUniform("ambientLight", ambientLight);
-        this.shader.setUniform("specularPower", this.specularPower);
+        this.shader.setUniform("specularPower", specularPower);
+
         final PointLight currPointLight = new PointLight(pointLight);
         final Vector3f lightPos = currPointLight.getPosition();
         final Vector4f aux = new Vector4f(lightPos, 1);
@@ -78,12 +82,18 @@ public class Renderer {
         lightPos.y = aux.y;
         lightPos.z = aux.z;
         this.shader.setUniform("pointLight", currPointLight);
-        this.shader.setUniform("textureSampler", 0);
 
+        final DirectionalLight currDirLight = new DirectionalLight(directionalLight);
+        final Vector4f dir = new Vector4f(currDirLight.getDirection(), 0);
+        dir.mul(viewMatrix);
+        currDirLight.setDirection(new Vector3f(dir.x, dir.y, dir.z));
+        this.shader.setUniform("directionalLight", currDirLight);
+
+        this.shader.setUniform("textureSampler", 0);
         for (final SceneObject sceneObject : sceneObjects) {
-            final Mesh mesh = sceneObject.getMesh();
-            final Matrix4f viewModelMatrix = this.transform.getViewModelMatrix(sceneObject, viewMatrix);
-            this.shader.setUniform("viewModelMatrix", viewModelMatrix);
+            Mesh mesh = sceneObject.getMesh();
+            Matrix4f modelViewMatrix = this.transform.getViewModelMatrix(sceneObject, viewMatrix);
+            this.shader.setUniform("viewModelMatrix", modelViewMatrix);
             this.shader.setUniform("material", mesh.getMaterial());
             mesh.render();
         }

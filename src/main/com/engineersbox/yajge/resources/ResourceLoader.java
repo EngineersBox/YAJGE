@@ -20,6 +20,16 @@ public class ResourceLoader {
     }
 
     public static String loadAsString(final String fileName) {
+        String contents = null;
+        try  {
+            contents = FileUtils.readFileToString(new File(fileName), StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            LOGGER.error("Could not read file {}", fileName, e);
+        }
+        return contents;
+    }
+
+    public static String loadResourceAsString(final String fileName) {
         final ClassLoader classLoader = ResourceLoader.class.getClassLoader();
         try (final InputStream inputStream = classLoader.getResourceAsStream(fileName)) {
             if (inputStream == null) {
@@ -37,7 +47,7 @@ public class ResourceLoader {
 
     public static List<String> loadAsStringLines(final String fileName) {
         final List<String> lines = new ArrayList<>();
-        try (final LineIterator lineIterator = FileUtils.lineIterator(new File(fileName), "UTF-8")) {
+        try (final LineIterator lineIterator = FileUtils.lineIterator(new File(fileName), StandardCharsets.UTF_8.name())) {
             while (lineIterator.hasNext()) {
                 lines.add(lineIterator.nextLine());
             }

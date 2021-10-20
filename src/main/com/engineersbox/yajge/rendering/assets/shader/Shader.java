@@ -1,10 +1,11 @@
-package com.engineersbox.yajge.rendering.resources.shader;
+package com.engineersbox.yajge.rendering.assets.shader;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.lighting.PointLight;
-import com.engineersbox.yajge.rendering.resources.materials.Material;
+import com.engineersbox.yajge.rendering.assets.materials.Material;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
@@ -38,7 +39,7 @@ public class Shader {
         this. uniforms.put(uniformName, uniformLocation);
     }
 
-    public void createPointLightUniform(final String uniformName) throws Exception {
+    public void createPointLightUniforms(final String uniformName) throws Exception {
         createUniform(uniformName + ".colour");
         createUniform(uniformName + ".position");
         createUniform(uniformName + ".intensity");
@@ -47,7 +48,13 @@ public class Shader {
         createUniform(uniformName + ".att.exponent");
     }
 
-    public void createMaterialUniform(final String uniformName) throws Exception {
+    public void createDirectionalLightUniforms(final String uniformName) throws Exception {
+        createUniform(uniformName + ".colour");
+        createUniform(uniformName + ".direction");
+        createUniform(uniformName + ".intensity");
+    }
+
+    public void createMaterialUniforms(final String uniformName) throws Exception {
         createUniform(uniformName + ".ambient");
         createUniform(uniformName + ".diffuse");
         createUniform(uniformName + ".specular");
@@ -95,6 +102,13 @@ public class Shader {
         setUniform(uniformName + ".att.constant", pointLight.getAttenuation().getConstant());
         setUniform(uniformName + ".att.linear", pointLight.getAttenuation().getLinear());
         setUniform(uniformName + ".att.exponent", pointLight.getAttenuation().getExponent());
+    }
+
+    public void setUniform(final String uniformName,
+                           final DirectionalLight dirLight) {
+        setUniform(uniformName + ".colour", dirLight.getColor());
+        setUniform(uniformName + ".direction", dirLight.getDirection());
+        setUniform(uniformName + ".intensity", dirLight.getIntensity());
     }
 
     public void setUniform(final String uniformName,

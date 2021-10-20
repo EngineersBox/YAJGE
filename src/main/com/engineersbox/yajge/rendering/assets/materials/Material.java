@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.rendering.resources.materials;
+package com.engineersbox.yajge.rendering.assets.materials;
 
 import org.joml.Vector4f;
 
