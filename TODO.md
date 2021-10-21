@@ -10,6 +10,7 @@
 * Cascaded shadow mapping
 * Centralise scene components under Scene object
 * Created enum declarations for uniform names and update magic string references
+* XML configurations for each engine component
 * Refactor to Assimp library for handling more model formats
 * Create deferred shading pipeline
 * Implement fog

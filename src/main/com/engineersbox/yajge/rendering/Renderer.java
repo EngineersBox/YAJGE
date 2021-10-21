@@ -16,13 +16,12 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.stream.Stream;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
 
-    /**
-     * Field of View in Radians
-     */
     private static final float FOV = (float) Math.toRadians(60.0f);
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
@@ -49,12 +48,14 @@ public class Renderer {
         this.sceneShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/final.vert"));
         this.sceneShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/final.frag"));
         this.sceneShader.link();
-        this.sceneShader.createUniform("projectionMatrix");
-        this.sceneShader.createUniform("viewModelMatrix");
-        this.sceneShader.createUniform("textureSampler");
+        Stream.of(
+                "projectionMatrix",
+                "viewModelMatrix",
+                "textureSampler",
+                "specularPower",
+                "ambientLight"
+        ).forEach(this.sceneShader::createUniform);
         this.sceneShader.createMaterialUniform("material");
-        this.sceneShader.createUniform("specularPower");
-        this.sceneShader.createUniform("ambientLight");
         this.sceneShader.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
         this.sceneShader.createSpotLightListUniform("spotLights", MAX_SPOT_LIGHTS);
         this.sceneShader.createDirectionalLightUniform("directionalLight");
@@ -65,9 +66,11 @@ public class Renderer {
         this.hudShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.vert"));
         this.hudShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.frag"));
         this.hudShader.link();
-        this.hudShader.createUniform("projModelMatrix");
-        this.hudShader.createUniform("colour");
-        this.hudShader.createUniform("hasTexture");
+        Stream.of(
+                "projModelMatrix",
+                "colour",
+                "hasTexture"
+        ).forEach(this.hudShader::createUniform);
     }
 
     public void clear() {
