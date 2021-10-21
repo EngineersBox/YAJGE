@@ -44,7 +44,7 @@ public class Engine implements Runnable {
         }
     }
 
-    protected void init() throws Exception {
+    protected void init() {
         this.window.init();
         this.timer.init();
         this.mouseInput.init(this.window);

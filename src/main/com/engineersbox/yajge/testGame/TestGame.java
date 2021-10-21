@@ -1,11 +1,12 @@
 package com.engineersbox.yajge.testGame;
 
-import com.engineersbox.yajge.element.object.SceneObject;
+import com.engineersbox.yajge.rendering.lighting.Attenuation;
+import com.engineersbox.yajge.scene.lighting.SceneLight;
+import com.engineersbox.yajge.scene.object.SceneElement;
 import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
-import com.engineersbox.yajge.rendering.lighting.Attenuation;
 import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.lighting.PointLight;
 import com.engineersbox.yajge.rendering.lighting.SpotLight;
@@ -27,11 +28,9 @@ public class TestGame implements EngineLogic {
     private final Vector3f cameraInc;
     private final Renderer renderer;
     private final Camera camera;
-    private SceneObject[] sceneObjects;
-    private Vector3f ambientLight;
-    private PointLight[] pointLightList;
-    private SpotLight[] spotLightList;
-    private DirectionalLight directionalLight;
+    private SceneElement[] sceneElements;
+    private SceneLight sceneLight;
+    private Hud hud;
     private float lightAngle;
     private float spotAngle = 0;
     private float spotInc = 1;
@@ -44,9 +43,8 @@ public class TestGame implements EngineLogic {
     }
 
     @Override
-    public void init(final Window window) throws Exception {
+    public void init(final Window window) {
         this.renderer.init(window);
-
         final float reflectance = 1f;
 
         final Mesh mesh = OBJLoader.loadMesh("assets/game/models/cube.obj");
@@ -54,33 +52,34 @@ public class TestGame implements EngineLogic {
         final Material material = new Material(texture, reflectance);
 
         mesh.setMaterial(material);
-        final SceneObject sceneObject = new SceneObject(mesh);
-        sceneObject.setScale(0.5f);
-        sceneObject.setPosition(0, 0, -2);
-        this.sceneObjects = new SceneObject[]{sceneObject};
+        final SceneElement sceneElement = new SceneElement(mesh);
+        sceneElement.setScale(0.5f);
+        sceneElement.setPosition(0, 0, -2);
+        sceneElements = new SceneElement[]{sceneElement};
 
-        this.ambientLight = new Vector3f(0.3f, 0.3f, 0.3f);
+        this.sceneLight = new SceneLight();
+        this.sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
 
-        // Point Light
         Vector3f lightPosition = new Vector3f(0, 0, 1);
         float lightIntensity = 1.0f;
         PointLight pointLight = new PointLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
         Attenuation att = new Attenuation(0.0f, 0.0f, 1.0f);
         pointLight.setAttenuation(att);
-        this.pointLightList = new PointLight[]{pointLight};
+        this.sceneLight.setPointLightList(new PointLight[]{pointLight});
 
-        // Spot Light
         lightPosition = new Vector3f(0, 0.0f, 10f);
         pointLight = new PointLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
         att = new Attenuation(0.0f, 0.0f, 0.02f);
         pointLight.setAttenuation(att);
         final Vector3f coneDir = new Vector3f(0, 0, -1);
-        float cutoff = (float) Math.cos(Math.toRadians(140));
+        final float cutoff = (float) Math.cos(Math.toRadians(140));
         final SpotLight spotLight = new SpotLight(pointLight, coneDir, cutoff);
-        this.spotLightList = new SpotLight[]{spotLight, new SpotLight(spotLight)};
+        this.sceneLight.setSpotLightList(new SpotLight[]{spotLight, new SpotLight(spotLight)});
 
         lightPosition = new Vector3f(-1, 0, 0);
-        this.directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
+        this.sceneLight.setDirectionalLight(new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity));
+
+        hud = new Hud("DEMO");
     }
 
     @Override
@@ -102,11 +101,12 @@ public class TestGame implements EngineLogic {
         } else if (window.isKeyPressed(GLFW_KEY_SPACE)) {
             this.cameraInc.y = 1;
         }
-        final float lightPos = this.spotLightList[0].getPointLight().getPosition().z;
+        final SpotLight[] spotLightList = sceneLight.getSpotLightList();
+        final float lightPos = spotLightList[0].getPointLight().getPosition().z;
         if (window.isKeyPressed(GLFW_KEY_N)) {
-            this.spotLightList[0].getPointLight().getPosition().z = lightPos + 0.1f;
+            spotLightList[0].getPointLight().getPosition().z = lightPos + 0.1f;
         } else if (window.isKeyPressed(GLFW_KEY_M)) {
-            this.spotLightList[0].getPointLight().getPosition().z = lightPos - 0.1f;
+            spotLightList[0].getPointLight().getPosition().z = lightPos - 0.1f;
         }
     }
 
@@ -118,68 +118,69 @@ public class TestGame implements EngineLogic {
                 this.cameraInc.y * CAMERA_POS_STEP,
                 this.cameraInc.z * CAMERA_POS_STEP
         );
-
         if (mouseInput.isRightButtonPressed()) {
-            final Vector2f rotVec = mouseInput.getDisplayVec();
+            Vector2f rotVec = mouseInput.getDisplayVec();
             this.camera.moveRotation(
                     rotVec.x * MOUSE_SENSITIVITY,
                     rotVec.y * MOUSE_SENSITIVITY,
                     0
             );
+            this.hud.rotateCompass(this.camera.getRotation().y);
         }
 
-        // Update spotlight direction
         this.spotAngle += this.spotInc * 0.05f;
-        if (spotAngle > 2) {
+        if (this.spotAngle > 2) {
             this.spotInc = -1;
-        } else if (spotAngle < -2) {
+        } else if (this.spotAngle < -2) {
             this.spotInc = 1;
         }
         final double spotAngleRad = Math.toRadians(this.spotAngle);
-        final Vector3f coneDir = this.spotLightList[0].getConeDirection();
+        final SpotLight[] spotLightList = this.sceneLight.getSpotLightList();
+        final Vector3f coneDir = spotLightList[0].getConeDirection();
         coneDir.y = (float) Math.sin(spotAngleRad);
 
         // Update directional light direction, intensity and colour
+        final DirectionalLight directionalLight = this.sceneLight.getDirectionalLight();
         this.lightAngle += 1.1f;
         if (this.lightAngle > 90) {
-            this.directionalLight.setIntensity(0);
+            directionalLight.setIntensity(0);
             if (this.lightAngle >= 360) {
                 this.lightAngle = -90;
             }
         } else if (this.lightAngle <= -80 || this.lightAngle >= 80) {
             final float factor = 1 - (Math.abs(this.lightAngle) - 80) / 10.0f;
-            this.directionalLight.setIntensity(factor);
-            this.directionalLight.getColor().y = Math.max(factor, 0.9f);
-            this.directionalLight.getColor().z = Math.max(factor, 0.5f);
+            directionalLight.setIntensity(factor);
+            directionalLight.getColor().y = Math.max(factor, 0.9f);
+            directionalLight.getColor().z = Math.max(factor, 0.5f);
         } else {
-            this.directionalLight.setIntensity(1);
-            this.directionalLight.getColor().x = 1;
-            this.directionalLight.getColor().y = 1;
-            this.directionalLight.getColor().z = 1;
+            directionalLight.setIntensity(1);
+            directionalLight.getColor().x = 1;
+            directionalLight.getColor().y = 1;
+            directionalLight.getColor().z = 1;
         }
-        final double angRad = Math.toRadians(this.lightAngle);
-        this.directionalLight.getDirection().x = (float) Math.sin(angRad);
-        this.directionalLight.getDirection().y = (float) Math.cos(angRad);
+        final double angRad = Math.toRadians(lightAngle);
+        directionalLight.getDirection().x = (float) Math.sin(angRad);
+        directionalLight.getDirection().y = (float) Math.cos(angRad);
     }
 
     @Override
     public void render(final Window window) {
+        this.hud.updateSize(window);
         this.renderer.render(
                 window,
                 this.camera,
-                this.sceneObjects,
-                this.ambientLight,
-                this.pointLightList,
-                this.spotLightList,
-                this.directionalLight
+                this.sceneElements,
+                this.sceneLight,
+                this.hud
         );
     }
 
     @Override
     public void cleanup() {
         this.renderer.cleanup();
-        for (final SceneObject sceneObject : this.sceneObjects) {
-            sceneObject.getMesh().cleanUp();
+        for (final SceneElement sceneElement : this.sceneElements) {
+            sceneElement.getMesh().cleanUp();
         }
+        this.hud.cleanup();
     }
 }

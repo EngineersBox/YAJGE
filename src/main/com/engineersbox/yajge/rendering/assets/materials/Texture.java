@@ -11,66 +11,81 @@ import static org.lwjgl.stb.STBImage.*;
 public class Texture {
 
     private final int id;
+    private final int width;
+    private final int height;
 
-    public Texture(final String fileName) throws Exception {
-        this(loadTexture(fileName));
+    public Texture(String fileName) {
+        final ByteBuffer buf;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer w = stack.mallocInt(1);
+            final IntBuffer h = stack.mallocInt(1);
+            final IntBuffer channels = stack.mallocInt(1);
+
+            buf = stbi_load(fileName, w, h, channels, 4);
+            if (buf == null) {
+                throw new RuntimeException("Image file [" + fileName  + "] not loaded: " + stbi_failure_reason());
+            }
+
+            width = w.get();
+            height = h.get();
+        }
+        this.id = createTexture(buf);
+        stbi_image_free(buf);
     }
 
-    public Texture(final int id) {
-        this.id = id;
+    public Texture(ByteBuffer imageBuffer) {
+        final ByteBuffer buf;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer w = stack.mallocInt(1);
+            final IntBuffer h = stack.mallocInt(1);
+            final IntBuffer channels = stack.mallocInt(1);
+
+            buf = stbi_load_from_memory(imageBuffer, w, h, channels, 4);
+            if (buf == null) {
+                throw new RuntimeException("Image file not loaded: " + stbi_failure_reason());
+            }
+
+            width = w.get();
+            height = h.get();
+        }
+        this.id = createTexture(buf);
+        stbi_image_free(buf);
     }
 
+    private int createTexture(final ByteBuffer buf) {
+        final int textureId = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                this.width,
+                this.height,
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                buf
+        );
+        glGenerateMipmap(GL_TEXTURE_2D);
+        return textureId;
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public int getHeight() {
+        return this.height;
+    }
     public void bind() {
         glBindTexture(GL_TEXTURE_2D, this.id);
     }
 
     public int getId() {
         return this.id;
-    }
-
-    private static int loadTexture(final String fileName) {
-        final int width;
-        final int height;
-        final ByteBuffer imageBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer w = stack.mallocInt(1);
-            final IntBuffer h = stack.mallocInt(1);
-            final IntBuffer channels = stack.mallocInt(1);
-            imageBuffer = stbi_load(fileName, w, h, channels, 4);
-            if (imageBuffer == null) {
-                throw new RuntimeException(String.format(
-                        "Could not load image file %s: %s",
-                        fileName,
-                        stbi_failure_reason()
-                )); // TODO: Implement an exception for this
-            }
-            width = w.get();
-            height = h.get();
-        }
-        final int textureId = createAndBindTexture(width, height, imageBuffer);
-        stbi_image_free(imageBuffer);
-        return textureId;
-    }
-
-    private static int createAndBindTexture(final int width,
-                                            final int height,
-                                            final ByteBuffer imageBuffer) {
-        final int textureId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RGBA,
-                width,
-                height,
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                imageBuffer
-        );
-        glGenerateMipmap(GL_TEXTURE_2D);
-        return textureId;
     }
 
     public void cleanup() {

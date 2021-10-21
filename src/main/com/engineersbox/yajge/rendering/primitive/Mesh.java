@@ -122,6 +122,18 @@ public class Mesh {
         glDeleteVertexArrays(this.vaoId);
     }
 
+    public void deleteBuffers() {
+        glDisableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        for (int vboId : vboIdList) {
+            glDeleteBuffers(vboId);
+        }
+
+        glBindVertexArray(0);
+        glDeleteVertexArrays(vaoId);
+    }
+
     public Material getMaterial() {
         return this.material;
     }

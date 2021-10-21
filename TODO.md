@@ -16,6 +16,7 @@
 * Skybox
 * Audio system
 * Physics system
+* PBR and IBL
 
 ## Assimp Structure
 

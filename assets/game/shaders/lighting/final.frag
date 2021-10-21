@@ -23,10 +23,9 @@ struct PointLight {
     Attenuation att;
 };
 
-struct SpotLight
-{
+struct SpotLight {
     PointLight pl;
-    vec3 conedir;
+    vec3 coneDir;
     float cutoff;
 };
 
@@ -102,7 +101,7 @@ vec4 calcSpotLight(SpotLight light, vec3 position, vec3 normal) {
     vec3 light_direction = light.pl.position - position;
     vec3 to_light_dir  = normalize(light_direction);
     vec3 from_light_dir  = -to_light_dir;
-    float spot_alfa = dot(from_light_dir, normalize(light.conedir));
+    float spot_alfa = dot(from_light_dir, normalize(light.coneDir));
     
     vec4 colour = vec4(0, 0, 0, 0);
     

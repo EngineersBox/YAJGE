@@ -1,19 +1,23 @@
-package com.engineersbox.yajge.element.object;
+package com.engineersbox.yajge.scene.object;
 
 import com.engineersbox.yajge.rendering.primitive.Mesh;
 import org.joml.Vector3f;
 
-public class SceneObject {
-    private final Mesh mesh;
+public class SceneElement {
+    private Mesh mesh;
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
 
-    public SceneObject(final Mesh mesh) {
+    public SceneElement() {
+        position = new Vector3f();
+        scale = 1;
+        rotation = new Vector3f();
+    }
+
+    public SceneElement(final Mesh mesh) {
+        this();
         this.mesh = mesh;
-        this.position = new Vector3f();
-        this.scale = 1;
-        this.rotation = new Vector3f();
     }
 
     public Vector3f getPosition() {
@@ -50,5 +54,9 @@ public class SceneObject {
 
     public Mesh getMesh() {
         return this.mesh;
+    }
+
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
     }
 }
