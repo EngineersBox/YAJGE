@@ -65,7 +65,7 @@ public class TestGame implements EngineLogic {
         PointLight pointLight = new PointLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
         Attenuation att = new Attenuation(0.0f, 0.0f, 1.0f);
         pointLight.setAttenuation(att);
-        this.sceneLight.setPointLightList(new PointLight[]{pointLight});
+        this.sceneLight.setPointLights(new PointLight[]{pointLight});
 
         lightPosition = new Vector3f(0, 0.0f, 10f);
         pointLight = new PointLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
@@ -74,7 +74,7 @@ public class TestGame implements EngineLogic {
         final Vector3f coneDir = new Vector3f(0, 0, -1);
         final float cutoff = (float) Math.cos(Math.toRadians(140));
         final SpotLight spotLight = new SpotLight(pointLight, coneDir, cutoff);
-        this.sceneLight.setSpotLightList(new SpotLight[]{spotLight, new SpotLight(spotLight)});
+        this.sceneLight.setSpotLights(new SpotLight[]{spotLight, new SpotLight(spotLight)});
 
         lightPosition = new Vector3f(-1, 0, 0);
         this.sceneLight.setDirectionalLight(new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity));
@@ -101,7 +101,7 @@ public class TestGame implements EngineLogic {
         } else if (window.isKeyPressed(GLFW_KEY_SPACE)) {
             this.cameraInc.y = 1;
         }
-        final SpotLight[] spotLightList = sceneLight.getSpotLightList();
+        final SpotLight[] spotLightList = sceneLight.getSpotLights();
         final float lightPos = spotLightList[0].getPointLight().getPosition().z;
         if (window.isKeyPressed(GLFW_KEY_N)) {
             spotLightList[0].getPointLight().getPosition().z = lightPos + 0.1f;
@@ -135,7 +135,7 @@ public class TestGame implements EngineLogic {
             this.spotInc = 1;
         }
         final double spotAngleRad = Math.toRadians(this.spotAngle);
-        final SpotLight[] spotLightList = this.sceneLight.getSpotLightList();
+        final SpotLight[] spotLightList = this.sceneLight.getSpotLights();
         final Vector3f coneDir = spotLightList[0].getConeDirection();
         coneDir.y = (float) Math.sin(spotAngleRad);
 

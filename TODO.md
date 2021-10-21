@@ -9,6 +9,7 @@
 * Create shadow casting extending on Phong shading model
 * Cascaded shadow mapping
 * Centralise scene components under Scene object
+* Created enum declarations for uniform names and update magic string references
 * Refactor to Assimp library for handling more model formats
 * Create deferred shading pipeline
 * Implement fog
