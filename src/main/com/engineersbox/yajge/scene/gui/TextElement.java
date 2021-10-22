@@ -7,7 +7,7 @@ import com.engineersbox.yajge.rendering.assets.font.CharInfo;
 import com.engineersbox.yajge.rendering.assets.font.FontTexture;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
-import com.engineersbox.yajge.scene.object.SceneElement;
+import com.engineersbox.yajge.scene.element.SceneElement;
 import org.eclipse.collections.impl.collector.Collectors2;
 import org.eclipse.collections.impl.factory.primitive.FloatLists;
 

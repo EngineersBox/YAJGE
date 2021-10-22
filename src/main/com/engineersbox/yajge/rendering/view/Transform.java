@@ -1,7 +1,6 @@
-package com.engineersbox.yajge.scene.transform;
+package com.engineersbox.yajge.rendering.view;
 
-import com.engineersbox.yajge.scene.object.SceneElement;
-import com.engineersbox.yajge.rendering.view.Camera;
+import com.engineersbox.yajge.scene.element.SceneElement;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 

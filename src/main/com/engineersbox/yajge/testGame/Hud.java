@@ -7,7 +7,7 @@ import com.engineersbox.yajge.rendering.primitive.Mesh;
 import com.engineersbox.yajge.resources.primitive.OBJLoader;
 import com.engineersbox.yajge.scene.gui.IHud;
 import com.engineersbox.yajge.scene.gui.TextElement;
-import com.engineersbox.yajge.scene.object.SceneElement;
+import com.engineersbox.yajge.scene.element.SceneElement;
 import org.joml.Vector4f;
 
 import java.awt.*;

@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.scene.object;
+package com.engineersbox.yajge.scene.element;
 
 import com.engineersbox.yajge.rendering.primitive.Mesh;
 import org.joml.Vector3f;

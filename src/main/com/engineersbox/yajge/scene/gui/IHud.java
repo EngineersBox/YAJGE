@@ -1,6 +1,6 @@
 package com.engineersbox.yajge.scene.gui;
 
-import com.engineersbox.yajge.scene.object.SceneElement;
+import com.engineersbox.yajge.scene.element.SceneElement;
 
 public interface IHud {
     SceneElement[] getSceneElements();
