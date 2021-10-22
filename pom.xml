@@ -25,6 +25,7 @@
 		<jaxb-runtime.version>3.0.2</jaxb-runtime.version>
 		<pngdecoder.version>1.0</pngdecoder.version>
 		<eclipse.colections.version>10.4.0</eclipse.colections.version>
+		<typesafe.version>1.4.1</typesafe.version>
 
 		<!-- Maven Compiler Version -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -50,6 +51,13 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- HOCON Typesafe -->
+		<dependency>
+			<groupId>com.typesafe</groupId>
+			<artifactId>config</artifactId>
+			<version>${typesafe.version}</version>
+		</dependency>
+
 		<!-- Eclipse Collections API -->
 		<dependency>
 			<groupId>org.eclipse.collections</groupId>
@@ -475,6 +483,27 @@
 								</transformer>
 							</transformers>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.timvlaer</groupId>
+				<artifactId>tscfg-maven-plugin</artifactId>
+				<configuration>
+					<templateFile>src/main/resources/templates/engineConfigTemplate.conf</templateFile>
+					<packageName>com.engineersbox.yajge.resources.config</packageName>
+					<outputDirectory>src/main</outputDirectory>
+					<className>Config</className>
+					<generateGetters>false</generateGetters>
+					<useOptionals>true</useOptionals>
+					<useDurations>true</useDurations>
+				</configuration>
+				<executions>
+					<execution>
+						<id>tscfg-sources</id>
+						<goals>
+							<goal>generate-config-class</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>

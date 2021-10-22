@@ -5,14 +5,15 @@ import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.engine.util.Timer;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.logging.LoggerCompat;
+import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Engine implements Runnable {
 
-    public static final int TARGET_FPS = 75;
-    public static final int TARGET_UPS = 30;
+//    public static final int TARGET_FPS = 75;
+//    public static final int TARGET_UPS = 30;
 
     private static final Logger LOGGER = LogManager.getLogger(Engine.class);
 
@@ -54,7 +55,7 @@ public class Engine implements Runnable {
     protected void gameLoop() {
         float elapsedTime;
         float accumulator = 0f;
-        final float interval = 1f / TARGET_UPS;
+        final float interval = 1f / ConfigHandler.CONFIG.video.ups;
         this.running = true;
         while (this.running && !this.window.windowShouldClose()) {
             elapsedTime = timer.getElapsedTime();
@@ -73,7 +74,7 @@ public class Engine implements Runnable {
     }
 
     private void sync() {
-        final float loopSlot = 1f / TARGET_FPS;
+        final float loopSlot = 1f / ConfigHandler.CONFIG.video.fps;
         final double endTime = this.timer.getLastLoopTime() + loopSlot;
         try {
             Thread.sleep((long) (endTime - this.timer.getTime()));

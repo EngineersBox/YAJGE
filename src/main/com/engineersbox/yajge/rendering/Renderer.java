@@ -8,6 +8,7 @@ import com.engineersbox.yajge.rendering.primitive.Mesh;
 import com.engineersbox.yajge.rendering.assets.shader.Shader;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.ResourceLoader;
+import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.gui.IHud;
@@ -25,12 +26,6 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
-
-    private static final float FOV = (float) Math.toRadians(60.0f);
-    private static final float Z_NEAR = 0.01f;
-    private static final float Z_FAR = 1000.f;
-    private static final int MAX_POINT_LIGHTS = 5;
-    private static final int MAX_SPOT_LIGHTS = 5;
 
     private final Transform transform;
     private Shader sceneShader;
@@ -62,8 +57,8 @@ public class Renderer {
                 "ambientLight"
         ).forEach(this.sceneShader::createUniform);
         this.sceneShader.createMaterialUniform("material");
-        this.sceneShader.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
-        this.sceneShader.createSpotLightListUniform("spotLights", MAX_SPOT_LIGHTS);
+        this.sceneShader.createPointLightListUniform("pointLights", ConfigHandler.CONFIG.render.lighting.maxPointLights);
+        this.sceneShader.createSpotLightListUniform("spotLights", ConfigHandler.CONFIG.render.lighting.maxSpotLights);
         this.sceneShader.createDirectionalLightUniform("directionalLight");
     }
 
@@ -106,7 +101,13 @@ public class Renderer {
             glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
-        this.transform.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        this.transform.updateProjectionMatrix(
+                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
+                window.getWidth(),
+                window.getHeight(),
+                (float) ConfigHandler.CONFIG.render.camera.zNear,
+                (float) ConfigHandler.CONFIG.render.camera.zFar
+        );
         this.transform.updateViewMatrix(camera);
         renderScene(scene);
         renderSkybox(scene);

@@ -99,7 +99,7 @@ public class Mesh {
     }
 
     private void startRender() {
-        final Texture texture = material.getTexture();
+        final Texture texture = this.material.getTexture();
         if (texture != null) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture.getId());
@@ -146,7 +146,7 @@ public class Mesh {
         glDisableVertexAttribArray(0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        for (int vboId : vboIdList) {
+        for (final int vboId : this.vboIdList) {
             glDeleteBuffers(vboId);
         }
 
