@@ -2,12 +2,14 @@ package com.engineersbox.yajge.rendering.primitive;
 
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.assets.materials.Texture;
+import com.engineersbox.yajge.scene.element.SceneElement;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
@@ -96,16 +98,34 @@ public class Mesh {
         return indicesBuffer;
     }
 
-    public void render() {
-        final Texture texture = this.material.getTexture();
+    private void startRender() {
+        final Texture texture = material.getTexture();
         if (texture != null) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
         glBindVertexArray(getVaoId());
-        glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
+    }
+
+    private void endRender() {
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public void renderList(final List<SceneElement> sceneElements,
+                           final Consumer<SceneElement> consumer) {
+        startRender();
+        for (final SceneElement sceneElement : sceneElements) {
+            consumer.accept(sceneElement);
+            glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
+        }
+        endRender();
+    }
+
+    public void render() {
+        startRender();
+        glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
+        endRender();
     }
 
     public void cleanUp() {

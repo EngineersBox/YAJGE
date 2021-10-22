@@ -1,29 +1,47 @@
 package com.engineersbox.yajge.scene;
 
+import com.engineersbox.yajge.rendering.primitive.Mesh;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class Scene {
 
-    private SceneElement[] sceneElements;
-    private Skybox skybox;
+    private Map<Mesh, List<SceneElement>> meshMap;
+
+    private Skybox skyBox;
+
     private SceneLight sceneLight;
 
-    public SceneElement[] getSceneElements() {
-        return this.sceneElements;
+    public Scene() {
+        this.meshMap = new HashMap();
+    }
+
+    public Map<Mesh, List<SceneElement>> getGameMeshes() {
+        return this.meshMap;
     }
 
     public void setSceneElements(final SceneElement[] sceneElements) {
-        this.sceneElements = sceneElements;
+        final int elementCount = sceneElements != null ? sceneElements.length : 0;
+        for (int i = 0; i < elementCount; i++) {
+            final SceneElement sceneElement = sceneElements[i];
+            final Mesh mesh = sceneElement.getMesh();
+            final List<SceneElement> list = this.meshMap.computeIfAbsent(mesh, k -> new ArrayList<>());
+            list.add(sceneElement);
+        }
     }
 
     public Skybox getSkybox() {
-        return this.skybox;
+        return this.skyBox;
     }
 
-    public void setSkyBox(final Skybox skybox) {
-        this.skybox = skybox;
+    public void setSkybox(final Skybox skyBox) {
+        this.skyBox = skyBox;
     }
 
     public SceneLight getSceneLight() {

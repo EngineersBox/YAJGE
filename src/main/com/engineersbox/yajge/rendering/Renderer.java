@@ -18,6 +18,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -104,6 +106,8 @@ public class Renderer {
             glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
+        this.transform.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        this.transform.updateViewMatrix(camera);
         renderScene(window, camera, scene);
         renderSkybox(window, camera, scene);
         renderHud(window, hud);
@@ -113,16 +117,17 @@ public class Renderer {
                               final Camera camera,
                               final Scene scene) {
         this.skyboxShader.bind();
+
         this.skyboxShader.setUniform("textureSampler", 0);
 
-        Matrix4f projectionMatrix = this.transform.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
         this.skyboxShader.setUniform("projectionMatrix", projectionMatrix);
         final Skybox skyBox = scene.getSkybox();
-        Matrix4f viewMatrix = this.transform.getViewMatrix(camera);
+        final Matrix4f viewMatrix = this.transform.getViewMatrix();
         viewMatrix.m30(0);
         viewMatrix.m31(0);
         viewMatrix.m32(0);
-        Matrix4f modelViewMatrix = this.transform.getViewModelMatrix(skyBox, viewMatrix);
+        final Matrix4f modelViewMatrix = this.transform.buildModelViewMatrix(skyBox, viewMatrix);
         this.skyboxShader.setUniform("viewModelMatrix", modelViewMatrix);
         this.skyboxShader.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
 
@@ -135,26 +140,32 @@ public class Renderer {
                             final Scene scene) {
         this.sceneShader.bind();
 
-        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
         this.sceneShader.setUniform("projectionMatrix", projectionMatrix);
-        final Matrix4f viewMatrix = this.transform.getViewMatrix(camera);
+
+        final Matrix4f viewMatrix = this.transform.getViewMatrix();
+
         final SceneLight sceneLight = scene.getSceneLight();
         renderLights(viewMatrix, sceneLight);
 
         this.sceneShader.setUniform("textureSampler", 0);
-        final SceneElement[] sceneElements = scene.getSceneElements();
-        for (final SceneElement sceneElement : sceneElements) {
-            final Mesh mesh = sceneElement.getMesh();
-            final Matrix4f modelViewMatrix = this.transform.getViewModelMatrix(sceneElement, viewMatrix);
-            this.sceneShader.setUniform("viewModelMatrix", modelViewMatrix);
-            this.sceneShader.setUniform("material", mesh.getMaterial());
-            mesh.render();
+        for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getGameMeshes().entrySet()) {
+            this.sceneShader.setUniform("material", entry.getKey().getMaterial());
+            entry.getKey().renderList(
+                    entry.getValue(),
+                    (final SceneElement gameItem) -> {
+                        final Matrix4f viewModelMatrix = this.transform.buildModelViewMatrix(gameItem, viewMatrix);
+                        this.sceneShader.setUniform("viewModelMatrix", viewModelMatrix);
+                    }
+            );
         }
+
         this.sceneShader.unbind();
     }
 
     private void renderLights(final Matrix4f viewMatrix,
                               final SceneLight sceneLight) {
+
         this.sceneShader.setUniform("ambientLight", sceneLight.getAmbientLight());
         this.sceneShader.setUniform("specularPower", specularPower);
 
@@ -172,7 +183,7 @@ public class Renderer {
             this.sceneShader.setUniform("pointLights", currPointLight, i);
         }
 
-        //  Spotlights
+        // Spotlights
         final SpotLight[] spotLightList = sceneLight.getSpotLights();
         numLights = spotLightList != null ? spotLightList.length : 0;
         for (int i = 0; i < numLights; i++) {
@@ -180,14 +191,17 @@ public class Renderer {
             final Vector4f dir = new Vector4f(currSpotLight.getConeDirection(), 0);
             dir.mul(viewMatrix);
             currSpotLight.setConeDirection(new Vector3f(dir.x, dir.y, dir.z));
+
             final Vector3f lightPos = currSpotLight.getPointLight().getPosition();
             final Vector4f aux = new Vector4f(lightPos, 1);
             aux.mul(viewMatrix);
             lightPos.x = aux.x;
             lightPos.y = aux.y;
             lightPos.z = aux.z;
+
             this.sceneShader.setUniform("spotLights", currSpotLight, i);
         }
+
         final DirectionalLight currDirLight = new DirectionalLight(sceneLight.getDirectionalLight());
         final Vector4f dir = new Vector4f(currDirLight.getDirection(), 0);
         dir.mul(viewMatrix);
@@ -199,9 +213,9 @@ public class Renderer {
                            final IHud hud) {
         this.hudShader.bind();
         final Matrix4f orthoProjectionMatrix = this.transform.getOrthoProjectionMatrix(0, window.getWidth(), window.getHeight(), 0);
-        for (SceneElement sceneElement : hud.getSceneElements()) {
+        for (final SceneElement sceneElement : hud.getSceneElements()) {
             final Mesh mesh = sceneElement.getMesh();
-            final Matrix4f projModelMatrix = this.transform.getOrthoProjModelMatrix(sceneElement, orthoProjectionMatrix);
+            final Matrix4f projModelMatrix = this.transform.buildOrthoProjModelMatrix(sceneElement, orthoProjectionMatrix);
             this.hudShader.setUniform("projModelMatrix", projModelMatrix);
             this.hudShader.setUniform("colour", sceneElement.getMesh().getMaterial().getAmbientColour());
             this.hudShader.setUniform("hasTexture", sceneElement.getMesh().getMaterial().isTextured() ? 1 : 0);
@@ -211,6 +225,9 @@ public class Renderer {
     }
 
     public void cleanup() {
+        if (this.skyboxShader != null) {
+            this.skyboxShader.cleanup();
+        }
         if (this.sceneShader != null) {
             this.sceneShader.cleanup();
         }

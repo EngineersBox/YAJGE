@@ -80,7 +80,7 @@ public class TestGame implements EngineLogic {
 
         final Skybox skyBox = new Skybox("assets/game/models/skybox.obj", "assets/game/textures/skybox.png");
         skyBox.setScale(SKYBOX_SCALE);
-        this.scene.setSkyBox(skyBox);
+        this.scene.setSkybox(skyBox);
 
         setupLights();
 
@@ -174,9 +174,9 @@ public class TestGame implements EngineLogic {
     @Override
     public void cleanup() {
         this.renderer.cleanup();
-        for (final SceneElement SceneElement : this.scene.getSceneElements()) {
-            SceneElement.getMesh().cleanUp();
-        }
+        scene.getGameMeshes()
+                .keySet()
+                .forEach(Mesh::cleanUp);
         this.hud.cleanup();
     }
 }

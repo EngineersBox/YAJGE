@@ -12,8 +12,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
-    private static final Logger LOGGER = LogManager.getLogger(Window.class);
-
     private final String title;
     private int width;
     private int height;
@@ -85,6 +83,8 @@ public class Window {
         GL.createCapabilities();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
     }
 
     public void setClearColor(final float r,
