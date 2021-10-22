@@ -149,7 +149,7 @@ public class Renderer {
         renderLights(viewMatrix, sceneLight);
 
         this.sceneShader.setUniform("textureSampler", 0);
-        for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getGameMeshes().entrySet()) {
+        for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
             this.sceneShader.setUniform("material", entry.getKey().getMaterial());
             entry.getKey().renderList(
                     entry.getValue(),

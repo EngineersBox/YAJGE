@@ -12,18 +12,16 @@ import java.util.Map;
 
 public class Scene {
 
-    private Map<Mesh, List<SceneElement>> meshMap;
-
+    private final Map<Mesh, List<SceneElement>> meshSceneElements;
     private Skybox skyBox;
-
     private SceneLight sceneLight;
 
     public Scene() {
-        this.meshMap = new HashMap();
+        this.meshSceneElements = new HashMap<>();
     }
 
-    public Map<Mesh, List<SceneElement>> getGameMeshes() {
-        return this.meshMap;
+    public Map<Mesh, List<SceneElement>> getMeshSceneElements() {
+        return this.meshSceneElements;
     }
 
     public void setSceneElements(final SceneElement[] sceneElements) {
@@ -31,7 +29,7 @@ public class Scene {
         for (int i = 0; i < elementCount; i++) {
             final SceneElement sceneElement = sceneElements[i];
             final Mesh mesh = sceneElement.getMesh();
-            final List<SceneElement> list = this.meshMap.computeIfAbsent(mesh, k -> new ArrayList<>());
+            final List<SceneElement> list = this.meshSceneElements.computeIfAbsent(mesh, k -> new ArrayList<>());
             list.add(sceneElement);
         }
     }

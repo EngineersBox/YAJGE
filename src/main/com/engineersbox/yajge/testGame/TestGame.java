@@ -174,7 +174,7 @@ public class TestGame implements EngineLogic {
     @Override
     public void cleanup() {
         this.renderer.cleanup();
-        scene.getGameMeshes()
+        scene.getMeshSceneElements()
                 .keySet()
                 .forEach(Mesh::cleanUp);
         this.hud.cleanup();
