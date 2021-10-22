@@ -108,14 +108,12 @@ public class Renderer {
         }
         this.transform.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         this.transform.updateViewMatrix(camera);
-        renderScene(window, camera, scene);
-        renderSkybox(window, camera, scene);
+        renderScene(scene);
+        renderSkybox(scene);
         renderHud(window, hud);
     }
 
-    private void renderSkybox(final Window window,
-                              final Camera camera,
-                              final Scene scene) {
+    private void renderSkybox(final Scene scene) {
         this.skyboxShader.bind();
 
         this.skyboxShader.setUniform("textureSampler", 0);
@@ -135,9 +133,7 @@ public class Renderer {
         this.skyboxShader.unbind();
     }
 
-    public void renderScene(final Window window,
-                            final Camera camera,
-                            final Scene scene) {
+    public void renderScene(final Scene scene) {
         this.sceneShader.bind();
 
         final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();

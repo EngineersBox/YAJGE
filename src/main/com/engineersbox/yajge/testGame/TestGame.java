@@ -66,11 +66,11 @@ public class TestGame implements EngineLogic {
         final SceneElement[] sceneElements  = new SceneElement[rows * cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                final SceneElement SceneElement = new SceneElement(mesh);
-                SceneElement.setScale(BLOCK_SCALE);
+                final SceneElement sceneElement = new SceneElement(mesh);
+                sceneElement.setScale(BLOCK_SCALE);
                 incy = Math.random() > 0.9f ? BLOCK_SCALE * 2 : 0f;
-                SceneElement.setPosition(posx, starty + incy, posz);
-                sceneElements[i*cols + j] = SceneElement;
+                sceneElement.setPosition(posx, starty + incy, posz);
+                sceneElements[i*cols + j] = sceneElement;
                 posx += inc;
             }
             posx = startx;

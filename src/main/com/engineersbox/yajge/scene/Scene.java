@@ -25,11 +25,12 @@ public class Scene {
     }
 
     public void setSceneElements(final SceneElement[] sceneElements) {
-        final int elementCount = sceneElements != null ? sceneElements.length : 0;
-        for (int i = 0; i < elementCount; i++) {
-            final SceneElement sceneElement = sceneElements[i];
+        if (sceneElements == null) {
+            return;
+        }
+        for (final SceneElement sceneElement : sceneElements) {
             final Mesh mesh = sceneElement.getMesh();
-            final List<SceneElement> list = this.meshSceneElements.computeIfAbsent(mesh, k -> new ArrayList<>());
+            final List<SceneElement> list = this.meshSceneElements.computeIfAbsent(mesh, (final Mesh key) -> new ArrayList<>());
             list.add(sceneElement);
         }
     }
