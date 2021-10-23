@@ -8,8 +8,7 @@ import com.engineersbox.yajge.rendering.assets.font.FontTexture;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
 import com.engineersbox.yajge.scene.element.SceneElement;
-import org.eclipse.collections.impl.collector.Collectors2;
-import org.eclipse.collections.impl.factory.primitive.FloatLists;
+import com.engineersbox.yajge.util.ListUtils;
 
 public class TextElement extends SceneElement {
 
@@ -77,17 +76,9 @@ public class TextElement extends SceneElement {
             startx += charInfo.width();
         }
 
-        final float[] posArr = positions.stream()
-                .collect(Collectors2.collectFloat(
-                        Float::floatValue,
-                        FloatLists.mutable::empty
-                )).toArray();
-        final float[] texCoordsArr = texCoords.stream()
-                .collect(Collectors2.collectFloat(
-                        Float::floatValue,
-                        FloatLists.mutable::empty
-                )).toArray();
-        final int[] indicesArr = indices.stream().mapToInt(i->i).toArray();
+        final float[] posArr = ListUtils.floatListToArray(positions);
+        final float[] texCoordsArr = ListUtils.floatListToArray(texCoords);
+        final int[] indicesArr = ListUtils.intListToArray(indices);
         final Mesh mesh = new Mesh(posArr, texCoordsArr, normals, indicesArr);
         mesh.setMaterial(new Material(fontTexture.getTexture()));
         return mesh;

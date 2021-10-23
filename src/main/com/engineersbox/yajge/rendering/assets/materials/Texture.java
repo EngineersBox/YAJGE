@@ -2,11 +2,12 @@ package com.engineersbox.yajge.rendering.assets.materials;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+
+import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
-import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
 
@@ -21,16 +22,16 @@ public class Texture {
             final IntBuffer h = stack.mallocInt(1);
             final IntBuffer channels = stack.mallocInt(1);
 
-            buf = stbi_load(fileName, w, h, channels, 4);
+            buf = STBImage.stbi_load(fileName, w, h, channels, 4);
             if (buf == null) {
-                throw new RuntimeException("Image file [" + fileName  + "] not loaded: " + stbi_failure_reason());
+                throw new RuntimeException("Image file [" + fileName  + "] not loaded: " + STBImage.stbi_failure_reason());
             }
 
             width = w.get();
             height = h.get();
         }
         this.id = createTexture(buf);
-        stbi_image_free(buf);
+        STBImage.stbi_image_free(buf);
     }
 
     public Texture(ByteBuffer imageBuffer) {
@@ -40,16 +41,16 @@ public class Texture {
             final IntBuffer h = stack.mallocInt(1);
             final IntBuffer channels = stack.mallocInt(1);
 
-            buf = stbi_load_from_memory(imageBuffer, w, h, channels, 4);
+            buf = STBImage.stbi_load_from_memory(imageBuffer, w, h, channels, 4);
             if (buf == null) {
-                throw new RuntimeException("Image file not loaded: " + stbi_failure_reason());
+                throw new RuntimeException("Image file not loaded: " + STBImage.stbi_failure_reason());
             }
 
             width = w.get();
             height = h.get();
         }
         this.id = createTexture(buf);
-        stbi_image_free(buf);
+        STBImage.stbi_image_free(buf);
     }
 
     private int createTexture(final ByteBuffer buf) {

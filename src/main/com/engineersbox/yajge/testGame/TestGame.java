@@ -2,18 +2,15 @@ package com.engineersbox.yajge.testGame;
 
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.Skybox;
+import com.engineersbox.yajge.scene.element.Terrain;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
-import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.primitive.Mesh;
-import com.engineersbox.yajge.rendering.assets.materials.Material;
-import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import com.engineersbox.yajge.rendering.view.Camera;
-import com.engineersbox.yajge.resources.primitive.OBJLoader;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -23,9 +20,14 @@ public class TestGame implements EngineLogic {
 
     private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 0.05f;
-    private static final float BLOCK_SCALE = 0.5f;
+
     private static final float SKYBOX_SCALE = 10.0f;
-    private static final float EXTENSION = 2.0f;
+
+    private static final float TERRAIN_SCALE = 10;
+    private static final int TERRAIN_SIZE = 3;
+    private static final float TERRAIN_MIN_Y = -0.1f;
+    private static final float TERRAIN_MAX_Y = 0.1f;
+    private static final int TERRAIN_TEX_INC = 40;
 
     private final Vector3f cameraInc;
     private final Renderer renderer;
@@ -47,48 +49,27 @@ public class TestGame implements EngineLogic {
 
         this.scene = new Scene();
 
-        final float reflectance = 1f;
-        final Mesh mesh = OBJLoader.loadMesh("assets/game/models/cube.obj");
-        final Texture texture = new Texture("assets/game/textures/grassblock.png");
-        final Material material = new Material(texture, reflectance);
-        mesh.setMaterial(material);
-
-        final float startx = EXTENSION * (-SKYBOX_SCALE + BLOCK_SCALE);
-        final  float startz = EXTENSION * (SKYBOX_SCALE - BLOCK_SCALE);
-        final float starty = -1.0f;
-        final float inc = BLOCK_SCALE * 2;
-
-        float posx = startx;
-        float posz = startz;
-        float incy;
-        final int rows = (int)(EXTENSION * SKYBOX_SCALE * 2 / inc);
-        final int cols = (int)(EXTENSION * SKYBOX_SCALE * 2/ inc);
-        final SceneElement[] sceneElements  = new SceneElement[rows * cols];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                final SceneElement sceneElement = new SceneElement(mesh);
-                sceneElement.setScale(BLOCK_SCALE);
-                incy = Math.random() > 0.9f ? BLOCK_SCALE * 2 : 0f;
-                sceneElement.setPosition(posx, starty + incy, posz);
-                sceneElements[i*cols + j] = sceneElement;
-                posx += inc;
-            }
-            posx = startx;
-            posz -= inc;
-        }
-        this.scene.setSceneElements(sceneElements);
+        final Terrain terrain = new Terrain(
+                TERRAIN_SIZE,
+                TERRAIN_SCALE,
+                TERRAIN_MIN_Y,
+                TERRAIN_MAX_Y,
+                "assets/game/textures/heightmap.png",
+                "assets/game/textures/terrain.png",
+                TERRAIN_TEX_INC
+        );
+        scene.setSceneElements(terrain.getSceneElements());
 
         final Skybox skyBox = new Skybox("assets/game/models/skybox.obj", "assets/game/textures/skybox.png");
         skyBox.setScale(SKYBOX_SCALE);
         this.scene.setSkybox(skyBox);
-
         setupLights();
 
         this.hud = new Hud("DEMO");
-
-        this.camera.getPosition().x = 0.65f;
-        this.camera.getPosition().y = 1.15f;
-        this.camera.getPosition().y = 4.34f;
+        this.camera.getPosition().x = 0.0f;
+        this.camera.getPosition().z = 0.0f;
+        this.camera.getPosition().y = -0.2f;
+        this.camera.getRotation().x = 10.f;
     }
 
     private void setupLights() {

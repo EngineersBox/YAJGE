@@ -3,6 +3,7 @@ package com.engineersbox.yajge.rendering.primitive;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import com.engineersbox.yajge.scene.element.SceneElement;
+import com.engineersbox.yajge.util.AllocUtils;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -62,15 +63,7 @@ public class Mesh {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         } finally {
-            freeAll(posBuffer, texCoordsBuffer, vecNormalsBuffer, indicesBuffer);
-        }
-    }
-
-    private void freeAll(final java.nio.Buffer ...buffers) {
-        for (final java.nio.Buffer bufferPtr : buffers) {
-            if (bufferPtr != null) {
-                MemoryUtil.memFree(bufferPtr);
-            }
+            AllocUtils.freeAll(posBuffer, texCoordsBuffer, vecNormalsBuffer, indicesBuffer);
         }
     }
 
