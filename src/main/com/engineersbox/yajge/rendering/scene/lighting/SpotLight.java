@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.rendering.lighting;
+package com.engineersbox.yajge.rendering.scene.lighting;
 
 import org.joml.Vector3f;
 

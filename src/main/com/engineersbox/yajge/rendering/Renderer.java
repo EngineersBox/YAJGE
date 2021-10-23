@@ -1,9 +1,9 @@
 package com.engineersbox.yajge.rendering;
 
 import com.engineersbox.yajge.engine.core.Window;
-import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
-import com.engineersbox.yajge.rendering.lighting.PointLight;
-import com.engineersbox.yajge.rendering.lighting.SpotLight;
+import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
+import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
+import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
 import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.rendering.assets.shader.Shader;
 import com.engineersbox.yajge.rendering.view.Camera;
@@ -60,6 +60,7 @@ public class Renderer {
         this.sceneShader.createPointLightListUniform("pointLights", ConfigHandler.CONFIG.render.lighting.maxPointLights);
         this.sceneShader.createSpotLightListUniform("spotLights", ConfigHandler.CONFIG.render.lighting.maxSpotLights);
         this.sceneShader.createDirectionalLightUniform("directionalLight");
+        this.sceneShader.createFogUniform("fog");
     }
 
     private void initHudShader() {
@@ -146,6 +147,7 @@ public class Renderer {
         renderLights(viewMatrix, sceneLight);
 
         this.sceneShader.setUniform("textureSampler", 0);
+        this.sceneShader.setUniform("fog", scene.getFog());
         for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
             this.sceneShader.setUniform("material", entry.getKey().getMaterial());
             entry.getKey().renderList(

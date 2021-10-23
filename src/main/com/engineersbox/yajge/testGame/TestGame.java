@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.testGame;
 
+import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.element.Terrain;
@@ -8,7 +9,7 @@ import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
-import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
+import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.rendering.view.Camera;
 import org.joml.Vector2f;
@@ -59,6 +60,7 @@ public class TestGame implements EngineLogic {
                 TERRAIN_TEX_INC
         );
         this.scene.setSceneElements(terrain.getSceneElements());
+        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.15f));
 
         final Skybox skyBox = new Skybox("assets/game/models/skybox.obj", "assets/game/textures/skybox.png");
         skyBox.setScale(SKYBOX_SCALE);

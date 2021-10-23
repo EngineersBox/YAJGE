@@ -3,10 +3,11 @@ package com.engineersbox.yajge.rendering.assets.shader;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
-import com.engineersbox.yajge.rendering.lighting.PointLight;
+import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
+import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
+import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
-import com.engineersbox.yajge.rendering.lighting.SpotLight;
+import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
@@ -37,7 +38,7 @@ public class Shader {
         if (uniformLocation < 0) {
             throw new RuntimeException("Could not find uniform: " + uniformName);
         }
-        this. uniforms.put(uniformName, uniformLocation);
+        this.uniforms.put(uniformName, uniformLocation);
     }
 
     public void createPointLightListUniform(final String uniformName,
@@ -83,9 +84,21 @@ public class Shader {
         createUniform(uniformName + ".reflectance");
     }
 
+    public void createFogUniform(final String uniformName) {
+        createUniform(uniformName + ".isActive");
+        createUniform(uniformName + ".colour");
+        createUniform(uniformName + ".density");
+    }
+
+    public void setUniform(final String uniformName,
+                           final Fog fog) {
+        setUniform(uniformName + ".isActive", fog.isActive() ? 1 : 0);
+        setUniform(uniformName + ".colour", fog.getColour() );
+        setUniform(uniformName + ".density", fog.getDensity());
+    }
+
     public void setUniform(final String uniformName,
                            final Matrix4f value) {
-        // Dump the matrix into a float buffer
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             glUniformMatrix4fv(
                     this.uniforms.get(uniformName),

@@ -1,6 +1,7 @@
 package com.engineersbox.yajge.scene;
 
 import com.engineersbox.yajge.rendering.object.composite.Mesh;
+import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
@@ -15,9 +16,11 @@ public class Scene {
     private final Map<Mesh, List<SceneElement>> meshSceneElements;
     private Skybox skyBox;
     private SceneLight sceneLight;
+    private Fog fog;
 
     public Scene() {
         this.meshSceneElements = new HashMap<>();
+        this.fog = Fog.NO_FOG;
     }
 
     public Map<Mesh, List<SceneElement>> getMeshSceneElements() {
@@ -49,5 +52,13 @@ public class Scene {
 
     public void setSceneLight(final SceneLight sceneLight) {
         this.sceneLight = sceneLight;
+    }
+
+    public Fog getFog() {
+        return this.fog;
+    }
+
+    public void setFog(final Fog fog) {
+        this.fog = fog;
     }
 }

@@ -1,8 +1,8 @@
 package com.engineersbox.yajge.scene.lighting;
 
-import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
-import com.engineersbox.yajge.rendering.lighting.PointLight;
-import com.engineersbox.yajge.rendering.lighting.SpotLight;
+import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
+import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
+import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
 import org.joml.Vector3f;
 
 public class SceneLight {
