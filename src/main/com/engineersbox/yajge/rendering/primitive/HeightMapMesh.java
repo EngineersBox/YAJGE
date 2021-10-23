@@ -70,9 +70,9 @@ public class HeightMapMesh {
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                positions.add(STARTX + col * incX); // x
-                positions.add(getHeight(col, row, width, imageBuffer)); //y
-                positions.add(STARTZ + row * incZ); //z
+                positions.add(STARTX + col * incX);
+                positions.add(getHeight(col, row, width, imageBuffer));
+                positions.add(STARTZ + row * incZ);
 
                 texCoords.add((float) texInc * (float) col / (float) width);
                 texCoords.add((float) texInc * (float) row / (float) height);
