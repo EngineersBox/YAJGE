@@ -42,7 +42,11 @@ public class HeightMapMesh {
 
             imageBuffer = STBImage.stbi_load(heightMapFile, w, h, channels, 4);
             if (imageBuffer == null) {
-                throw new RuntimeException("Image file " + heightMapFile  + " not loaded: " + STBImage.stbi_failure_reason());
+                throw new RuntimeException(String.format(
+                        "Image %s could not be loaded: %s",
+                        heightMapFile,
+                        STBImage.stbi_failure_reason()
+                ));
             }
 
             width = w.get();
