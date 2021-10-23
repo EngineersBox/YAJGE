@@ -1,6 +1,6 @@
 package com.engineersbox.yajge.scene;
 
-import com.engineersbox.yajge.rendering.primitive.Mesh;
+import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.lighting.SceneLight;

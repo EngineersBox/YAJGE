@@ -9,7 +9,7 @@ import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
-import com.engineersbox.yajge.rendering.primitive.Mesh;
+import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.rendering.view.Camera;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -33,6 +33,7 @@ public class TestGame implements EngineLogic {
     private final Renderer renderer;
     private final Camera camera;
     private Scene scene;
+    private Terrain terrain;
     private Hud hud;
     private float lightAngle;
 
@@ -48,8 +49,7 @@ public class TestGame implements EngineLogic {
         this.renderer.init(window);
 
         this.scene = new Scene();
-
-        final Terrain terrain = new Terrain(
+        this.terrain = new Terrain(
                 TERRAIN_SIZE,
                 TERRAIN_SCALE,
                 TERRAIN_MIN_Y,
@@ -58,7 +58,7 @@ public class TestGame implements EngineLogic {
                 "assets/game/textures/terrain.png",
                 TERRAIN_TEX_INC
         );
-        scene.setSceneElements(terrain.getSceneElements());
+        this.scene.setSceneElements(terrain.getSceneElements());
 
         final Skybox skyBox = new Skybox("assets/game/models/skybox.obj", "assets/game/textures/skybox.png");
         skyBox.setScale(SKYBOX_SCALE);
@@ -76,7 +76,7 @@ public class TestGame implements EngineLogic {
         final SceneLight sceneLight = new SceneLight();
         this.scene.setSceneLight(sceneLight);
         sceneLight.setAmbientLight(new Vector3f(1.0f, 1.0f, 1.0f));
-        Vector3f lightPosition = new Vector3f(-1, 0, 0);
+        final Vector3f lightPosition = new Vector3f(-1, 0, 0);
         sceneLight.setDirectionalLight(new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, 1.0f));
     }
 
@@ -113,11 +113,17 @@ public class TestGame implements EngineLogic {
             );
             this.hud.rotateCompass(this.camera.getRotation().y);
         }
+
+        final Vector3f prevPos = new Vector3f(this.camera.getPosition());
         this.camera.movePosition(
                 this.cameraInc.x * CAMERA_POS_STEP,
                 this.cameraInc.y * CAMERA_POS_STEP,
                 this.cameraInc.z * CAMERA_POS_STEP
         );
+        final float height = this.terrain.getHeight(this.camera.getPosition());
+        if (this.camera.getPosition().y <= height)  {
+            this.camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
+        }
 
         final SceneLight sceneLight = this.scene.getSceneLight();
         final DirectionalLight directionalLight = sceneLight.getDirectionalLight();

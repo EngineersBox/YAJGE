@@ -6,7 +6,7 @@ import java.util.List;
 import com.engineersbox.yajge.rendering.assets.font.CharInfo;
 import com.engineersbox.yajge.rendering.assets.font.FontTexture;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
-import com.engineersbox.yajge.rendering.primitive.Mesh;
+import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.util.ListUtils;
 

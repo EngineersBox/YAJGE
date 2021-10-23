@@ -4,7 +4,7 @@ import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.rendering.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.lighting.PointLight;
 import com.engineersbox.yajge.rendering.lighting.SpotLight;
-import com.engineersbox.yajge.rendering.primitive.Mesh;
+import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.rendering.assets.shader.Shader;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.ResourceLoader;

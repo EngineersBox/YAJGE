@@ -1,10 +1,8 @@
-package com.engineersbox.yajge.rendering.primitive;
+package com.engineersbox.yajge.rendering.object.composite;
 
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import com.engineersbox.yajge.util.ListUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -18,49 +16,32 @@ public class HeightMapMesh {
 
     private static final int MAX_CHANNEL_VALUE = 255;
     private static final int MAX_COLOUR = MAX_CHANNEL_VALUE * MAX_CHANNEL_VALUE * MAX_CHANNEL_VALUE;
-    private static final float STARTX = -0.5f;
-    private static final float STARTZ = -0.5f;
+    public static final float STARTX = -0.5f;
+    public static final float STARTZ = -0.5f;
 
     private final float minY;
     private final float maxY;
     private final Mesh mesh;
+    private final float[][] heightArray;
 
     public HeightMapMesh(final float minY,
                          final float maxY,
-                         final String heightMapFile,
+                         final ByteBuffer heightMapImage,
+                         final int width,
+                         final int height,
                          final String textureFile,
                          final int texInc) {
         this.minY = minY;
         this.maxY = maxY;
-        final ByteBuffer imageBuffer;
-        final int width;
-        final int height;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
-
-            imageBuffer = STBImage.stbi_load(heightMapFile, w, h, channels, 4);
-            if (imageBuffer == null) {
-                throw new RuntimeException(String.format(
-                        "Image %s could not be loaded: %s",
-                        heightMapFile,
-                        STBImage.stbi_failure_reason()
-                ));
-            }
-
-            width = w.get();
-            height = h.get();
-        }
-        this.mesh = buildMesh(width, height, imageBuffer, texInc);
+        this.heightArray = new float[height][width];
         final Texture texture = new Texture(textureFile);
+        this.mesh = buildMesh(width, height, heightMapImage, texInc);
         this.mesh.setMaterial(new Material(texture, 0.0f));
-        STBImage.stbi_image_free(imageBuffer);
     }
 
     private Mesh buildMesh(final int width,
                            final int height,
-                           final ByteBuffer imageBuffer,
+                           final ByteBuffer heightMapImage,
                            final int texInc) {
         final float incX = getXLength() / (width - 1);
         final float incZ = getZLength() / (height - 1);
@@ -71,7 +52,9 @@ public class HeightMapMesh {
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 positions.add(STARTX + col * incX);
-                positions.add(getHeight(col, row, width, imageBuffer));
+                final float currentHeight = getHeight(col, row, width, heightMapImage);
+                this.heightArray[row][col] = currentHeight;
+                positions.add(currentHeight);
                 positions.add(STARTZ + row * incZ);
 
                 texCoords.add((float) texInc * (float) col / (float) width);
@@ -102,6 +85,14 @@ public class HeightMapMesh {
 
     public Mesh getMesh() {
         return this.mesh;
+    }
+
+    public float getHeight(int row, int col) {
+        if ((row >= 0 && row < this.heightArray.length)
+            && (col >= 0 && col < this.heightArray[row].length)) {
+            return this.heightArray[row][col];
+        }
+        return 0;
     }
 
     public static float getXLength() {

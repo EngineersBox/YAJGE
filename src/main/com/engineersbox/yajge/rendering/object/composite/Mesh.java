@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.rendering.primitive;
+package com.engineersbox.yajge.rendering.object.composite;
 
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.assets.materials.Texture;

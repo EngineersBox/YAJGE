@@ -3,9 +3,9 @@ package com.engineersbox.yajge.resources.primitive;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.engineersbox.yajge.rendering.primitive.Face;
-import com.engineersbox.yajge.rendering.primitive.IdxGroup;
-import com.engineersbox.yajge.rendering.primitive.Mesh;
+import com.engineersbox.yajge.rendering.object.primitive.Face;
+import com.engineersbox.yajge.rendering.object.primitive.IdxGroup;
+import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.resources.ResourceLoader;
 import org.joml.Vector2f;
 import org.joml.Vector3f;

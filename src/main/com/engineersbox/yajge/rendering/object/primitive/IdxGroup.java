@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.rendering.primitive;
+package com.engineersbox.yajge.rendering.object.primitive;
 
 public final class IdxGroup {
 
