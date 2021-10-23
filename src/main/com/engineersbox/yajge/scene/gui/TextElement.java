@@ -70,7 +70,7 @@ public class TextElement extends SceneElement {
             texCoords.add(0.0f);
             indices.add(i * VERTICES_PER_QUAD + 3);
 
-            // Add indices por left top and bottom right vertices
+            // To-left and Bottom-right indicies
             indices.add(i * VERTICES_PER_QUAD);
             indices.add(i * VERTICES_PER_QUAD + 2);
 

@@ -10,9 +10,9 @@ public class SceneElement {
     private final Vector3f rotation;
 
     public SceneElement() {
-        position = new Vector3f();
-        scale = 1;
-        rotation = new Vector3f();
+        this.position = new Vector3f();
+        this.scale = 1;
+        this.rotation = new Vector3f();
     }
 
     public SceneElement(final Mesh mesh) {

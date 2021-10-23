@@ -12,9 +12,6 @@ import org.apache.logging.log4j.Logger;
 
 public class Engine implements Runnable {
 
-//    public static final int TARGET_FPS = 75;
-//    public static final int TARGET_UPS = 30;
-
     private static final Logger LOGGER = LogManager.getLogger(Engine.class);
 
     private final Window window;
