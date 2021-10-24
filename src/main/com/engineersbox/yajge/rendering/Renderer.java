@@ -39,12 +39,12 @@ public class Renderer {
     }
 
     public void init(final Window window) {
-        setupSkyBoxShader();
-        initSceneShader();
-        initHudShader();
+        configureSkyBoxShader();
+        configureSceneShader();
+        configureHudShader();
     }
 
-    private void initSceneShader() {
+    private void configureSceneShader() {
         this.sceneShader = new Shader();
         this.sceneShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/final.vert"));
         this.sceneShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/final.frag"));
@@ -64,7 +64,7 @@ public class Renderer {
         this.sceneShader.createFogUniform("fog");
     }
 
-    private void initHudShader() {
+    private void configureHudShader() {
         this.hudShader = new Shader();
         this.hudShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.vert"));
         this.hudShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.frag"));
@@ -76,7 +76,7 @@ public class Renderer {
         ).forEach(this.hudShader::createUniform);
     }
 
-    private void setupSkyBoxShader() {
+    private void configureSkyBoxShader() {
         this.skyboxShader = new Shader();
         this.skyboxShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.vert"));
         this.skyboxShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.frag"));
