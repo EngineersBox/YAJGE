@@ -5,6 +5,7 @@
 * Implement normal mapping
 * Create shadow casting extending on Phong shading model
 * Cascaded shadow mapping
+  * Create tangent space transform to ensure object space or adapt shader view matrix to account for it
 * Created enum declarations for uniform names and update magic string references
 * XML configurations for each engine component
 * Refactor to Assimp library for handling more model formats

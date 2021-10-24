@@ -11,6 +11,7 @@ public class Material {
     private Vector4f specularColour;
     private float reflectance;
     private Texture texture;
+    private Texture normalMap;
 
     public Material() {
         this.ambientColour = DEFAULT_COLOUR;
@@ -88,6 +89,18 @@ public class Material {
 
     public void setTexture(final Texture texture) {
         this.texture = texture;
+    }
+
+    public boolean hasNormalMap() {
+        return this.normalMap != null;
+    }
+
+    public Texture getNormalMap() {
+        return this.normalMap;
+    }
+
+    public void setNormalMap(final Texture normalMap) {
+        this.normalMap = normalMap;
     }
 
 }

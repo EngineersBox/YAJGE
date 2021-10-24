@@ -54,7 +54,8 @@ public class Renderer {
                 "viewModelMatrix",
                 "textureSampler",
                 "specularPower",
-                "ambientLight"
+                "ambientLight",
+                "normalMap"
         ).forEach(this.sceneShader::createUniform);
         this.sceneShader.createMaterialUniform("material");
         this.sceneShader.createPointLightListUniform("pointLights", ConfigHandler.CONFIG.render.lighting.maxPointLights);
@@ -147,6 +148,7 @@ public class Renderer {
         renderLights(viewMatrix, sceneLight);
 
         this.sceneShader.setUniform("textureSampler", 0);
+        this.sceneShader.setUniform("normalMap", 1);
         this.sceneShader.setUniform("fog", scene.getFog());
         for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
             this.sceneShader.setUniform("material", entry.getKey().getMaterial());
