@@ -61,4 +61,9 @@ public class Scene {
     public void setFog(final Fog fog) {
         this.fog = fog;
     }
+
+    public void cleanup() {
+        this.meshSceneElements.keySet()
+                .forEach(Mesh::cleanUp);
+    }
 }

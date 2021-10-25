@@ -8,17 +8,25 @@ public class Transform {
     private final Matrix4f projectionMatrix;
     private final Matrix4f modelMatrix;
     private final Matrix4f modelViewMatrix;
+    private final Matrix4f modelLightMatrix;
+    private final Matrix4f modelLightViewMatrix;
     private final Matrix4f viewMatrix;
-    private final Matrix4f orthoMatrix;
+    private final Matrix4f lightViewMatrix;
+    private final Matrix4f orthoProjMatrix;
+    private final Matrix4f ortho2DMatrix;
     private final Matrix4f orthoModelMatrix;
 
     public Transform() {
-        projectionMatrix = new Matrix4f();
-        modelMatrix = new Matrix4f();
-        modelViewMatrix = new Matrix4f();
-        viewMatrix = new Matrix4f();
-        orthoMatrix = new Matrix4f();
-        orthoModelMatrix = new Matrix4f();
+        this.projectionMatrix = new Matrix4f();
+        this.modelMatrix = new Matrix4f();
+        this.modelViewMatrix = new Matrix4f();
+        this.modelLightMatrix = new Matrix4f();
+        this.modelLightViewMatrix = new Matrix4f();
+        this.viewMatrix = new Matrix4f();
+        this.orthoProjMatrix = new Matrix4f();
+        this.ortho2DMatrix = new Matrix4f();
+        this.orthoModelMatrix = new Matrix4f();
+        this.lightViewMatrix = new Matrix4f();
     }
 
     public Matrix4f getProjectionMatrix() {
@@ -34,58 +42,108 @@ public class Transform {
         return this.projectionMatrix.setPerspective(fov, width / height, zNear, zFar);
     }
 
+    public final Matrix4f getOrthoProjectionMatrix() {
+        return this.orthoProjMatrix;
+    }
+
+    public Matrix4f updateOrthoProjectionMatrix(final float left,
+                                                final float right,
+                                                final float bottom,
+                                                final float top,
+                                                final float zNear,
+                                                final float zFar) {
+        this.orthoProjMatrix.identity();
+        this.orthoProjMatrix.setOrtho(left, right, bottom, top, zNear, zFar);
+        return this.orthoProjMatrix;
+    }
+
+    public Matrix4f updateOrthoProjectionMatrix(final OrthoCoords orthoCoords) {
+        return updateOrthoProjectionMatrix(
+                orthoCoords.left,
+                orthoCoords.right,
+                orthoCoords.bottom,
+                orthoCoords.top,
+                orthoCoords.near,
+                orthoCoords.far
+        );
+    }
+
     public Matrix4f getViewMatrix() {
         return this.viewMatrix;
     }
 
     public Matrix4f updateViewMatrix(final Camera camera) {
-        final Vector3f cameraPos = camera.getPosition();
-        final Vector3f rotation = camera.getRotation();
-
-        this.viewMatrix.identity();
-        this.viewMatrix.rotate(
-                (float) Math.toRadians(rotation.x),
-                new Vector3f(1, 0, 0)
-        ).rotate(
-                (float) Math.toRadians(rotation.y),
-                new Vector3f(0, 1, 0)
-        );
-        this.viewMatrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-        return this.viewMatrix;
+        return updateGenericViewMatrix(camera.getPosition(), camera.getRotation(), this.viewMatrix);
     }
 
-    public final Matrix4f getOrthoProjectionMatrix(final float left,
-                                                   final float right,
-                                                   final float bottom,
-                                                   final float top) {
-        this.orthoMatrix.identity();
-        this.orthoMatrix.setOrtho2D(left, right, bottom, top);
-        return this.orthoMatrix;
+    public Matrix4f getLightViewMatrix() {
+        return this.lightViewMatrix;
     }
 
-    public Matrix4f buildModelViewMatrix(final SceneElement sceneElement,
-                                         final Matrix4f viewMatrix) {
+    public void setLightViewMatrix(final Matrix4f lightViewMatrix) {
+        this.lightViewMatrix.set(lightViewMatrix);
+    }
+
+    public Matrix4f updateLightViewMatrix(final Vector3f position,
+                                          final Vector3f rotation) {
+        return updateGenericViewMatrix(position, rotation, this.lightViewMatrix);
+    }
+
+    private Matrix4f updateGenericViewMatrix(final Vector3f position,
+                                             final Vector3f rotation,
+                                             final Matrix4f matrix) {
+        matrix.identity();
+        // First do the rotation so camera rotates over its position
+        matrix.rotate((float)Math.toRadians(rotation.x), new Vector3f(1, 0, 0))
+                .rotate((float)Math.toRadians(rotation.y), new Vector3f(0, 1, 0));
+        // Then do the translation
+        matrix.translate(-position.x, -position.y, -position.z);
+        return matrix;
+    }
+
+    public final Matrix4f getOrtho2DProjectionMatrix(final float left,
+                                                     final float right,
+                                                     final float bottom,
+                                                     final float top) {
+        this.ortho2DMatrix.identity();
+        this.ortho2DMatrix.setOrtho2D(left, right, bottom, top);
+        return this.ortho2DMatrix;
+    }
+
+    public Matrix4f buildViewModelMatrix(final SceneElement sceneElement,
+                                         final Matrix4f matrix) {
         final Vector3f rotation = sceneElement.getRotation();
-        this.modelMatrix.identity()
-                .translate(sceneElement.getPosition())
-                .rotateX((float)Math.toRadians(-rotation.x))
-                .rotateY((float)Math.toRadians(-rotation.y))
-                .rotateZ((float)Math.toRadians(-rotation.z))
-                .scale(sceneElement.getScale());
-        this.modelViewMatrix.set(viewMatrix);
+        this.modelMatrix.identity().translate(sceneElement.getPosition()).
+                rotateX((float)Math.toRadians(-rotation.x)).
+                rotateY((float)Math.toRadians(-rotation.y)).
+                rotateZ((float)Math.toRadians(-rotation.z)).
+                scale(sceneElement.getScale());
+        this.modelViewMatrix.set(matrix);
         return this.modelViewMatrix.mul(this.modelMatrix);
+    }
+
+    public Matrix4f buildModelLightViewMatrix(final SceneElement sceneElement,
+                                              final Matrix4f matrix) {
+        final Vector3f rotation = sceneElement.getRotation();
+        this.modelLightMatrix.identity().translate(sceneElement.getPosition()).
+                rotateX((float)Math.toRadians(-rotation.x)).
+                rotateY((float)Math.toRadians(-rotation.y)).
+                rotateZ((float)Math.toRadians(-rotation.z)).
+                scale(sceneElement.getScale());
+        this.modelLightViewMatrix.set(matrix);
+        return this.modelLightViewMatrix.mul(this.modelLightMatrix);
     }
 
     public Matrix4f buildOrthoProjModelMatrix(final SceneElement sceneElement,
                                               final Matrix4f orthoMatrix) {
         final Vector3f rotation = sceneElement.getRotation();
-        this.modelMatrix.identity()
-                .translate(sceneElement.getPosition())
-                .rotateX((float)Math.toRadians(-rotation.x))
-                .rotateY((float)Math.toRadians(-rotation.y))
-                .rotateZ((float)Math.toRadians(-rotation.z))
-                .scale(sceneElement.getScale());
+        this.modelMatrix.identity().translate(sceneElement.getPosition()).
+                rotateX((float) Math.toRadians(-rotation.x)).
+                rotateY((float) Math.toRadians(-rotation.y)).
+                rotateZ((float) Math.toRadians(-rotation.z)).
+                scale(sceneElement.getScale());
         this.orthoModelMatrix.set(orthoMatrix);
+        this.orthoModelMatrix.mul(this.modelMatrix);
         return this.orthoModelMatrix;
     }
 }

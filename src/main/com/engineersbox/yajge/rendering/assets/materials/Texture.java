@@ -7,6 +7,7 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture {
@@ -14,6 +15,28 @@ public class Texture {
     private final int id;
     private final int width;
     private final int height;
+
+    public Texture(int width, int height, int pixelFormat)  {
+        this.id = glGenTextures();
+        this.width = width;
+        this.height = height;
+        glBindTexture(GL_TEXTURE_2D, this.id);
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_DEPTH_COMPONENT,
+                this.width,
+                this.height,
+                0,
+                pixelFormat,
+                GL_FLOAT,
+                (ByteBuffer) null
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
 
     public Texture(String fileName) {
         final ByteBuffer buf;
@@ -53,7 +76,7 @@ public class Texture {
         STBImage.stbi_image_free(buf);
     }
 
-    private int createTexture(final ByteBuffer buf) {
+    private int createTexture(final ByteBuffer imageBuffer) {
         final int textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -68,7 +91,7 @@ public class Texture {
                 0,
                 GL_RGBA,
                 GL_UNSIGNED_BYTE,
-                buf
+                imageBuffer
         );
         glGenerateMipmap(GL_TEXTURE_2D);
         return textureId;

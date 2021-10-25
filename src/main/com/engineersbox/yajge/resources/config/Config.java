@@ -97,6 +97,8 @@ public class Config {
         public static class Lighting {
             public final int maxPointLights;
             public final int maxSpotLights;
+            public final int shadowMapHeight;
+            public final int shadowMapWidth;
 
             public Lighting(
                     com.typesafe.config.Config c,
@@ -104,6 +106,9 @@ public class Config {
                     $TsCfgValidator $tsCfgValidator) {
                 this.maxPointLights = c.hasPathOrNull("maxPointLights") ? c.getInt("maxPointLights") : 5;
                 this.maxSpotLights = c.hasPathOrNull("maxSpotLights") ? c.getInt("maxSpotLights") : 5;
+                this.shadowMapHeight =
+                        c.hasPathOrNull("shadowMapHeight") ? c.getInt("shadowMapHeight") : 1024;
+                this.shadowMapWidth = c.hasPathOrNull("shadowMapWidth") ? c.getInt("shadowMapWidth") : 1024;
             }
         }
 
