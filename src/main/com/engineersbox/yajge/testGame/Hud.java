@@ -4,7 +4,7 @@ import com.engineersbox.yajge.engine.core.Window;
 import com.engineersbox.yajge.rendering.assets.font.FontTexture;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.object.composite.Mesh;
-import com.engineersbox.yajge.resources.primitive.OBJLoader;
+import com.engineersbox.yajge.resources.loader.OBJLoader;
 import com.engineersbox.yajge.scene.gui.IHud;
 import com.engineersbox.yajge.scene.gui.TextElement;
 import com.engineersbox.yajge.scene.element.SceneElement;

@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.resources.primitive;
+package com.engineersbox.yajge.resources.loader;
 
 import java.util.ArrayList;
 import java.util.List;

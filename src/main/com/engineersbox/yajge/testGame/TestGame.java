@@ -1,10 +1,14 @@
 package com.engineersbox.yajge.testGame;
 
 import com.engineersbox.yajge.rendering.assets.materials.Material;
-import com.engineersbox.yajge.resources.primitive.OBJLoader;
+import com.engineersbox.yajge.rendering.object.md5.anim.MD5AnimModel;
+import com.engineersbox.yajge.rendering.object.md5.model.MD5Model;
+import com.engineersbox.yajge.resources.loader.MD5Loader;
+import com.engineersbox.yajge.resources.loader.OBJLoader;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Terrain;
+import com.engineersbox.yajge.scene.element.animation.AnimatedSceneElement;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 import com.engineersbox.yajge.engine.core.EngineLogic;
 import com.engineersbox.yajge.engine.core.Window;
@@ -30,147 +34,147 @@ public class TestGame implements EngineLogic {
     private Scene scene;
     private Hud hud;
     private Terrain terrain;
-    private SceneElement giantCube;
     private float angleInc;
     private float lightAngle;
+    private AnimatedSceneElement monster;
 
     public TestGame() {
-        this.renderer = new Renderer();
-        this.camera = new Camera();
-        this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
-        this.angleInc = 0;
-        this.lightAngle = 45;
+        renderer = new Renderer();
+        camera = new Camera();
+        cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
+        angleInc = 0;
+        lightAngle = 45;
     }
 
     @Override
-    public void init(final Window window) {
-        this.renderer.init(window);
-        this.scene = new Scene();
+    public void init(Window window) {
+        renderer.init(window);
 
-        final float reflectance = 1f;
-        final Mesh cubeMesh = OBJLoader.loadMesh("assets/game/models/cube.obj");
-        final Material cubeMaterial = new Material(new Vector4f(0, 1, 0, 1), reflectance);
-        cubeMesh.setMaterial(cubeMaterial);
-        this.giantCube = new SceneElement(cubeMesh);
-        this.giantCube.setPosition(0, 0, 0);
-        this.giantCube.setScale(0.5f);
+        scene = new Scene();
 
-        final Mesh quadMesh = OBJLoader.loadMesh("assets/game/models/plane.obj");
-        final Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 1.0f), reflectance);
+        float reflectance = 1f;
+
+        Mesh quadMesh = OBJLoader.loadMesh("assets/game/models/plane.obj");
+        Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 1.f), reflectance);
         quadMesh.setMaterial(quadMaterial);
-        final SceneElement quad = new SceneElement(quadMesh);
-        quad.setPosition(0, -1, 0);
-        quad.setScale(2.5f);
-        this.scene.setSceneElements(new SceneElement[]{this.giantCube, quad});
+        SceneElement quadSceneElement = new SceneElement(quadMesh);
+        quadSceneElement.setPosition(0, 0, 0);
+        quadSceneElement.setScale(2.5f);
 
+        // Setup  SceneElements
+        MD5Model md5Meshodel = MD5Model.parse("assets/game/models/monster.md5mesh");
+        MD5AnimModel md5AnimModel = MD5AnimModel.parse("assets/game/models/monster.md5anim");
+
+        monster = MD5Loader.process(md5Meshodel, md5AnimModel, new Vector4f(1, 1, 1, 1));
+        monster.setScale(0.05f);
+        monster.setRotation(90, 0, 90);
+
+        scene.setSceneElements(new SceneElement[] { quadSceneElement, monster} );
+
+        // Setup Lights
         setupLights();
-        this.camera.getPosition().z = 2;
-        this.hud = new Hud("Light Angle:");
+
+        camera.getPosition().x = 0.25f;
+        camera.getPosition().y = 6.5f;
+        camera.getPosition().z = 6.5f;
+        camera.getRotation().x = 25;
+        camera.getRotation().y = -1;
     }
 
     private void setupLights() {
-        final SceneLight sceneLight = new SceneLight();
-        this.scene.setSceneLight(sceneLight);
+        SceneLight sceneLight = new SceneLight();
+        scene.setSceneLight(sceneLight);
+
+        // Ambient Light
         sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
         sceneLight.setSkyboxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
-        final float lightIntensity = 1.0f;
-        final Vector3f lightDirection = new Vector3f(0, 1, 1);
-        final DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
-        directionalLight.setShadowPosMultiplier(5);
+        // Directional Light
+        float lightIntensity = 1.0f;
+        Vector3f lightDirection = new Vector3f(0, 1, 1);
+        DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
+        directionalLight.setShadowPosMultiplier(10);
         directionalLight.setOrthoCords(-10.0f, 10.0f, -10.0f, 10.0f, -1.0f, 20.0f);
         sceneLight.setDirectionalLight(directionalLight);
     }
 
     @Override
-    public void input(final Window window,
-                      final MouseInput mouseInput) {
-        this.cameraInc.set(0, 0, 0);
+    public void input(Window window, MouseInput mouseInput) {
+        cameraInc.set(0, 0, 0);
         if (window.isKeyPressed(GLFW_KEY_W)) {
-            this.cameraInc.z = -1;
+            cameraInc.z = -1;
         } else if (window.isKeyPressed(GLFW_KEY_S)) {
-            this.cameraInc.z = 1;
+            cameraInc.z = 1;
         }
         if (window.isKeyPressed(GLFW_KEY_A)) {
-            this.cameraInc.x = -1;
+            cameraInc.x = -1;
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
-            this.cameraInc.x = 1;
+            cameraInc.x = 1;
         }
-        if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) {
-            this.cameraInc.y = -1;
-        } else if (window.isKeyPressed(GLFW_KEY_SPACE)) {
-            this.cameraInc.y = 1;
+        if (window.isKeyPressed(GLFW_KEY_Z)) {
+            cameraInc.y = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_X)) {
+            cameraInc.y = 1;
         }
         if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-            this.angleInc -= 0.05f;
+            angleInc -= 0.05f;
         } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
-            this.angleInc += 0.05f;
+            angleInc += 0.05f;
         } else {
-            this.angleInc = 0;
+            angleInc = 0;
+        }
+        if (window.isKeyPressed(GLFW_KEY_SPACE) ) {
+            monster.nextFrame();
         }
     }
 
     @Override
-    public void update(final float interval,
-                       final MouseInput mouseInput) {
+    public void update(float interval, MouseInput mouseInput) {
+        // Update camera based on mouse
         if (mouseInput.isRightButtonPressed()) {
-            final Vector2f rotVec = mouseInput.getDisplayVec();
-            this.camera.moveRotation(
-                    rotVec.x * MOUSE_SENSITIVITY,
-                    rotVec.y * MOUSE_SENSITIVITY,
-                    0
-            );
+            Vector2f rotVec = mouseInput.getDisplayVec();
+            camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
         }
 
-        final Vector3f prevPos = new Vector3f(this.camera.getPosition());
-        this.camera.movePosition(
-                this.cameraInc.x * CAMERA_POS_STEP,
-                this.cameraInc.y * CAMERA_POS_STEP,
-                this.cameraInc.z * CAMERA_POS_STEP
-        );
-
-        final float height = this.terrain != null ? this.terrain.getHeight(this.camera.getPosition()) : -Float.MAX_VALUE;
-        if (this.camera.getPosition().y <= height) {
-            this.camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
+        // Update camera position
+        Vector3f prevPos = new Vector3f(camera.getPosition());
+        camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
+        // Check if there has been a collision. If true, set the y position to
+        // the maximum height
+        float height = terrain != null ? terrain.getHeight(camera.getPosition()) : -Float.MAX_VALUE;
+        if (camera.getPosition().y <= height) {
+            camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
         }
 
-        float rotY = this.giantCube.getRotation().y;
-        rotY += 0.5f;
-        if ( rotY >= 360 ) {
-            rotY -= 360;
+        lightAngle += angleInc;
+        if (lightAngle < 0) {
+            lightAngle = 0;
+        } else if (lightAngle > 180) {
+            lightAngle = 180;
         }
-        this.giantCube.getRotation().y = rotY;
-
-        this.lightAngle = Math.max(Math.min(this.lightAngle + this.angleInc, 180), 0);
-        final float zValue = (float)Math.cos(Math.toRadians(this.lightAngle));
-        final float yValue = (float)Math.sin(Math.toRadians(this.lightAngle));
-        final Vector3f lightDirection = this.scene.getSceneLight().getDirectionalLight().getDirection();
+        float zValue = (float) Math.cos(Math.toRadians(lightAngle));
+        float yValue = (float) Math.sin(Math.toRadians(lightAngle));
+        Vector3f lightDirection = this.scene.getSceneLight().getDirectionalLight().getDirection();
         lightDirection.x = 0;
         lightDirection.y = yValue;
         lightDirection.z = zValue;
         lightDirection.normalize();
-        this.hud.setStatusText("LightAngle: " + (float) Math.toDegrees(Math.acos(lightDirection.z)));
     }
 
     @Override
-    public void render(final Window window) {
-        if (this.hud != null) {
-            this.hud.updateSize(window);
+    public void render(Window window) {
+        if (hud != null) {
+            hud.updateSize(window);
         }
-        this.renderer.render(
-                window,
-                this.camera,
-                this.scene,
-                this.hud
-        );
+        renderer.render(window, camera, scene, hud);
     }
 
     @Override
     public void cleanup() {
-        this.renderer.cleanup();
-        this.scene.cleanup();
-        if (this.hud != null) {
-            this.hud.cleanup();
+        renderer.cleanup();
+        scene.cleanup();
+        if (hud != null) {
+            hud.cleanup();
         }
     }
 }

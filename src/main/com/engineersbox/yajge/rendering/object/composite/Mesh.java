@@ -4,6 +4,7 @@ import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.util.AllocUtils;
+import com.engineersbox.yajge.util.ArrayUtils;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -35,18 +36,35 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Mesh {
 
+    public static final int MAX_WEIGHTS = 4;
+
     private final int vaoId;
     private final List<Integer> vboIdList;
     private final int vertexCount;
     private Material material;
 
+    public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
+        this(
+                positions,
+                textCoords,
+                normals,
+                indices,
+                ArrayUtils.createFilledArray(Mesh.MAX_WEIGHTS * positions.length / 3, 0),
+                ArrayUtils.createFilledArray(Mesh.MAX_WEIGHTS * positions.length / 3, 0.0f)
+        );
+    }
+
     public Mesh(final float[] positions,
                 final float[] textCoords,
                 final float[] normals,
-                final int[] indices) {
+                final int[] indices,
+                final int[] jointIndices,
+                final float[] weights) {
         FloatBuffer posBuffer = null;
         FloatBuffer texCoordsBuffer = null;
         FloatBuffer vecNormalsBuffer = null;
+        FloatBuffer weightsBuffer = null;
+        IntBuffer jointIndicesBuffer = null;
         IntBuffer indicesBuffer = null;
         try {
             this.vertexCount = indices.length;
@@ -57,12 +75,21 @@ public class Mesh {
             posBuffer = allocateFloatBuffer(0, 3, positions);
             texCoordsBuffer = allocateFloatBuffer(1, 2, textCoords);
             vecNormalsBuffer = allocateFloatBuffer(2, 3, normals);
+            weightsBuffer = allocateFloatBuffer(3, 4, weights);
+            jointIndicesBuffer = allocateIntBuffer(4, 4, jointIndices);
             indicesBuffer = allocateIndexBuffer(indices);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         } finally {
-            AllocUtils.freeAll(posBuffer, texCoordsBuffer, vecNormalsBuffer, indicesBuffer);
+            AllocUtils.freeAll(
+                    posBuffer,
+                    texCoordsBuffer,
+                    vecNormalsBuffer,
+                    indicesBuffer,
+                    weightsBuffer,
+                    jointIndicesBuffer
+            );
         }
     }
 
@@ -88,6 +115,15 @@ public class Mesh {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
         return indicesBuffer;
+    }
+
+    private IntBuffer allocateIntBuffer(final int index,
+                                        final int size,
+                                        final int[] values) {
+        final IntBuffer intBuffer = allocateIndexBuffer(values);
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, size, GL_FLOAT, false, 0, 0);
+        return intBuffer;
     }
 
     private void startRender() {

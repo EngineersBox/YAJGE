@@ -4,59 +4,68 @@ import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import org.joml.Vector3f;
 
 public class SceneElement {
-    private Mesh mesh;
+    private Mesh[] meshes;
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
 
     public SceneElement() {
-        this.position = new Vector3f();
-        this.scale = 1;
-        this.rotation = new Vector3f();
+        position = new Vector3f();
+        scale = 1;
+        rotation = new Vector3f();
     }
 
-    public SceneElement(final Mesh mesh) {
+    public SceneElement(Mesh mesh) {
         this();
-        this.mesh = mesh;
+        this.meshes = new Mesh[]{mesh};
+    }
+
+    public SceneElement(Mesh[] meshes) {
+        this();
+        this.meshes = meshes;
     }
 
     public Vector3f getPosition() {
-        return this.position;
+        return position;
     }
 
-    public void setPosition(final float x,
-                            final float y,
-                            final float z) {
+    public void setPosition(float x, float y, float z) {
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
     }
 
     public float getScale() {
-        return this.scale;
+        return scale;
     }
 
-    public void setScale(final float scale) {
+    public void setScale(float scale) {
         this.scale = scale;
     }
 
     public Vector3f getRotation() {
-        return this.rotation;
+        return rotation;
     }
 
-    public void setRotation(final float x,
-                            final float y,
-                            final float z) {
+    public void setRotation(float x, float y, float z) {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
     }
 
     public Mesh getMesh() {
-        return this.mesh;
+        return meshes[0];
+    }
+
+    public Mesh[] getMeshes() {
+        return meshes;
+    }
+
+    public void setMeshes(Mesh[] meshes) {
+        this.meshes = meshes;
     }
 
     public void setMesh(Mesh mesh) {
-        this.mesh = mesh;
+        this.meshes = new Mesh[]{mesh};
     }
 }

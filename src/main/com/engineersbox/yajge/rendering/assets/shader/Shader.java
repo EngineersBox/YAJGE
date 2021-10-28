@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.rendering.assets.shader;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -105,6 +106,17 @@ public class Shader {
                     false,
                     value.get(stack.mallocFloat(16))
             );
+        }
+    }
+
+    public void setUniform(String uniformName, Matrix4f[] matrices) {
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final int length = matrices != null ? matrices.length : 0;
+            final FloatBuffer floatBuffer = stack.mallocFloat(16 * length);
+            for (int i = 0; i < length; i++) {
+                matrices[i].get(16 * i, floatBuffer);
+            }
+            glUniformMatrix4fv(uniforms.get(uniformName), false, floatBuffer);
         }
     }
 

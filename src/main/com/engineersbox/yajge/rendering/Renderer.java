@@ -11,6 +11,7 @@ import com.engineersbox.yajge.resources.ResourceLoader;
 import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.Skybox;
+import com.engineersbox.yajge.scene.element.animation.AnimatedSceneElement;
 import com.engineersbox.yajge.scene.gui.IHud;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 import com.engineersbox.yajge.scene.element.SceneElement;
@@ -61,7 +62,8 @@ public class Renderer {
                 "textureSampler",
                 "specularPower",
                 "ambientLight",
-                "normalMap"
+                "normalMap",
+                "jointsMatrix"
         ).forEach(this.sceneShader::createUniform);
         this.sceneShader.createMaterialUniform("material");
         this.sceneShader.createPointLightListUniform("pointLights", ConfigHandler.CONFIG.render.lighting.maxPointLights);
@@ -104,8 +106,11 @@ public class Renderer {
         this.depthShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/depth.vert"));
         this.depthShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/depth.frag"));
         this.depthShader.link();
-        this.depthShader.createUniform("orthoProjectionMatrix");
-        this.depthShader.createUniform("modelLightViewMatrix");
+        Stream.of(
+                "orthoProjectionMatrix",
+                "modelLightViewMatrix",
+                "jointsMatrix"
+        ).forEach(this.depthShader::createUniform);
     }
 
     public void clear() {
@@ -166,9 +171,11 @@ public class Renderer {
         for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
             entry.getKey().renderList(
                     entry.getValue(),
-                    (final SceneElement gameItem) -> {
-                        final Matrix4f modelLightViewMatrix = this.transform.buildViewModelMatrix(gameItem, lightViewMatrix);
-                        this.depthShader.setUniform("modelLightViewMatrix", modelLightViewMatrix);
+                    (final SceneElement sceneElement) -> {
+                        this.depthShader.setUniform("modelLightViewMatrix", this.transform.buildViewModelMatrix(sceneElement, lightViewMatrix));
+                        if (sceneElement instanceof AnimatedSceneElement animatedSceneElement) {
+                            this.depthShader.setUniform("jointsMatrix", animatedSceneElement.getCurrentFrame().getJointMatrices());
+                        }
                     }
             );
         }
@@ -220,10 +227,11 @@ public class Renderer {
             mesh.renderList(
                     entry.getValue(),
                     (final SceneElement sceneElement) -> {
-                        Matrix4f viewModelMatrix = this.transform.buildViewModelMatrix(sceneElement, viewMatrix);
-                        this.sceneShader.setUniform("viewModelMatrix", viewModelMatrix);
-                        Matrix4f modelLightViewMatrix = this.transform.buildModelLightViewMatrix(sceneElement, this.transform.getLightViewMatrix());
-                        this.sceneShader.setUniform("modelLightViewMatrix", modelLightViewMatrix);
+                        this.sceneShader.setUniform("viewModelMatrix", this.transform.buildViewModelMatrix(sceneElement, viewMatrix));
+                        this.sceneShader.setUniform("modelLightViewMatrix", this.transform.buildModelLightViewMatrix(sceneElement, this.transform.getLightViewMatrix()));
+                        if (sceneElement instanceof AnimatedSceneElement animatedSceneElement) {
+                            this.sceneShader.setUniform("jointsMatrix", animatedSceneElement.getCurrentFrame().getJointMatrices());
+                        }
                     }
             );
         }
@@ -277,6 +285,9 @@ public class Renderer {
 
     private void renderHud(final Window window,
                            final IHud hud) {
+        if (hud == null) {
+            return;
+        }
         this.hudShader.bind();
         final Matrix4f orthoProjectionMatrix = this.transform.getOrtho2DProjectionMatrix(0, window.getWidth(), window.getHeight(), 0);
         for (final SceneElement sceneElement : hud.getSceneElements()) {

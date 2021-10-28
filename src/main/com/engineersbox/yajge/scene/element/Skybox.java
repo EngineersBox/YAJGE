@@ -3,7 +3,7 @@ package com.engineersbox.yajge.scene.element;
 import com.engineersbox.yajge.rendering.assets.materials.Material;
 import com.engineersbox.yajge.rendering.assets.materials.Texture;
 import com.engineersbox.yajge.rendering.object.composite.Mesh;
-import com.engineersbox.yajge.resources.primitive.OBJLoader;
+import com.engineersbox.yajge.resources.loader.OBJLoader;
 
 public class Skybox extends SceneElement {
 
