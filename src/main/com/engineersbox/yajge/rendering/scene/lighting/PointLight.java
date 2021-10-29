@@ -6,9 +6,9 @@ public class PointLight {
 
     private Vector3f color;
     private Vector3f position;
-    protected float intensity;
+    private float intensity;
     private Attenuation attenuation;
-
+    
     public PointLight(final Vector3f color,
                       final Vector3f position,
                       final float intensity) {
@@ -66,4 +66,5 @@ public class PointLight {
     public void setAttenuation(final Attenuation attenuation) {
         this.attenuation = attenuation;
     }
+
 }

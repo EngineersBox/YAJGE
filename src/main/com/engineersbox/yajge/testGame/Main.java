@@ -1,7 +1,10 @@
-package com.engineersbox.yajge.testGame;
+package com.engineersbox.yajge.testgame;
 
-import com.engineersbox.yajge.engine.Engine;
-import com.engineersbox.yajge.engine.core.EngineLogic;
+import com.engineersbox.yajge.core.engine.Engine;
+import com.engineersbox.yajge.core.engine.IGameLogic;
+import com.engineersbox.yajge.core.window.WindowOptions;
+import com.engineersbox.yajge.logging.LoggerCompat;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,18 +14,17 @@ public class Main {
 
     public static void main(final String[] args) {
         try {
-            final EngineLogic gameLogic = new TestGame();
+            final IGameLogic gameInstance = new TestGame();
+            final WindowOptions opts = new WindowOptions();
             final Engine engine = new Engine(
                     "YAJGE",
-                    600,
-                    480,
                     true,
-                    gameLogic
+                    opts,
+                    gameInstance
             );
             engine.run();
         } catch (final Exception e) {
-            LOGGER.error(e);
+            e.printStackTrace(LoggerCompat.asPrintStream(LOGGER, Level.ERROR));
         }
     }
-
 }

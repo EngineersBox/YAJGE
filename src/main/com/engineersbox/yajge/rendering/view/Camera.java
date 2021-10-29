@@ -6,12 +6,12 @@ public class Camera {
 
     private final Vector3f position;
     private final Vector3f rotation;
-
+    
     public Camera() {
-        this.position = new Vector3f(0, 0, 0);
-        this.rotation = new Vector3f(0, 0, 0);
+        this.position = new Vector3f();
+        this.rotation = new Vector3f();
     }
-
+    
     public Camera(final Vector3f position,
                   final Vector3f rotation) {
         this.position = position;
@@ -29,7 +29,7 @@ public class Camera {
         this.position.y = y;
         this.position.z = z;
     }
-
+    
     public void movePosition(final float offsetX,
                              final float offsetY,
                              final float offsetZ) {
@@ -47,7 +47,7 @@ public class Camera {
     public Vector3f getRotation() {
         return this.rotation;
     }
-
+    
     public void setRotation(final float x,
                             final float y,
                             final float z) {

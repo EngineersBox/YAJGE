@@ -1,17 +1,18 @@
 package com.engineersbox.yajge.scene.element.animation;
 
 import com.engineersbox.yajge.animation.AnimatedFrame;
-import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.SceneElement;
+import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import org.joml.Matrix4f;
 
 import java.util.List;
 
 public class AnimatedSceneElement extends SceneElement {
+
     private int currentFrame;
     private List<AnimatedFrame> frames;
-    private List<Matrix4f> invJointMatrices;
-
+    private final List<Matrix4f> invJointMatrices;
+    
     public AnimatedSceneElement(final Mesh[] meshes,
                                 final List<AnimatedFrame> frames,
                                 final List<Matrix4f> invJointMatrices) {
@@ -28,18 +29,24 @@ public class AnimatedSceneElement extends SceneElement {
     public void setFrames(final List<AnimatedFrame> frames) {
         this.frames = frames;
     }
-
+    
     public AnimatedFrame getCurrentFrame() {
         return this.frames.get(this.currentFrame);
     }
-
+    
     public AnimatedFrame getNextFrame() {
-        return this.frames.get(this.currentFrame + 1 % this.frames.size());
+        return this.frames.get((this.currentFrame + 1) % this.frames.size());
     }
 
     public void nextFrame() {
-        this.currentFrame = this.currentFrame + 1 % this.frames.size();
-    }
+        final int nextFrame = this.currentFrame + 1;
+        if ( nextFrame > this.frames.size() - 1) {
+            this.currentFrame = 0;
+        } else {
+            this.currentFrame = nextFrame;
+        }
+        this.currentFrame = (this.currentFrame + 1) % this.frames.size();
+    }    
 
     public List<Matrix4f> getInvJointMatrices() {
         return this.invJointMatrices;

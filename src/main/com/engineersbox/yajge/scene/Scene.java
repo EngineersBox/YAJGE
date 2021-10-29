@@ -1,9 +1,10 @@
 package com.engineersbox.yajge.scene;
 
-import com.engineersbox.yajge.rendering.object.composite.Mesh;
 import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
+import com.engineersbox.yajge.scene.element.object.composite.Mesh;
+import com.engineersbox.yajge.scene.element.particles.IParticleEmitter;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 
 import java.util.ArrayList;
@@ -17,17 +18,18 @@ public class Scene {
     private Skybox skyBox;
     private SceneLight sceneLight;
     private Fog fog;
+    private IParticleEmitter[] particleEmitters;
 
     public Scene() {
         this.meshSceneElements = new HashMap<>();
-        this.fog = Fog.NO_FOG;
+        this.fog = Fog.NOFOG;
     }
 
     public Map<Mesh, List<SceneElement>> getMeshSceneElements() {
         return this.meshSceneElements;
     }
 
-    public void setSceneElements(final SceneElement[] sceneElements) {
+    public void getSceneElements(final SceneElement[] sceneElements) {
         if (sceneElements == null) {
             return;
         }
@@ -38,11 +40,20 @@ public class Scene {
         }
     }
 
-    public Skybox getSkybox() {
+    public void cleanup() {
+        for (final Mesh mesh : this.meshSceneElements.keySet()) {
+            mesh.cleanUp();
+        }
+        for (final IParticleEmitter particleEmitter : this.particleEmitters) {
+            particleEmitter.cleanup();            
+        }
+    }
+
+    public Skybox getSkyBox() {
         return this.skyBox;
     }
 
-    public void setSkybox(final Skybox skyBox) {
+    public void setSkyBox(final Skybox skyBox) {
         this.skyBox = skyBox;
     }
 
@@ -62,8 +73,12 @@ public class Scene {
         this.fog = fog;
     }
 
-    public void cleanup() {
-        this.meshSceneElements.keySet()
-                .forEach(Mesh::cleanUp);
+    public IParticleEmitter[] getParticleEmitters() {
+        return this.particleEmitters;
     }
+
+    public void setParticleEmitters(final IParticleEmitter[] particleEmitters) {
+        this.particleEmitters = particleEmitters;
+    }
+
 }

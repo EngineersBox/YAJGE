@@ -2,21 +2,21 @@ package com.engineersbox.yajge.resources.loader;
 
 import com.engineersbox.yajge.animation.AnimVertex;
 import com.engineersbox.yajge.animation.AnimatedFrame;
-import com.engineersbox.yajge.rendering.assets.materials.Material;
-import com.engineersbox.yajge.rendering.assets.materials.Texture;
-import com.engineersbox.yajge.rendering.object.composite.Mesh;
-import com.engineersbox.yajge.rendering.object.md5.anim.MD5AnimModel;
-import com.engineersbox.yajge.rendering.object.md5.frame.MD5BaseFrame;
-import com.engineersbox.yajge.rendering.object.md5.frame.MD5BaseFrameData;
-import com.engineersbox.yajge.rendering.object.md5.frame.MD5Frame;
-import com.engineersbox.yajge.rendering.object.md5.hierarchy.MD5HierarchyData;
-import com.engineersbox.yajge.rendering.object.md5.joint.MD5JointData;
-import com.engineersbox.yajge.rendering.object.md5.model.MD5Model;
-import com.engineersbox.yajge.rendering.object.md5.primitive.MD5Mesh;
-import com.engineersbox.yajge.rendering.object.md5.primitive.MD5Triangle;
-import com.engineersbox.yajge.rendering.object.md5.primitive.MD5Vertex;
-import com.engineersbox.yajge.rendering.object.md5.primitive.MD5Weight;
+import com.engineersbox.yajge.resources.assets.material.Material;
+import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.scene.element.animation.AnimatedSceneElement;
+import com.engineersbox.yajge.scene.element.object.composite.Mesh;
+import com.engineersbox.yajge.scene.element.object.md5.anim.MD5AnimModel;
+import com.engineersbox.yajge.scene.element.object.md5.frame.MD5BaseFrame;
+import com.engineersbox.yajge.scene.element.object.md5.frame.MD5BaseFrameData;
+import com.engineersbox.yajge.scene.element.object.md5.frame.MD5Frame;
+import com.engineersbox.yajge.scene.element.object.md5.hierarchy.MD5HierarchyData;
+import com.engineersbox.yajge.scene.element.object.md5.joint.MD5JointData;
+import com.engineersbox.yajge.scene.element.object.md5.model.MD5Model;
+import com.engineersbox.yajge.scene.element.object.md5.primitive.MD5Mesh;
+import com.engineersbox.yajge.scene.element.object.md5.primitive.MD5Triangle;
+import com.engineersbox.yajge.scene.element.object.md5.primitive.MD5Vertex;
+import com.engineersbox.yajge.scene.element.object.md5.primitive.MD5Weight;
 import com.engineersbox.yajge.util.FileUtils;
 import com.engineersbox.yajge.util.ListUtils;
 import com.engineersbox.yajge.util.MD5Utils;
@@ -31,28 +31,25 @@ import java.util.List;
 
 public class MD5Loader {
 
-    public static AnimatedSceneElement process(final MD5Model md5Model,
-                                               final MD5AnimModel animModel,
-                                               final Vector4f defaultColour) {
+    public static AnimatedSceneElement process(final MD5Model md5Model, final MD5AnimModel animModel, final Vector4f defaultColour) {
         final List<Matrix4f> invJointMatrices = calcInJointMatrices(md5Model);
         final List<AnimatedFrame> animatedFrames = processAnimationFrames(md5Model, animModel, invJointMatrices);
 
-        final List<Mesh> meshes = new ArrayList<>();
+        final List<Mesh> list = new ArrayList<>();
         for (final MD5Mesh md5Mesh : md5Model.getMeshes()) {
             final Mesh mesh = generateMesh(md5Model, md5Mesh);
             handleTexture(mesh, md5Mesh, defaultColour);
-            meshes.add(mesh);
+            list.add(mesh);
         }
 
-        Mesh[] meshesArray = new Mesh[meshes.size()];
-        meshesArray = meshes.toArray(meshesArray);
+        Mesh[] meshes = new Mesh[list.size()];
+        meshes = list.toArray(meshes);
 
-        return new AnimatedSceneElement(meshesArray, animatedFrames, invJointMatrices);
+        return new AnimatedSceneElement(meshes, animatedFrames, invJointMatrices);
     }
 
     private static List<Matrix4f> calcInJointMatrices(final MD5Model md5Model) {
         final List<Matrix4f> result = new ArrayList<>();
-
         final List<MD5JointData> joints = md5Model.getJointInfo().getJoints();
         for (final MD5JointData joint : joints) {
             final Matrix4f mat = new Matrix4f()
@@ -64,10 +61,10 @@ public class MD5Loader {
         return result;
     }
 
-    private static Mesh generateMesh(final MD5Model md5Model,
-                                     final MD5Mesh md5Mesh) {
+    private static Mesh generateMesh(final MD5Model md5Model, final MD5Mesh md5Mesh) {
         final List<AnimVertex> vertices = new ArrayList<>();
         final List<Integer> indices = new ArrayList<>();
+
         final List<MD5Vertex> md5Vertices = md5Mesh.getVertices();
         final List<MD5Weight> weights = md5Mesh.getWeights();
         final List<MD5JointData> joints = md5Model.getJointInfo().getJoints();
@@ -79,8 +76,8 @@ public class MD5Loader {
             vertex.position = new Vector3f();
             vertex.textCoords = md5Vertex.getTextCoords();
 
-            int startWeight = md5Vertex.getStartWeight();
-            int numWeights = md5Vertex.getWeightCount();
+            final int startWeight = md5Vertex.getStartWeight();
+            final int numWeights = md5Vertex.getWeightCount();
 
             vertex.jointIndices = new int[numWeights];
             Arrays.fill(vertex.jointIndices, -1);
@@ -103,6 +100,7 @@ public class MD5Loader {
             indices.add(tri.getVertex1());
             indices.add(tri.getVertex2());
 
+            // Normals
             final AnimVertex v0 = vertices.get(tri.getVertex0());
             final AnimVertex v1 = vertices.get(tri.getVertex1());
             final AnimVertex v2 = vertices.get(tri.getVertex2());
@@ -117,6 +115,7 @@ public class MD5Loader {
             v2.normal.add(normal);
         }
 
+        // Once the contributions have been added, normalize the result
         for(final AnimVertex v : vertices) {
             v.normal.normalize();
         }
@@ -124,9 +123,7 @@ public class MD5Loader {
         return createMesh(vertices, indices);
     }
 
-    private static List<AnimatedFrame> processAnimationFrames(final MD5Model md5Model,
-                                                              final MD5AnimModel animModel,
-                                                              final List<Matrix4f> invJointMatrices) {
+    private static List<AnimatedFrame> processAnimationFrames(final MD5Model md5Model, final MD5AnimModel animModel, final List<Matrix4f> invJointMatrices) {
         final List<AnimatedFrame> animatedFrames = new ArrayList<>();
         final List<MD5Frame> frames = animModel.getFrames();
         for (final MD5Frame frame : frames) {
@@ -136,22 +133,22 @@ public class MD5Loader {
         return animatedFrames;
     }
 
-    private static AnimatedFrame processAnimationFrame(final MD5Model md5Model,
-                                                       final MD5AnimModel animModel,
-                                                       final MD5Frame frame,
-                                                       final List<Matrix4f> invJointMatrices) {
+    private static AnimatedFrame processAnimationFrame(final MD5Model md5Model, final MD5AnimModel animModel, final MD5Frame frame, final List<Matrix4f> invJointMatrices) {
         final AnimatedFrame result = new AnimatedFrame();
+
         final MD5BaseFrame baseFrame = animModel.getBaseFrame();
         final List<MD5HierarchyData> hierarchyList = animModel.getHierarchy().getHierarchyDataList();
-        final List<MD5JointData> joints = md5Model.getJointInfo().getJoints();
-        final float[] frameData = frame.getFrameData();
 
-        for (int i = 0; i < joints.size(); i++) {
+        final List<MD5JointData> joints = md5Model.getJointInfo().getJoints();
+        final int numJoints = joints.size();
+        final float[] frameData = frame.getFrameData();
+        for (int i = 0; i < numJoints; i++) {
+            final MD5JointData joint = joints.get(i);
             final MD5BaseFrameData baseFrameData = baseFrame.getFrameDataList().get(i);
             final Vector3f position = baseFrameData.getPosition();
             Quaternionf orientation = baseFrameData.getOrientation();
 
-            int flags = hierarchyList.get(i).getFlags();
+            final int flags = hierarchyList.get(i).getFlags();
             int startIndex = hierarchyList.get(i).getStartIndex();
 
             if ((flags & 1) > 0) {
@@ -172,14 +169,18 @@ public class MD5Loader {
             if ((flags & 32) > 0) {
                 orientation.z = frameData[startIndex++];
             }
+            // Update Quaternion's w component
             orientation = MD5Utils.calculateQuaternion(orientation.x, orientation.y, orientation.z);
 
+            // Calculate translation and rotation matrices for this joint
             final Matrix4f translateMat = new Matrix4f().translate(position);
             final Matrix4f rotationMat = new Matrix4f().rotate(orientation);
             Matrix4f jointMat = translateMat.mul(rotationMat);
 
-            if (joints.get(i).getParentIndex() > -1) {
-                final Matrix4f parentMatrix = result.getLocalJointMatrices()[joints.get(i).getParentIndex()];
+            // Joint position is relative to joint's parent index position. Use parent matrices
+            // to transform it to model space
+            if (joint.getParentIndex() > -1) {
+                final Matrix4f parentMatrix = result.getLocalJointMatrices()[joint.getParentIndex()];
                 jointMat = new Matrix4f(parentMatrix).mul(jointMat);
             }
 
@@ -189,8 +190,7 @@ public class MD5Loader {
         return result;
     }
 
-    private static Mesh createMesh(final List<AnimVertex> vertices,
-                                   final List<Integer> indices) {
+    private static Mesh createMesh(final List<AnimVertex> vertices, final List<Integer> indices) {
         final List<Float> positions = new ArrayList<>();
         final List<Float> textCoords = new ArrayList<>();
         final List<Float> normals = new ArrayList<>();
@@ -209,7 +209,7 @@ public class MD5Loader {
             normals.add(vertex.normal.y);
             normals.add(vertex.normal.z);
 
-            int numWeights = vertex.weights.length;
+            final int numWeights = vertex.weights.length;
             for (int i = 0; i < Mesh.MAX_WEIGHTS; i++) {
                 if (i < numWeights) {
                     jointIndices.add(vertex.jointIndices[i]);
@@ -231,27 +231,25 @@ public class MD5Loader {
         );
     }
 
-    private static void handleTexture(final Mesh mesh,
-                                      final MD5Mesh md5Mesh,
-                                      final Vector4f defaultColour) {
+    private static void handleTexture(final Mesh mesh, final MD5Mesh md5Mesh, final Vector4f defaultColour) {
         final String texturePath = md5Mesh.getTexture();
-        if (texturePath == null || texturePath.length() <= 0) {
-            mesh.setMaterial(new Material(defaultColour, 1));
-            return;
-        }
+        if (texturePath != null && !texturePath.isEmpty()) {
+            final Texture texture = new Texture(texturePath);
+            final Material material = new Material(texture);
 
-        final Texture texture = new Texture(texturePath);
-        final Material material = new Material(texture);
-        int pos = texturePath.lastIndexOf(".");
-        if (pos > 0) {
-            final String basePath = texturePath.substring(0, pos);
-            final String extension = texturePath.substring(pos);
-            final String normalMapFileName = basePath + "_local" + extension;
-            if (FileUtils.fileExists(normalMapFileName)) {
-                final Texture normalMap = new Texture(normalMapFileName);
-                material.setNormalMap(normalMap);
+            final int pos = texturePath.lastIndexOf(".");
+            if (pos > 0) {
+                final String basePath = texturePath.substring(0, pos);
+                final String extension = texturePath.substring(pos);
+                final String normalMapFileName = basePath + "_local" + extension;
+                if (FileUtils.fileExists(normalMapFileName)) {
+                    final Texture normalMap = new Texture(normalMapFileName);
+                    material.setNormalMap(normalMap);
+                }
             }
+            mesh.setMaterial(material);
+        } else {
+            mesh.setMaterial(new Material(defaultColour, 1));
         }
-        mesh.setMaterial(material);
     }
 }

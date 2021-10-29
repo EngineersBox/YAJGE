@@ -3,10 +3,12 @@ package com.engineersbox.yajge.scene.gui;
 import com.engineersbox.yajge.scene.element.SceneElement;
 
 public interface IHud {
-    SceneElement[] getSceneElements();
+
+    SceneElement[] getGameItems();
 
     default void cleanup() {
-        for (final SceneElement sceneElement : getSceneElements()) {
+        final SceneElement[] sceneElements = getGameItems();
+        for (final SceneElement sceneElement : sceneElements) {
             sceneElement.getMesh().cleanUp();
         }
     }

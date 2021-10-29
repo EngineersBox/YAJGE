@@ -8,10 +8,10 @@ import org.joml.Vector3f;
 public class SceneLight {
 
     private Vector3f ambientLight;
-    private PointLight[] pointLights;
-    private SpotLight[] spotLights;
+    private Vector3f skyBoxLight;
+    private PointLight[] pointLightList;
+    private SpotLight[] spotLightList;
     private DirectionalLight directionalLight;
-    private Vector3f skyboxLight;
 
     public Vector3f getAmbientLight() {
         return this.ambientLight;
@@ -21,20 +21,20 @@ public class SceneLight {
         this.ambientLight = ambientLight;
     }
 
-    public PointLight[] getPointLights() {
-        return this.pointLights;
+    public PointLight[] getPointLightList() {
+        return this.pointLightList;
     }
 
-    public void setPointLights(final PointLight[] pointLights) {
-        this.pointLights = pointLights;
+    public void setPointLightList(final PointLight[] pointLightList) {
+        this.pointLightList = pointLightList;
     }
 
-    public SpotLight[] getSpotLights() {
-        return this.spotLights;
+    public SpotLight[] getSpotLightList() {
+        return this.spotLightList;
     }
 
-    public void setSpotLights(final SpotLight[] spotLights) {
-        this.spotLights = spotLights;
+    public void setSpotLightList(final SpotLight[] spotLightList) {
+        this.spotLightList = spotLightList;
     }
 
     public DirectionalLight getDirectionalLight() {
@@ -45,12 +45,12 @@ public class SceneLight {
         this.directionalLight = directionalLight;
     }
 
-    public Vector3f getSkyboxLight() {
-        return this.skyboxLight;
+    public Vector3f getSkyBoxLight() {
+        return this.skyBoxLight;
     }
 
-    public void setSkyboxLight(Vector3f skyboxLight) {
-        this.skyboxLight = skyboxLight;
+    public void setSkyBoxLight(final Vector3f skyBoxLight) {
+        this.skyBoxLight = skyBoxLight;
     }
-
+    
 }

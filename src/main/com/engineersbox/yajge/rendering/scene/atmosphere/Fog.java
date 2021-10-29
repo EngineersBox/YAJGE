@@ -7,8 +7,8 @@ public class Fog {
     private boolean active;
     private Vector3f colour;
     private float density;
-    public static final Fog NO_FOG = new Fog();
-
+    public static final Fog NOFOG = new Fog();
+    
     public Fog() {
         this.active = false;
         this.colour = new Vector3f();

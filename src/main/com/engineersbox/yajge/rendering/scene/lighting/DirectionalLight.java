@@ -4,21 +4,21 @@ import com.engineersbox.yajge.rendering.view.OrthoCoords;
 import org.joml.Vector3f;
 
 public class DirectionalLight {
-
+    
     private Vector3f color;
     private Vector3f direction;
     private float intensity;
-    private OrthoCoords orthoCords;
-    private float shadowPosMultiplier;
-
+    private final OrthoCoords orthoCords;
+    private float shadowPosMult;
+    
     public DirectionalLight(final Vector3f color,
                             final Vector3f direction,
                             final float intensity) {
         this.orthoCords = new OrthoCoords();
-        this.shadowPosMultiplier = 1;
         this.color = color;
         this.direction = direction;
         this.intensity = intensity;
+        this.shadowPosMult = 1;
     }
 
     public DirectionalLight(final DirectionalLight light) {
@@ -29,18 +29,18 @@ public class DirectionalLight {
         );
     }
 
-    public float getShadowPosMultiplier() {
-        return shadowPosMultiplier;
+    public float getShadowPosMult() {
+        return this.shadowPosMult;
     }
-
-    public void setShadowPosMultiplier(final float shadowPosMultiplier) {
-        this.shadowPosMultiplier = shadowPosMultiplier;
+    
+    public void setShadowPosMult(final float shadowPosMult) {
+        this.shadowPosMult = shadowPosMult;
     }
-
+    
     public OrthoCoords getOrthoCoords(){
         return this.orthoCords;
     }
-
+    
     public void setOrthoCords(final float left,
                               final float right,
                               final float bottom,
@@ -54,11 +54,7 @@ public class DirectionalLight {
         this.orthoCords.near = near;
         this.orthoCords.far = far;
     }
-
-    public void setOrthoCoords(final OrthoCoords orthoCords) {
-        this.orthoCords = orthoCords;
-    }
-
+    
     public Vector3f getColor() {
         return this.color;
     }
@@ -82,4 +78,5 @@ public class DirectionalLight {
     public void setIntensity(final float intensity) {
         this.intensity = intensity;
     }
+
 }

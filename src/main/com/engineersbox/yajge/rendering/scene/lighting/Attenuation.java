@@ -3,7 +3,9 @@ package com.engineersbox.yajge.rendering.scene.lighting;
 public class Attenuation {
 
     private float constant;
+
     private float linear;
+
     private float exponent;
 
     public Attenuation(final float constant,
@@ -15,26 +17,26 @@ public class Attenuation {
     }
 
     public float getConstant() {
-        return constant;
+        return this.constant;
     }
 
-    public void setConstant(float constant) {
+    public void setConstant(final float constant) {
         this.constant = constant;
     }
 
     public float getLinear() {
-        return linear;
+        return this.linear;
     }
 
-    public void setLinear(float linear) {
+    public void setLinear(final float linear) {
         this.linear = linear;
     }
 
     public float getExponent() {
-        return exponent;
+        return this.exponent;
     }
 
-    public void setExponent(float exponent) {
+    public void setExponent(final float exponent) {
         this.exponent = exponent;
     }
 }

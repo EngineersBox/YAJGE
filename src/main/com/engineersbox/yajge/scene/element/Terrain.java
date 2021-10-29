@@ -1,7 +1,7 @@
 package com.engineersbox.yajge.scene.element;
 
-import com.engineersbox.yajge.rendering.object.composite.HeightMapMesh;
-import com.engineersbox.yajge.rendering.object.primitive.Box2D;
+import com.engineersbox.yajge.scene.element.object.composite.HeightMapMesh;
+import com.engineersbox.yajge.scene.element.object.primitive.Box2D;
 import org.joml.Vector3f;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -75,9 +75,9 @@ public class Terrain {
         Box2D boundingBox = null;
         boolean found = false;
         SceneElement terrainChunk = null;
-        for (int row = 0; row < terrainSize && !found; row++) {
-            for (int col = 0; col < terrainSize && !found; col++) {
-                terrainChunk = this.sceneElements[row * terrainSize + col];
+        for (int row = 0; row < this.terrainSize && !found; row++) {
+            for (int col = 0; col < this.terrainSize && !found; col++) {
+                terrainChunk = this.sceneElements[row * this.terrainSize + col];
                 boundingBox = this.boundingBoxes[row][col];
                 found = boundingBox.contains(position.x, position.z);
             }
@@ -94,8 +94,8 @@ public class Terrain {
     protected Vector3f[] getTriangle(final Vector3f position,
                                      final Box2D boundingBox,
                                      final SceneElement terrainChunk) {
-        final float cellWidth = boundingBox.width / (float) verticesPerCol;
-        final float cellHeight = boundingBox.height / (float) verticesPerRow;
+        final float cellWidth = boundingBox.width / (float) this.verticesPerCol;
+        final float cellHeight = boundingBox.height / (float) this.verticesPerRow;
         final int col = (int) ((position.x - boundingBox.x) / cellWidth);
         final int row = (int) ((position.z - boundingBox.y) / cellHeight);
 
@@ -167,7 +167,7 @@ public class Terrain {
     }
 
     public SceneElement[] getSceneElements() {
-        return sceneElements;
+        return this.sceneElements;
     }
 
 }
