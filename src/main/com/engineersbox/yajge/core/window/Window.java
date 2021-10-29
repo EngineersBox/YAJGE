@@ -1,13 +1,21 @@
 package com.engineersbox.yajge.core.window;
 
+import com.engineersbox.yajge.logging.LoggerCompat;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
+
+    private static final Logger LOGGER = LogManager.getLogger(Window.class);
 
     private final String title;
     private int width;
@@ -61,6 +69,7 @@ public class Window {
     }
 
     public void init() {
+        LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -165,4 +174,10 @@ public class Window {
         glfwPollEvents();
     }
 
+    public void cleanup() {
+        glfwFreeCallbacks(this.windowHandle);
+        glfwDestroyWindow(this.windowHandle);
+        glfwTerminate();
+        glfwSetErrorCallback(null).free();
+    }
 }

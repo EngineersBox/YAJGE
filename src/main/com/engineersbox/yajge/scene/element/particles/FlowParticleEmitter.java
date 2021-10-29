@@ -20,7 +20,9 @@ public class FlowParticleEmitter implements IParticleEmitter {
     private float scaleRndRange;
     private long animRange;
 
-    public FlowParticleEmitter(final Particle baseParticle, final int maxParticles, final long creationPeriodMillis) {
+    public FlowParticleEmitter(final Particle baseParticle,
+                               final int maxParticles,
+                               final long creationPeriodMillis) {
         this.particles = new ArrayList<>();
         this.baseParticle = baseParticle;
         this.maxParticles = maxParticles;

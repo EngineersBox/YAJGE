@@ -85,7 +85,6 @@ public class MD5AnimModel {
             throw new RuntimeException("Cannot parse empty file");
         }
 
-        // Parse Header
         boolean headerEnd = false;
         int start = 0;
         for (int i = 0; i < numLines && !headerEnd; i++) {

@@ -5,7 +5,6 @@ import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
 import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
 import com.engineersbox.yajge.rendering.view.Camera;
-import com.engineersbox.yajge.rendering.view.OrthoCoords;
 import com.engineersbox.yajge.rendering.view.Transform;
 import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.resources.assets.shader.Shader;
@@ -41,7 +40,7 @@ public class Renderer {
     private Shader depthShader;
     private Shader sceneShader;
     private Shader hudShader;
-    private Shader skyBoxShader;
+    private Shader skyboxShader;
     private Shader particlesShader;
     private final float specularPower;
 
@@ -53,11 +52,11 @@ public class Renderer {
     public void init(final Window window) {
         this.shadowMap = new ShadowMap();
 
-        setupDepthShader();
-        setupSkyBoxShader();
-        setupSceneShader();
-        setupParticlesShader();
-        setupHudShader();
+        configureDepthShader();
+        configureSkyboxShader();
+        configureSceneShader();
+        configureParticleShader();
+        configureHudShader();
     }
 
     public void render(final Window window, final Camera camera, final Scene scene, final IHud hud) {
@@ -79,10 +78,10 @@ public class Renderer {
         renderParticles(scene);
         renderHud(window, hud);
 
-        //renderAxes(camera);
+//        renderAxes(camera);
     }
 
-    private void setupParticlesShader() {
+    private void configureParticleShader() {
         this.particlesShader = new Shader();
         this.particlesShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/particles/particles.vert"));
         this.particlesShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/particles/particles.frag"));
@@ -98,7 +97,7 @@ public class Renderer {
         ).forEach(this.particlesShader::createUniform);
     }
 
-    private void setupDepthShader() {
+    private void configureDepthShader() {
         this.depthShader = new Shader();
         this.depthShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/depth.vert"));
         this.depthShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/depth.frag"));
@@ -110,21 +109,20 @@ public class Renderer {
         ).forEach(this.depthShader::createUniform);
     }
 
-    private void setupSkyBoxShader() {
-        this.skyBoxShader = new Shader();
-        this.skyBoxShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.vert"));
-        this.skyBoxShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.frag"));
-        this.skyBoxShader.link();
+    private void configureSkyboxShader() {
+        this.skyboxShader = new Shader();
+        this.skyboxShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.vert"));
+        this.skyboxShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.frag"));
+        this.skyboxShader.link();
         Stream.of(
                 "projectionMatrix",
                 "viewModelMatrix",
                 "textureSampler",
                 "ambientLight"
-        ).forEach(this.skyBoxShader::createUniform);
+        ).forEach(this.skyboxShader::createUniform);
     }
 
-    private void setupSceneShader() {
-        // Create shader
+    private void configureSceneShader() {
         this.sceneShader = new Shader();
         this.sceneShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/final.vert"));
         this.sceneShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/lighting/final.frag"));
@@ -148,7 +146,7 @@ public class Renderer {
         ).forEach(this.sceneShader::createUniform);
     }
 
-    private void setupHudShader() {
+    private void configureHudShader() {
         this.hudShader = new Shader();
         this.hudShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.vert"));
         this.hudShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.frag"));
@@ -166,10 +164,8 @@ public class Renderer {
 
     private void renderParticles(final Scene scene) {
         this.particlesShader.bind();
-
         this.particlesShader.setUniform("textureSampler", 0);
-        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
-        this.particlesShader.setUniform("projectionMatrix", projectionMatrix);
+        this.particlesShader.setUniform("projectionMatrix", this.transform.getProjectionMatrix());
 
         final Matrix4f viewMatrix = this.transform.getViewMatrix();
         final IParticleEmitter[] emitters = scene.getParticleEmitters();
@@ -227,9 +223,11 @@ public class Renderer {
         final float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z));
         final float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x));
         final float lightAngleZ = 0;
-        final Matrix4f lightViewMatrix = this.transform.updateLightViewMatrix(new Vector3f(lightDirection).mul(light.getShadowPosMult()), new Vector3f(lightAngleX, lightAngleY, lightAngleZ));
-        final OrthoCoords orthCoords = light.getOrthoCoords();
-        final Matrix4f orthoProjMatrix = this.transform.updateOrthoProjectionMatrix(orthCoords.left, orthCoords.right, orthCoords.bottom, orthCoords.top, orthCoords.near, orthCoords.far);
+        final Matrix4f lightViewMatrix = this.transform.updateLightViewMatrix(
+                new Vector3f(lightDirection).mul(light.getShadowPosMult()),
+                new Vector3f(lightAngleX, lightAngleY, lightAngleZ)
+        );
+        final Matrix4f orthoProjMatrix = this.transform.updateOrthoProjectionMatrix(light.getOrthoCoords());
 
         this.depthShader.setUniform("orthoProjectionMatrix", orthoProjMatrix);
         for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
@@ -251,12 +249,9 @@ public class Renderer {
     private void renderSkyBox(final Scene scene) {
         final Skybox skyBox = scene.getSkyBox();
         if (skyBox != null) {
-            this.skyBoxShader.bind();
-
-            this.skyBoxShader.setUniform("textureSampler", 0);
-
-            final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
-            this.skyBoxShader.setUniform("projectionMatrix", projectionMatrix);
+            this.skyboxShader.bind();
+            this.skyboxShader.setUniform("textureSampler", 0);
+            this.skyboxShader.setUniform("projectionMatrix", this.transform.getProjectionMatrix());
             final Matrix4f viewMatrix = this.transform.getViewMatrix();
             final float m30 = viewMatrix.m30();
             viewMatrix.m30(0);
@@ -265,30 +260,25 @@ public class Renderer {
             final float m32 = viewMatrix.m32();
             viewMatrix.m32(0);
 
-            final Matrix4f viewModelMatrix = this.transform.buildVIewModelMatrix(skyBox, viewMatrix);
-            this.skyBoxShader.setUniform("viewModelMatrix", viewModelMatrix);
-            this.skyBoxShader.setUniform("ambientLight", scene.getSceneLight().getSkyBoxLight());
+            this.skyboxShader.setUniform("viewModelMatrix", this.transform.buildVIewModelMatrix(skyBox, viewMatrix));
+            this.skyboxShader.setUniform("ambientLight", scene.getSceneLight().getSkyBoxLight());
 
             scene.getSkyBox().getMesh().render();
 
             viewMatrix.m30(m30);
             viewMatrix.m31(m31);
             viewMatrix.m32(m32);
-            this.skyBoxShader.unbind();
+            this.skyboxShader.unbind();
         }
     }
 
     public void renderScene(final Scene scene) {
         this.sceneShader.bind();
 
-        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
-        this.sceneShader.setUniform("projectionMatrix", projectionMatrix);
-        final Matrix4f orthoProjMatrix = this.transform.getOrthoProjectionMatrix();
-        this.sceneShader.setUniform("orthoProjectionMatrix", orthoProjMatrix);
+        this.sceneShader.setUniform("projectionMatrix", this.transform.getProjectionMatrix());
+        this.sceneShader.setUniform("orthoProjectionMatrix", this.transform.getOrthoProjectionMatrix());
         final Matrix4f lightViewMatrix = this.transform.getLightViewMatrix();
-
         final Matrix4f viewMatrix = this.transform.getViewMatrix();
-
         final SceneLight sceneLight = scene.getSceneLight();
         renderLights(viewMatrix, sceneLight);
 
@@ -414,8 +404,8 @@ public class Renderer {
         if (this.depthShader != null) {
             this.depthShader.cleanup();
         }
-        if (this.skyBoxShader != null) {
-            this.skyBoxShader.cleanup();
+        if (this.skyboxShader != null) {
+            this.skyboxShader.cleanup();
         }
         if (this.sceneShader != null) {
             this.sceneShader.cleanup();

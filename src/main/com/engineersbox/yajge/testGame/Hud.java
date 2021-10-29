@@ -24,8 +24,6 @@ public class Hud implements IHud {
         final FontTexture fontTexture = new FontTexture(FONT, CHARSET);
         this.statusFontTexture = new TextElement(statusText, fontTexture);
         this.statusFontTexture.getMesh().getMaterial().setAmbientColour(new Vector4f(0.5f, 0.5f, 0.5f, 10f));
-
-        // Create list that holds the items that compose the HUD
         this.sceneElements = new SceneElement[]{this.statusFontTexture};
     }
 
@@ -37,7 +35,7 @@ public class Hud implements IHud {
     public SceneElement[] getGameItems() {
         return this.sceneElements;
     }
-   
+
     public void updateSize(final Window window) {
         this.statusFontTexture.setPosition(10f, window.getHeight() - 50f, 0);
     }

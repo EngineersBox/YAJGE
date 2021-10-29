@@ -39,12 +39,6 @@ public class AnimatedSceneElement extends SceneElement {
     }
 
     public void nextFrame() {
-        final int nextFrame = this.currentFrame + 1;
-        if ( nextFrame > this.frames.size() - 1) {
-            this.currentFrame = 0;
-        } else {
-            this.currentFrame = nextFrame;
-        }
         this.currentFrame = (this.currentFrame + 1) % this.frames.size();
     }    
 

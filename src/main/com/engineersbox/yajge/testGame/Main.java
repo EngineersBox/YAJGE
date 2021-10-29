@@ -1,7 +1,7 @@
 package com.engineersbox.yajge.testgame;
 
 import com.engineersbox.yajge.core.engine.Engine;
-import com.engineersbox.yajge.core.engine.IGameLogic;
+import com.engineersbox.yajge.core.engine.IEngineLogic;
 import com.engineersbox.yajge.core.window.WindowOptions;
 import com.engineersbox.yajge.logging.LoggerCompat;
 import org.apache.logging.log4j.Level;
@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(final String[] args) {
         try {
-            final IGameLogic gameInstance = new TestGame();
+            final IEngineLogic gameInstance = new TestGame();
             final WindowOptions opts = new WindowOptions();
             final Engine engine = new Engine(
                     "YAJGE",

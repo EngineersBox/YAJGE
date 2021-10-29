@@ -1,6 +1,6 @@
 package com.engineersbox.yajge.testgame;
 
-import com.engineersbox.yajge.core.engine.IGameLogic;
+import com.engineersbox.yajge.core.engine.IEngineLogic;
 import com.engineersbox.yajge.core.window.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
@@ -22,7 +22,7 @@ import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class TestGame implements IGameLogic {
+public class TestGame implements IEngineLogic {
 
     private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 0.05f;
@@ -58,7 +58,7 @@ public class TestGame implements IGameLogic {
         quadSceneElement.setPosition(0, 0, 0);
         quadSceneElement.setScale(2.5f);
 
-        this.scene.getSceneElements(new SceneElement[] {quadSceneElement} );
+        this.scene.getSceneElements(new SceneElement[] {quadSceneElement});
 
         final Vector3f particleSpeed = new Vector3f(0, 1, 0);
         particleSpeed.mul(2.5f);
@@ -138,10 +138,18 @@ public class TestGame implements IGameLogic {
                        final MouseInput mouseInput) {
         if (mouseInput.isRightButtonPressed()) {
             final Vector2f rotVec = mouseInput.getDisplVec();
-            this.camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
+            this.camera.moveRotation(
+                    rotVec.x * MOUSE_SENSITIVITY,
+                    rotVec.y * MOUSE_SENSITIVITY,
+                    0
+            );
         }
         final Vector3f prevPos = new Vector3f(this.camera.getPosition());
-        this.camera.movePosition(this.cameraInc.x * CAMERA_POS_STEP, this.cameraInc.y * CAMERA_POS_STEP, this.cameraInc.z * CAMERA_POS_STEP);
+        this.camera.movePosition(
+                this.cameraInc.x * CAMERA_POS_STEP,
+                this.cameraInc.y * CAMERA_POS_STEP,
+                this.cameraInc.z * CAMERA_POS_STEP
+        );
 
         final float height = this.terrain != null ? this.terrain.getHeight(this.camera.getPosition()) : -Float.MAX_VALUE;
         if (this.camera.getPosition().y <= height) {

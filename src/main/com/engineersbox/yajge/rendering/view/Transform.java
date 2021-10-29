@@ -55,6 +55,17 @@ public class Transform {
         return this.orthoProjMatrix;
     }
 
+    public Matrix4f updateOrthoProjectionMatrix(final OrthoCoords orthoCoords) {
+        return updateOrthoProjectionMatrix(
+                orthoCoords.left,
+                orthoCoords.right,
+                orthoCoords.bottom,
+                orthoCoords.top,
+                orthoCoords.near,
+                orthoCoords.far
+        );
+    }
+
     public Matrix4f updateOrthoProjectionMatrix(final float left,
                                                 final float right,
                                                 final float bottom,

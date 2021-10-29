@@ -16,7 +16,7 @@ public class Engine implements Runnable {
 
     private final Window window;
     private final Timer timer;
-    private final IGameLogic gameLogic;
+    private final IEngineLogic gameLogic;
     private final MouseInput mouseInput;
     private boolean running = false;
 
@@ -31,7 +31,7 @@ public class Engine implements Runnable {
     public Engine(final String windowTitle,
                   final boolean vSync,
                   final WindowOptions opts,
-                  final IGameLogic gameLogic) {
+                  final IEngineLogic gameLogic) {
         this(
                 windowTitle,
                 0,
@@ -47,7 +47,7 @@ public class Engine implements Runnable {
                   final int height,
                   final boolean vSync,
                   final WindowOptions opts,
-                  final IGameLogic gameLogic) {
+                  final IEngineLogic gameLogic) {
         LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
         this.window = new Window(
                 windowTitle,
@@ -103,6 +103,7 @@ public class Engine implements Runnable {
 
     protected void cleanup() {
         this.gameLogic.cleanup();
+        this.window.cleanup();
     }
     
     private void sync() {

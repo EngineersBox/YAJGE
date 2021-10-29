@@ -62,7 +62,6 @@ public class MD5Model {
             throw new RuntimeException("Cannot parse empty file");
         }
 
-        // Parse Header
         boolean headerEnd = false;
         int start = 0;
         for (int i = 0; i < lines.size() && !headerEnd; i++) {
@@ -77,7 +76,6 @@ public class MD5Model {
         final MD5ModelHeader header = MD5ModelHeader.parse(headerBlock);
         result.setHeader(header);
 
-        // Parse the rest of block
         int blockStart = 0;
         boolean inBlock = false;
         String blockId = "";
