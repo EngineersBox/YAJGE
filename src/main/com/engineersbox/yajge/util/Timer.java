@@ -2,6 +2,7 @@ package com.engineersbox.yajge.util;
 
 public class Timer {
 
+    private static final double NANOS_IN_SECONDS = 1_000_000_000.0;
     private double lastLoopTime;
     
     public void init() {
@@ -9,7 +10,7 @@ public class Timer {
     }
 
     public double getTime() {
-        return System.nanoTime() / 1_000_000_000.0;
+        return System.nanoTime() / NANOS_IN_SECONDS;
     }
 
     public float getElapsedTime() {

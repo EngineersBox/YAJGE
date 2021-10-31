@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.resources.loader;
 
+import com.engineersbox.yajge.scene.element.object.composite.InstancedMesh;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.object.obj.Face;
 import com.engineersbox.yajge.scene.element.object.obj.IdxGroup;
@@ -13,6 +14,11 @@ import java.util.List;
 public class OBJLoader {
 
     public static Mesh loadMesh(final String fileName) {
+        return loadMesh(fileName, 1);
+    }
+
+    public static Mesh loadMesh(final String fileName,
+                                final int instances) {
         final List<String> lines = ResourceLoader.loadAsStringLines(fileName);
         
         final List<Vector3f> vertices = new ArrayList<>();
@@ -55,13 +61,20 @@ public class OBJLoader {
                 // Ignore other lines
             }
         }
-        return reorderLists(vertices, textures, normals, faces);
+        return reorderLists(
+                vertices,
+                textures,
+                normals,
+                faces,
+                instances
+        );
     }
 
     private static Mesh reorderLists(final List<Vector3f> positions,
                                      final List<Vector2f> texCoords,
                                      final List<Vector3f> normal,
-                                     final List<Face> faces) {
+                                     final List<Face> faces,
+                                     final int instances) {
 
         final List<Integer> indices = new ArrayList<>();
         final float[] posArr = new float[positions.size() * 3];
@@ -86,12 +99,14 @@ public class OBJLoader {
                 );
             }
         }
-        return new Mesh(
-                posArr,
-                textCoordArr,
-                normArr,
-                ListUtils.intListToArray(indices)
-        );
+        final int[] indicesArr = ListUtils.intListToArray(indices);
+        final Mesh mesh;
+        if (instances > 1) {
+            mesh = new InstancedMesh(posArr, textCoordArr, normArr, indicesArr, instances);
+        } else {
+            mesh = new Mesh(posArr, textCoordArr, normArr, indicesArr);
+        }
+        return mesh;
     }
 
     private static void processFaceVertex(final IdxGroup indices,

@@ -3,58 +3,85 @@ package com.engineersbox.yajge.scene;
 import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
+import com.engineersbox.yajge.scene.element.object.composite.InstancedMesh;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.particles.IParticleEmitter;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Scene {
 
     private final Map<Mesh, List<SceneElement>> meshSceneElements;
-    private Skybox skyBox;
+    private final Map<InstancedMesh, List<SceneElement>> instancedMeshSceneElements;
+    private Skybox skybox;
     private SceneLight sceneLight;
     private Fog fog;
+    private boolean renderShadows;
+
     private IParticleEmitter[] particleEmitters;
 
     public Scene() {
-        this.meshSceneElements = new HashMap<>();
+        this.meshSceneElements = new HashMap();
+        this.instancedMeshSceneElements = new HashMap();
         this.fog = Fog.NOFOG;
+        this.renderShadows = true;
     }
 
     public Map<Mesh, List<SceneElement>> getMeshSceneElements() {
         return this.meshSceneElements;
     }
 
-    public void getSceneElements(final SceneElement[] sceneElements) {
+    public Map<InstancedMesh, List<SceneElement>> getInstancedMeshSceneElements() {
+        return this.instancedMeshSceneElements;
+    }
+
+    public boolean isRenderShadows() {
+        return this.renderShadows;
+    }
+
+    public void setSceneElements(final SceneElement[] sceneElements) {
         if (sceneElements == null) {
             return;
         }
         for (final SceneElement sceneElement : sceneElements) {
-            final Mesh mesh = sceneElement.getMesh();
-            final List<SceneElement> list = this.meshSceneElements.computeIfAbsent(mesh, (final Mesh key) -> new ArrayList<>());
-            list.add(sceneElement);
+            final Mesh[] meshes = sceneElement.getMeshes();
+            for (final Mesh mesh : meshes) {
+                final boolean instancedMesh = mesh instanceof InstancedMesh;
+                List<SceneElement> list = instancedMesh
+                        ? this.instancedMeshSceneElements.get(mesh)
+                        : this.meshSceneElements.get(mesh);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    if (instancedMesh) {
+                        this.instancedMeshSceneElements.put((InstancedMesh) mesh, list);
+                    } else {
+                        this.meshSceneElements.put(mesh, list);
+                    }
+                }
+                list.add(sceneElement);
+            }
         }
     }
 
     public void cleanup() {
-        for (final Mesh mesh : this.meshSceneElements.keySet()) {
-            mesh.cleanUp();
-        }
-        for (final IParticleEmitter particleEmitter : this.particleEmitters) {
-            particleEmitter.cleanup();            
+        this.meshSceneElements.keySet().forEach(Mesh::cleanUp);
+        this.instancedMeshSceneElements.keySet().forEach(Mesh::cleanUp);
+        if (this.particleEmitters != null) {
+            Arrays.stream(this.particleEmitters).forEach(IParticleEmitter::cleanup);
         }
     }
 
-    public Skybox getSkyBox() {
-        return this.skyBox;
+    public Skybox getSkybox() {
+        return this.skybox;
     }
 
-    public void setSkyBox(final Skybox skyBox) {
-        this.skyBox = skyBox;
+    public void setRenderShadows(final boolean renderShadows) {
+        this.renderShadows = renderShadows;
+    }
+
+    public void setSkybox(final Skybox skybox) {
+        this.skybox = skybox;
     }
 
     public SceneLight getSceneLight() {

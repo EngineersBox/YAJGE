@@ -4,10 +4,10 @@ import com.engineersbox.yajge.scene.element.SceneElement;
 
 public interface IHud {
 
-    SceneElement[] getGameItems();
+    SceneElement[] getSceneElements();
 
     default void cleanup() {
-        final SceneElement[] sceneElements = getGameItems();
+        final SceneElement[] sceneElements = getSceneElements();
         for (final SceneElement sceneElement : sceneElements) {
             sceneElement.getMesh().cleanUp();
         }

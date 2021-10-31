@@ -2,7 +2,7 @@ package com.engineersbox.yajge.rendering.scene.lighting;
 
 import org.joml.Vector3f;
 
-public class PointLight {
+public class PointLight implements ILightFixture {
 
     private Vector3f color;
     private Vector3f position;
@@ -35,26 +35,32 @@ public class PointLight {
         );
     }
 
+    @Override
     public Vector3f getColor() {
         return this.color;
     }
 
+    @Override
     public void setColor(final Vector3f color) {
         this.color = color;
     }
 
+    @Override
     public Vector3f getPosition() {
         return this.position;
     }
 
+    @Override
     public void setPosition(final Vector3f position) {
         this.position = position;
     }
 
+    @Override
     public float getIntensity() {
         return this.intensity;
     }
 
+    @Override
     public void setIntensity(final float intensity) {
         this.intensity = intensity;
     }

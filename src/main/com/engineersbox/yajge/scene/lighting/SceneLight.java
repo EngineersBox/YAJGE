@@ -21,7 +21,7 @@ public class SceneLight {
         this.ambientLight = ambientLight;
     }
 
-    public PointLight[] getPointLightList() {
+    public PointLight[] getPointLights() {
         return this.pointLightList;
     }
 
@@ -29,7 +29,7 @@ public class SceneLight {
         this.pointLightList = pointLightList;
     }
 
-    public SpotLight[] getSpotLightList() {
+    public SpotLight[] getSpotLights() {
         return this.spotLightList;
     }
 

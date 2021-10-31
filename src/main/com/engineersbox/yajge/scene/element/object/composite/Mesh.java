@@ -23,15 +23,15 @@ public class Mesh {
 
     public static final int MAX_WEIGHTS = 4;
 
-    private final int vaoId;
-    private final List<Integer> vboIdList;
+    protected final int vaoId;
+    protected final List<Integer> vboIdList;
     private final int vertexCount;
     private Material material;
 
-    public Mesh(final float[] positions, final float[] textCoords, final float[] normals, final int[] indices) {
+    public Mesh(final float[] positions, final float[] texCoords, final float[] normals, final int[] indices) {
         this(
                 positions,
-                textCoords,
+                texCoords,
                 normals,
                 indices,
                 ArrayUtils.createFilledArray(Mesh.MAX_WEIGHTS * positions.length / 3, 0),
@@ -40,7 +40,7 @@ public class Mesh {
     }
 
     public Mesh(final float[] positions,
-                final float[] textCoords,
+                final float[] texCoords,
                 final float[] normals,
                 final int[] indices,
                 final int[] jointIndices,
@@ -58,7 +58,7 @@ public class Mesh {
             glBindVertexArray(this.vaoId);
 
             posBuffer = allocateFloatBuffer(0, 3, positions);
-            texCoordsBuffer = allocateFloatBuffer(1, 2, textCoords);
+            texCoordsBuffer = allocateFloatBuffer(1, 2, texCoords);
             vecNormalsBuffer = allocateFloatBuffer(2, 3, normals);
             weightsBuffer = allocateFloatBuffer(3, 4, weights);
             jointIndicesBuffer = allocateIntBuffer(4, 4, jointIndices);
@@ -111,7 +111,7 @@ public class Mesh {
         return intBuffer;
     }
 
-    private void startRender() {
+    protected void startRender() {
         final Texture texture = this.material.getTexture();
         if (texture != null) {
             glActiveTexture(GL_TEXTURE0);
@@ -126,7 +126,7 @@ public class Mesh {
         glBindVertexArray(getVaoId());
     }
 
-    private void endRender() {
+    protected void endRender() {
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
     }

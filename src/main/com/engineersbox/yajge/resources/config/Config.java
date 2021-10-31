@@ -1,5 +1,7 @@
 package com.engineersbox.yajge.resources.config;
 
+import java.io.Serial;
+
 public class Config {
   public final Config.Engine engine;
   public final Config.Render render;
@@ -18,9 +20,9 @@ public class Config {
       public final GraphicsAPIType graphicsAPI;
 
       public Features(
-          com.typesafe.config.Config c,
-          java.lang.String parentPath,
-          $TsCfgValidator $tsCfgValidator) {
+              final com.typesafe.config.Config c,
+              final java.lang.String parentPath,
+              final $TsCfgValidator $tsCfgValidator) {
         this.graphicsAPI = GraphicsAPIType.valueOf(c.getString("graphicsAPI"));
       }
     }
@@ -30,22 +32,24 @@ public class Config {
       public final java.lang.String textures;
 
       public Resources(
-          com.typesafe.config.Config c,
-          java.lang.String parentPath,
-          $TsCfgValidator $tsCfgValidator) {
+              final com.typesafe.config.Config c,
+              final java.lang.String parentPath,
+              final $TsCfgValidator $tsCfgValidator) {
         this.shaders = $_reqStr(parentPath, c, "shaders", $tsCfgValidator);
         this.textures = $_reqStr(parentPath, c, "textures", $tsCfgValidator);
       }
 
       private static java.lang.String $_reqStr(
-          java.lang.String parentPath,
-          com.typesafe.config.Config c,
-          java.lang.String path,
-          $TsCfgValidator $tsCfgValidator) {
-        if (c == null) return null;
+              final java.lang.String parentPath,
+              final com.typesafe.config.Config c,
+              final java.lang.String path,
+              final $TsCfgValidator $tsCfgValidator) {
+        if (c == null) {
+          return null;
+        }
         try {
           return c.getString(path);
-        } catch (com.typesafe.config.ConfigException e) {
+        } catch (final com.typesafe.config.ConfigException e) {
           $tsCfgValidator.addBadPath(parentPath + path, e);
           return null;
         }
@@ -53,9 +57,9 @@ public class Config {
     }
 
     public Engine(
-        com.typesafe.config.Config c,
-        java.lang.String parentPath,
-        $TsCfgValidator $tsCfgValidator) {
+            final com.typesafe.config.Config c,
+            final java.lang.String parentPath,
+            final $TsCfgValidator $tsCfgValidator) {
       this.features =
           c.hasPathOrNull("features")
               ? new Engine.Features(
@@ -85,9 +89,9 @@ public class Config {
       public final double zNear;
 
       public Camera(
-          com.typesafe.config.Config c,
-          java.lang.String parentPath,
-          $TsCfgValidator $tsCfgValidator) {
+              final com.typesafe.config.Config c,
+              final java.lang.String parentPath,
+              final $TsCfgValidator $tsCfgValidator) {
         this.fov = c.hasPathOrNull("fov") ? c.getDouble("fov") : 60.0;
         this.zFar = c.hasPathOrNull("zFar") ? c.getDouble("zFar") : 1000.0;
         this.zNear = c.hasPathOrNull("zNear") ? c.getDouble("zNear") : 0.01;
@@ -101,9 +105,9 @@ public class Config {
       public final int shadowMapWidth;
 
       public Lighting(
-          com.typesafe.config.Config c,
-          java.lang.String parentPath,
-          $TsCfgValidator $tsCfgValidator) {
+              final com.typesafe.config.Config c,
+              final java.lang.String parentPath,
+              final $TsCfgValidator $tsCfgValidator) {
         this.maxPointLights = c.hasPathOrNull("maxPointLights") ? c.getInt("maxPointLights") : 5;
         this.maxSpotLights = c.hasPathOrNull("maxSpotLights") ? c.getInt("maxSpotLights") : 5;
         this.shadowMapHeight =
@@ -113,9 +117,9 @@ public class Config {
     }
 
     public Render(
-        com.typesafe.config.Config c,
-        java.lang.String parentPath,
-        $TsCfgValidator $tsCfgValidator) {
+            final com.typesafe.config.Config c,
+            final java.lang.String parentPath,
+            final $TsCfgValidator $tsCfgValidator) {
       this.camera =
           c.hasPathOrNull("camera")
               ? new Render.Camera(c.getConfig("camera"), parentPath + "camera.", $tsCfgValidator)
@@ -140,16 +144,16 @@ public class Config {
     public final int ups;
 
     public Video(
-        com.typesafe.config.Config c,
-        java.lang.String parentPath,
-        $TsCfgValidator $tsCfgValidator) {
+            final com.typesafe.config.Config c,
+            final java.lang.String parentPath,
+            final $TsCfgValidator $tsCfgValidator) {
       this.fps = c.hasPathOrNull("fps") ? c.getInt("fps") : 60;
       this.monitor = c.hasPathOrNull("monitor") ? c.getInt("monitor") : 1;
       this.ups = c.hasPathOrNull("ups") ? c.getInt("ups") : 30;
     }
   }
 
-  public Config(com.typesafe.config.Config c) {
+  public Config(final com.typesafe.config.Config c) {
     final $TsCfgValidator $tsCfgValidator = new $TsCfgValidator();
     final java.lang.String parentPath = "";
     this.engine =
@@ -179,17 +183,20 @@ public class Config {
   private static final class $TsCfgValidator {
     private final java.util.List<java.lang.String> badPaths = new java.util.ArrayList<>();
 
-    void addBadPath(java.lang.String path, com.typesafe.config.ConfigException e) {
-      badPaths.add("'" + path + "': " + e.getClass().getName() + "(" + e.getMessage() + ")");
+    void addBadPath(final java.lang.String path, final com.typesafe.config.ConfigException e) {
+      this.badPaths.add("'" + path + "': " + e.getClass().getName() + "(" + e.getMessage() + ")");
     }
 
     void validate() {
-      if (!badPaths.isEmpty()) {
-        java.lang.StringBuilder sb = new java.lang.StringBuilder("Invalid configuration:");
-        for (java.lang.String path : badPaths) {
+      if (!this.badPaths.isEmpty()) {
+        final java.lang.StringBuilder sb = new java.lang.StringBuilder("Invalid configuration:");
+        for (final java.lang.String path : this.badPaths) {
           sb.append("\n    ").append(path);
         }
-        throw new com.typesafe.config.ConfigException(sb.toString()) {};
+        throw new com.typesafe.config.ConfigException(sb.toString()) {
+          @Serial
+          private static final long serialVersionUID = 1169357720903533991L;
+        };
       }
     }
   }
