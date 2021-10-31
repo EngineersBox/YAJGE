@@ -16,6 +16,7 @@ public class Main {
         try {
             final IEngineLogic gameInstance = new TestGame();
             final WindowOptions opts = new WindowOptions();
+            opts.cullFace = true;
             final Engine engine = new Engine(
                     "YAJGE",
                     true,

@@ -32,7 +32,7 @@ public class Hud implements IHud {
     }
     
     @Override
-    public SceneElement[] getGameItems() {
+    public SceneElement[] getSceneElements() {
         return this.sceneElements;
     }
 

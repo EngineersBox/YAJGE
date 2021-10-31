@@ -12,6 +12,8 @@
 * Physics system
 * PBR and IBL
 * Scalable LOD
+* Fixed borked shadow mapping with directional light
+* Implement shadows for point and spot lights
 * Dynamic light instance counts (non-fixed limit of 5)
 
 ## Assimp Structure

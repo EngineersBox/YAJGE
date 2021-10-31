@@ -4,6 +4,7 @@ import com.engineersbox.yajge.core.engine.IEngineLogic;
 import com.engineersbox.yajge.core.window.Window;
 import com.engineersbox.yajge.input.MouseInput;
 import com.engineersbox.yajge.rendering.Renderer;
+import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.resources.assets.material.Material;
@@ -11,10 +12,9 @@ import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.resources.loader.OBJLoader;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
+import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.element.Terrain;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
-import com.engineersbox.yajge.scene.element.particles.FlowParticleEmitter;
-import com.engineersbox.yajge.scene.element.particles.Particle;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -25,7 +25,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class TestGame implements IEngineLogic {
 
     private static final float MOUSE_SENSITIVITY = 0.2f;
-    private static final float CAMERA_POS_STEP = 0.05f;
+    private static final float CAMERA_POS_STEP = 0.10f;
 
     private final Vector3f cameraInc;
     private final Renderer renderer;
@@ -35,8 +35,7 @@ public class TestGame implements IEngineLogic {
     private Terrain terrain;
     private float angleInc;
     private float lightAngle;
-    private FlowParticleEmitter particleEmitter;
-    
+
     public TestGame() {
         this.renderer = new Renderer();
         this.camera = new Camera();
@@ -50,36 +49,63 @@ public class TestGame implements IEngineLogic {
         this.renderer.init(window);
         this.scene = new Scene();
 
+        final float blockScale = 0.5f;
+        final float skyBoxScale = 50.0f;
+        final float extension = 2.0f;
+
+        final float startX = extension * (-skyBoxScale + blockScale);
+        final float startY = -1.0f;
+        final float startZ = extension * (skyBoxScale - blockScale);
+        final float inc = blockScale * 2;
+
+        float posx = startX;
+        float posz = startZ;
+        final int NUM_ROWS = (int) (extension * skyBoxScale * 2 / inc);
+        final int NUM_COLS = (int) (extension * skyBoxScale * 2/ inc);
+        final SceneElement[] sceneElements  = new SceneElement[(NUM_ROWS * NUM_COLS) + 1];
+
+        final Mesh cubeMesh = OBJLoader.loadMesh("assets/game/models/cube.obj");
+        final Texture cubeTexture = new Texture("assets/game/textures/grassblock_t.png");
+        final Material cubeMaterial = new Material(cubeTexture, 1f);
+        cubeMesh.setMaterial(cubeMaterial);
+        final SceneElement cubeSceneElement = new SceneElement(cubeMesh);
+        cubeSceneElement.setScale(blockScale * 2);
+        cubeSceneElement.setPosition(0, 1, 0);
+        sceneElements[NUM_ROWS * NUM_COLS] = cubeSceneElement;
+
         final float reflectance = 1f;
-        final Mesh quadMesh = OBJLoader.loadMesh("assets/game/models/plane.obj");
-        final Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 1.0f), reflectance);
-        quadMesh.setMaterial(quadMaterial);
-        final SceneElement quadSceneElement = new SceneElement(quadMesh);
-        quadSceneElement.setPosition(0, 0, 0);
-        quadSceneElement.setScale(2.5f);
+        final int instances = NUM_ROWS * NUM_COLS;
+        final Mesh mesh = OBJLoader.loadMesh("assets/game/models/cube.obj", instances);
+        final Texture texture = new Texture("assets/game/textures/grassblock.png");
+        final Material material = new Material(texture, reflectance);
+        mesh.setMaterial(material);
 
-        this.scene.getSceneElements(new SceneElement[] {quadSceneElement});
+        for(int i = 0; i < NUM_ROWS; i++) {
+            for(int j = 0; j < NUM_COLS; j++) {
+                final SceneElement sceneElement = new SceneElement(mesh);
+                sceneElement.setScale(blockScale);
+                sceneElement.setPosition(
+                        posx,
+                        startY + (Math.random() > 0.9f ? blockScale * 2 : 0f),
+                        posz
+                );
+                sceneElements[i*NUM_COLS + j] = sceneElement;
+                posx += inc;
+            }
+            posx = startX;
+            posz -= inc;
+        }
+        this.scene.setSceneElements(sceneElements);
+        this.scene.setRenderShadows(true);
 
-        final Vector3f particleSpeed = new Vector3f(0, 1, 0);
-        particleSpeed.mul(2.5f);
-        final long ttl = 4000;
-        final int maxParticles = 200;
-        final long creationPeriodMillis = 300;
-        final float range = 0.2f;
-        final float scale = 1.0f;
-        final Mesh partMesh = OBJLoader.loadMesh("assets/game/models/particle.obj");
-        final Texture texture = new Texture("assets/game/textures/particle_anim.png", 4, 4);
-        final Material partMaterial = new Material(texture, reflectance);
-        partMesh.setMaterial(partMaterial);
-        final Particle particle = new Particle(partMesh, particleSpeed, ttl, 100);
-        particle.setScale(scale);
-        this.particleEmitter = new FlowParticleEmitter(particle, maxParticles, creationPeriodMillis);
-        this.particleEmitter.setActive(true);
-        this.particleEmitter.setPositionRndRange(range);
-        this.particleEmitter.setSpeedRndRange(range);
-        this.particleEmitter.setAnimRange(10);
-        this.scene.setParticleEmitters(new FlowParticleEmitter[] {this.particleEmitter});
-        
+        final Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
+        this.scene.setFog(new Fog(true, fogColour, 0.05f));
+        final Skybox skyBox = new Skybox(
+                "assets/game/models/skybox.obj",
+                new Vector4f(0.65f, 0.65f, 0.65f, 1.0f)
+        );
+        skyBox.setScale(skyBoxScale);
+        this.scene.setSkybox(skyBox);
         setupLights();
 
         this.camera.getPosition().x = 0.25f;
@@ -134,39 +160,32 @@ public class TestGame implements IEngineLogic {
     }
 
     @Override
-    public void update(final float interval,
-                       final MouseInput mouseInput) {
+    public void update(final float interval, final MouseInput mouseInput) {
         if (mouseInput.isRightButtonPressed()) {
             final Vector2f rotVec = mouseInput.getDisplVec();
-            this.camera.moveRotation(
-                    rotVec.x * MOUSE_SENSITIVITY,
-                    rotVec.y * MOUSE_SENSITIVITY,
-                    0
-            );
+            this.camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
         }
-        final Vector3f prevPos = new Vector3f(this.camera.getPosition());
-        this.camera.movePosition(
-                this.cameraInc.x * CAMERA_POS_STEP,
-                this.cameraInc.y * CAMERA_POS_STEP,
-                this.cameraInc.z * CAMERA_POS_STEP
-        );
 
+        final Vector3f prevPos = new Vector3f(this.camera.getPosition());
+        this.camera.movePosition(this.cameraInc.x * CAMERA_POS_STEP, this.cameraInc.y * CAMERA_POS_STEP, this.cameraInc.z * CAMERA_POS_STEP);
         final float height = this.terrain != null ? this.terrain.getHeight(this.camera.getPosition()) : -Float.MAX_VALUE;
         if (this.camera.getPosition().y <= height) {
             this.camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
         }
 
-        this.lightAngle = Math.min(Math.max(this.lightAngle + this.angleInc, 0), 180);
+        this.lightAngle += this.angleInc;
+        if (this.lightAngle < 0) {
+            this.lightAngle = 0;
+        } else if (this.lightAngle > 180) {
+            this.lightAngle = 180;
+        }
         final float zValue = (float) Math.cos(Math.toRadians(this.lightAngle));
         final float yValue = (float) Math.sin(Math.toRadians(this.lightAngle));
-        final Vector3f lightDirection = this.scene.getSceneLight()
-                .getDirectionalLight()
-                .getDirection();
+        final Vector3f lightDirection = this.scene.getSceneLight().getDirectionalLight().getDirection();
         lightDirection.x = 0;
         lightDirection.y = yValue;
         lightDirection.z = zValue;
         lightDirection.normalize();
-        this.particleEmitter.update((long) (interval * 1000));
     }
 
     @Override
@@ -174,12 +193,7 @@ public class TestGame implements IEngineLogic {
         if (this.hud != null) {
             this.hud.updateSize(window);
         }
-        this.renderer.render(
-                window,
-                this.camera,
-                this.scene,
-                this.hud
-        );
+        this.renderer.render(window, this.camera, this.scene, this.hud);
     }
 
     @Override
