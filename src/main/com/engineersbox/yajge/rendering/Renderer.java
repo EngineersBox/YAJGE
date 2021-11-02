@@ -94,9 +94,7 @@ public class Renderer {
 
         Stream.of(
                 "projectionMatrix",
-                "viewModelMatrix",
                 "textureSampler",
-                "texXOffset",
                 "cols",
                 "rows"
         ).forEach(this.particlesShader::createUniform);
@@ -155,7 +153,9 @@ public class Renderer {
                 "modelLightViewNonInstancedMatrix",
                 "renderShadow",
                 "jointsMatrix",
-                "isInstanced"
+                "isInstanced",
+                "rows",
+                "cols"
         ).forEach(this.sceneShader::createUniform);
     }
 
@@ -178,45 +178,34 @@ public class Renderer {
 
     private void renderParticles(final Scene scene) {
         this.particlesShader.bind();
+
         this.particlesShader.setUniform("textureSampler", 0);
-        this.particlesShader.setUniform("projectionMatrix", this.transform.getProjectionMatrix());
+        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
+        this.particlesShader.setUniform("projectionMatrix", projectionMatrix);
 
         final Matrix4f viewMatrix = this.transform.getViewMatrix();
         final IParticleEmitter[] emitters = scene.getParticleEmitters();
-        final int numEmitters = emitters != null ? emitters.length : 0;
+        if (emitters == null) {
+            this.particlesShader.unbind();
+            return;
+        }
 
         glDepthMask(false);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-        for (int i = 0; i < numEmitters; i++) {
-            final IParticleEmitter emitter = emitters[i];
-            final Mesh mesh = emitter.getBaseParticle().getMesh();
-            final Texture texture = mesh.getMaterial().getTexture();
-            this.particlesShader.setUniform("cols", texture.getCols());
-            this.particlesShader.setUniform("rows", texture.getRows());
+        for (final IParticleEmitter emitter : emitters) {
+            final InstancedMesh mesh = (InstancedMesh)emitter.getBaseParticle().getMesh();
 
-            mesh.renderList(
-                    emitter.getParticles(),
-                    (final SceneElement sceneElement) -> {
-                        final int col = sceneElement.getTextPos() % texture.getCols();
-                        final int row = sceneElement.getTextPos() / texture.getCols();
-                        final float textXOffset = (float) col / texture.getCols();
-                        final float textYOffset = (float) row / texture.getRows();
-                        this.particlesShader.setUniform("texXOffset", textXOffset);
-                        this.particlesShader.setUniform("texYOffset", textYOffset);
+            final Texture text = mesh.getMaterial().getTexture();
+            this.particlesShader.setUniform("cols", text.getCols());
+            this.particlesShader.setUniform("rows", text.getRows());
 
-                        final Matrix4f modelMatrix = this.transform.buildModelMatrix(sceneElement);
-                        viewMatrix.transpose3x3(modelMatrix);
-
-                        final Matrix4f viewModelMatrix = this.transform.buildViewModelMatrix(modelMatrix, viewMatrix);
-                        viewModelMatrix.scale(sceneElement.getScale());
-                        this.particlesShader.setUniform("viewModelMatrix", viewModelMatrix);
-                    }
-            );
+            mesh.renderListInstanced(emitter.getParticles(), true, this.transform, viewMatrix, null);
         }
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDepthMask(true);
+
         this.particlesShader.unbind();
     }
 
@@ -242,8 +231,8 @@ public class Renderer {
         );
         this.depthShader.setUniform("orthoProjectionMatrix", this.transform.updateOrthoProjectionMatrix(light.getOrthoCoords()));
 
-        renderNonInstancedMeshes(scene, true, this.depthShader, null, lightViewMatrix);
-        renderInstancedMeshes(scene, true, this.depthShader, null, lightViewMatrix);
+        renderNonInstancedMeshes(scene, this.depthShader, null, lightViewMatrix);
+        renderInstancedMeshes(scene, this.depthShader, null, lightViewMatrix);
 
         this.depthShader.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -296,25 +285,31 @@ public class Renderer {
         this.sceneShader.setUniform("shadowMap", 2);
         this.sceneShader.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
 
-        renderNonInstancedMeshes(scene, false, this.sceneShader, viewMatrix, lightViewMatrix);
-        renderInstancedMeshes(scene, false, this.sceneShader, viewMatrix, lightViewMatrix);
+        renderNonInstancedMeshes(scene, this.sceneShader, viewMatrix, lightViewMatrix);
+        renderInstancedMeshes(scene, this.sceneShader, viewMatrix, lightViewMatrix);
         this.sceneShader.unbind();
     }
 
-    private void renderNonInstancedMeshes(final Scene scene, final boolean depthMap, final Shader shader, final Matrix4f viewMatrix, final Matrix4f lightViewMatrix) {
+    private void renderNonInstancedMeshes(final Scene scene, final Shader shader, final Matrix4f viewMatrix, final Matrix4f lightViewMatrix) {
         this.sceneShader.setUniform("isInstanced", 0);
         for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
-            if (!depthMap) {
+            if (viewMatrix != null) {
                 shader.setUniform("material", entry.getKey().getMaterial());
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D, this.shadowMap.getDepthMapTexture().getId());
+            }
+
+            final Texture texture = entry.getKey().getMaterial().getTexture();
+            if (texture != null) {
+                this.sceneShader.setUniform("cols", texture.getCols());
+                this.sceneShader.setUniform("rows", texture.getRows());
             }
 
             entry.getKey().renderList(
                     entry.getValue(),
                     (final SceneElement sceneElement) -> {
                         final Matrix4f modelMatrix = this.transform.buildModelMatrix(sceneElement);
-                        if (!depthMap) {
+                        if (viewMatrix != null) {
                             final Matrix4f viewModelMatrix = this.transform.buildViewModelMatrix(modelMatrix, viewMatrix);
                             this.sceneShader.setUniform("viewModelNonInstancedMatrix", viewModelMatrix);
                         }
@@ -328,22 +323,22 @@ public class Renderer {
         }
     }
 
-    private void renderInstancedMeshes(final Scene scene, final boolean depthMap, final Shader shader, final Matrix4f viewMatrix, final Matrix4f lightViewMatrix) {
+    private void renderInstancedMeshes(final Scene scene, final Shader shader, final Matrix4f viewMatrix, final Matrix4f lightViewMatrix) {
         shader.setUniform("isInstanced", 1);
 
         for (final Map.Entry<InstancedMesh, List<SceneElement>> entry : scene.getInstancedMeshSceneElements().entrySet()) {
-            if (!depthMap) {
+            final Texture texture = entry.getKey().getMaterial().getTexture();
+            if (texture != null) {
+                this.sceneShader.setUniform("cols", texture.getCols());
+                this.sceneShader.setUniform("rows", texture.getRows());
+            }
+
+            if (viewMatrix != null) {
                 shader.setUniform("material", entry.getKey().getMaterial());
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D, this.shadowMap.getDepthMapTexture().getId());
             }
-            entry.getKey().renderListInstanced(
-                    entry.getValue(),
-                    depthMap,
-                    this.transform,
-                    viewMatrix,
-                    lightViewMatrix
-            );
+            entry.getKey().renderListInstanced(entry.getValue(), this.transform, viewMatrix, lightViewMatrix);
         }
     }
 

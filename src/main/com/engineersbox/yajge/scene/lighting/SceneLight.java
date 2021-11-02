@@ -49,7 +49,7 @@ public class SceneLight {
         return this.skyBoxLight;
     }
 
-    public void setSkyBoxLight(final Vector3f skyBoxLight) {
+    public void setSkyboxLight(final Vector3f skyBoxLight) {
         this.skyBoxLight = skyBoxLight;
     }
     

@@ -170,14 +170,20 @@ public class HeightMapMesh {
                             final int z,
                             final int width,
                             final ByteBuffer buffer) {
+        return this.minY + Math.abs(this.maxY - this.minY) * ((float) getRGB(x, z, width, buffer) / (float) MAX_COLOUR);
+    }
+
+    public static int getRGB(final int x,
+                             final int z,
+                             final int width,
+                             final ByteBuffer buffer) {
         final byte r = buffer.get(x * 4 + z * 4 * width);
         final byte g = buffer.get(x * 4 + 1 + z * 4 * width);
         final byte b = buffer.get(x * 4 + 2 + z * 4 * width);
         final byte a = buffer.get(x * 4 + 3 + z * 4 * width);
-        final int argb = ((0xFF & a) << 24)
+        return ((0xFF & a) << 24)
                 | ((0xFF & r) << 16)
                 | ((0xFF & g) << 8)
                 | (0xFF & b);
-        return this.minY + Math.abs(this.maxY - this.minY) * ((float) argb / (float) MAX_COLOUR);
     }
 }

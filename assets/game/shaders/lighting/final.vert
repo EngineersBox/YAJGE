@@ -10,6 +10,7 @@ layout (location=3) in vec4 jointWeights;
 layout (location=4) in ivec4 jointIndices;
 layout (location=5) in mat4 viewModelInstancedMatrix;
 layout (location=9) in mat4 modelLightViewInstancedMatrix;
+layout (location=13) in vec2 texOffset;
 
 out vec2 outTexCoord;
 out vec3 mvVertexNormal;
@@ -24,21 +25,26 @@ uniform mat4 projectionMatrix;
 uniform mat4 modelLightViewNonInstancedMatrix;
 uniform mat4 orthoProjectionMatrix;
 
+uniform int cols;
+uniform int rows;
+
 void main() {
     vec4 initPos = vec4(0, 0, 0, 0);
     vec4 initNormal = vec4(0, 0, 0, 0);
-    mat4 modelViewMatrix;
+    mat4 viewModelMatrix;
     mat4 lightViewMatrix;
     if (isInstanced > 0) {
-        modelViewMatrix = viewModelInstancedMatrix;
+        viewModelMatrix = viewModelInstancedMatrix;
         lightViewMatrix = modelLightViewInstancedMatrix;
+
         initPos = vec4(position, 1.0);
         initNormal = vec4(vertexNormal, 0.0);
     } else {
-        modelViewMatrix = viewModelNonInstancedMatrix;
+        viewModelMatrix = viewModelNonInstancedMatrix;
         lightViewMatrix = modelLightViewNonInstancedMatrix;
+
         int count = 0;
-        for(int i = 0; i < MAX_WEIGHTS; i++) {
+        for (int i = 0; i < MAX_WEIGHTS; i++) {
             float weight = jointWeights[i];
             if (weight > 0) {
                 count++;
@@ -55,11 +61,15 @@ void main() {
             initNormal = vec4(vertexNormal, 0.0);
         }
     }
-    vec4 mvPos = modelViewMatrix * initPos;
+    vec4 mvPos = viewModelMatrix * initPos;
     gl_Position = projectionMatrix * mvPos;
-    outTexCoord = texCoord;
-    mvVertexNormal = normalize(modelViewMatrix * initNormal).xyz;
+
+    float x = (texCoord.x / cols + texOffset.x);
+    float y = (texCoord.y / rows + texOffset.y);
+    outTexCoord = vec2(x, y);
+
+    mvVertexNormal = normalize(viewModelMatrix * initNormal).xyz;
     mvVertexPos = mvPos.xyz;
     mlightviewVertexPos = orthoProjectionMatrix * lightViewMatrix * initPos;
-    outViewModelMatrix = modelViewMatrix;
+    outViewModelMatrix = viewModelMatrix;
 }

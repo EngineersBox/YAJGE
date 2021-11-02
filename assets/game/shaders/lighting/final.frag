@@ -7,7 +7,7 @@ in vec2 outTexCoord;
 in vec3 mvVertexNormal;
 in vec3 mvVertexPos;
 in vec4 mlightviewVertexPos;
-in mat4 outViewModelMatrix;
+in mat4 outModelViewMatrix;
 
 out vec4 fragColor;
 
@@ -173,7 +173,7 @@ float calcShadow(vec4 position) {
 
 void main() {
     configureColours(material, outTexCoord);
-    vec3 currNomal = calcNormal(material, mvVertexNormal, outTexCoord, outViewModelMatrix);
+    vec3 currNomal = calcNormal(material, mvVertexNormal, outTexCoord, outModelViewMatrix);
     vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, mvVertexPos, currNomal);
 
     for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
