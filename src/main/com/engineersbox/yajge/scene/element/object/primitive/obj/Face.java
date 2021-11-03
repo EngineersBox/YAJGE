@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.scene.element.object.obj;
+package com.engineersbox.yajge.scene.element.object.primitive.obj;
 
 public class Face {
 

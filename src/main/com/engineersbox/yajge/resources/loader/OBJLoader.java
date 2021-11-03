@@ -2,8 +2,8 @@ package com.engineersbox.yajge.resources.loader;
 
 import com.engineersbox.yajge.scene.element.object.composite.InstancedMesh;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
-import com.engineersbox.yajge.scene.element.object.obj.Face;
-import com.engineersbox.yajge.scene.element.object.obj.IdxGroup;
+import com.engineersbox.yajge.scene.element.object.primitive.obj.Face;
+import com.engineersbox.yajge.scene.element.object.primitive.obj.IdxGroup;
 import com.engineersbox.yajge.util.ListUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;

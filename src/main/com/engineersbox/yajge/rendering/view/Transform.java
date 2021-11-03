@@ -87,9 +87,9 @@ public class Transform {
         return updateGenericViewMatrix(position, rotation, this.lightViewMatrix);
     }
 
-    private Matrix4f updateGenericViewMatrix(final Vector3f position,
-                                             final Vector3f rotation,
-                                             final Matrix4f matrix) {
+    public static Matrix4f updateGenericViewMatrix(final Vector3f position,
+                                                   final Vector3f rotation,
+                                                   final Matrix4f matrix) {
         return matrix.rotationX((float) Math.toRadians(rotation.x))
                 .rotateY((float) Math.toRadians(rotation.y))
                 .translate(

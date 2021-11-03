@@ -17,7 +17,6 @@ public class Hud implements IHud {
     private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
 
     private final SceneElement[] sceneElements;
-
     private final TextElement statusFontTexture;
 
     public Hud(final String statusText) {

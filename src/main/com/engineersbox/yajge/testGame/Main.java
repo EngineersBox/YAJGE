@@ -15,11 +15,10 @@ public class Main {
     public static void main(final String[] args) {
         try {
             final IEngineLogic gameInstance = new TestGame();
-            final WindowOptions opts = new WindowOptions();
-            opts.cullFace = true;
+            final WindowOptions opts = new WindowOptions(true, false);
             final Engine engine = new Engine(
                     "YAJGE",
-                    true,
+                    false,
                     opts,
                     gameInstance
             );

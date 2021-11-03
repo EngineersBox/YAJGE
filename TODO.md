@@ -15,6 +15,7 @@
 * Fixed borked shadow mapping with directional light
 * Implement shadows for point and spot lights
 * Dynamic light instance counts (non-fixed limit of 5)
+* Fix particle texure not masked by shadow
 
 ## Assimp Structure
 

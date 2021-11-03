@@ -3,14 +3,15 @@ package com.engineersbox.yajge.scene.lighting;
 import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
 import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
+import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Vector3f;
 
 public class SceneLight {
 
     private Vector3f ambientLight;
-    private Vector3f skyBoxLight;
-    private PointLight[] pointLightList;
-    private SpotLight[] spotLightList;
+    private Vector3f skyboxLight;
+    private PointLight[] pointLights;
+    private SpotLight[] spotLights;
     private DirectionalLight directionalLight;
 
     public Vector3f getAmbientLight() {
@@ -22,19 +23,27 @@ public class SceneLight {
     }
 
     public PointLight[] getPointLights() {
-        return this.pointLightList;
+        return this.pointLights;
     }
 
-    public void setPointLightList(final PointLight[] pointLightList) {
-        this.pointLightList = pointLightList;
+    public void addPointLight(final PointLight pointLight) {
+        this.pointLights = ArrayUtils.add(this.pointLights, pointLight);
+    }
+
+    public void setPointLights(final PointLight[] pointLights) {
+        this.pointLights = pointLights;
     }
 
     public SpotLight[] getSpotLights() {
-        return this.spotLightList;
+        return this.spotLights;
     }
 
-    public void setSpotLightList(final SpotLight[] spotLightList) {
-        this.spotLightList = spotLightList;
+    public void addSpotLight(final SpotLight spotLight) {
+        this.spotLights = ArrayUtils.add(this.spotLights, spotLight);
+    }
+
+    public void setSpotLights(final SpotLight[] spotLights) {
+        this.spotLights = spotLights;
     }
 
     public DirectionalLight getDirectionalLight() {
@@ -45,12 +54,12 @@ public class SceneLight {
         this.directionalLight = directionalLight;
     }
 
-    public Vector3f getSkyBoxLight() {
-        return this.skyBoxLight;
+    public Vector3f getSkyboxLight() {
+        return this.skyboxLight;
     }
 
-    public void setSkyboxLight(final Vector3f skyBoxLight) {
-        this.skyBoxLight = skyBoxLight;
+    public void setSkyboxLight(final Vector3f skyboxLight) {
+        this.skyboxLight = skyboxLight;
     }
     
 }

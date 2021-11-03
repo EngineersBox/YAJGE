@@ -19,9 +19,14 @@ import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.particles.FlowParticleEmitter;
 import com.engineersbox.yajge.scene.element.particles.Particle;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
+import com.engineersbox.yajge.sound.SoundBuffer;
+import com.engineersbox.yajge.sound.SoundListener;
+import com.engineersbox.yajge.sound.SoundManager;
+import com.engineersbox.yajge.sound.SoundSource;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.openal.AL11;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
@@ -34,9 +39,11 @@ public class TestGame implements IEngineLogic {
 
     private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 0.10f;
+    private static final float CAMERA_POS_STEP_ACCELERATED = 0.30f;
 
     private final Vector3f cameraInc;
     private final Renderer renderer;
+    private final SoundManager soundManager;
     private final Camera camera;
     private Scene scene;
     private Hud hud;
@@ -44,9 +51,13 @@ public class TestGame implements IEngineLogic {
     private float angleInc;
     private float lightAngle;
     private FlowParticleEmitter particleEmitter;
+    private float accelerationMultiplier = CAMERA_POS_STEP;
+
+    private enum Sounds { MUSIC, FIRE }
 
     public TestGame() {
         this.renderer = new Renderer();
+        this.soundManager = new SoundManager();
         this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
@@ -110,11 +121,11 @@ public class TestGame implements IEngineLogic {
             posz -= inc;
         }
         this.scene.setSceneElements(sceneElements);
+        STBImage.stbi_image_free(buf);
 
         final int maxParticles = 200;
         final Vector3f particleSpeed = new Vector3f(0, 1, 0);
         particleSpeed.mul(2.5f);
-        final long ttl = 4000;
         final long creationPeriodMillis = 300;
         final float range = 0.2f;
         final float scale = 1.0f;
@@ -122,7 +133,12 @@ public class TestGame implements IEngineLogic {
         final Texture particleTexture = new Texture("assets/game/textures/particle_anim.png", 4, 4);
         final Material partMaterial = new Material(particleTexture, reflectance);
         partMesh.setMaterial(partMaterial);
-        final Particle particle = new Particle(partMesh, particleSpeed, ttl, 100);
+        final Particle particle = new Particle(
+                partMesh,
+                particleSpeed,
+                4000,
+                100
+        );
         particle.setScale(scale);
         this.particleEmitter = new FlowParticleEmitter(particle, maxParticles, creationPeriodMillis);
         this.particleEmitter.setActive(true);
@@ -138,7 +154,7 @@ public class TestGame implements IEngineLogic {
         skybox.setScale(skyboxScale);
         this.scene.setSkybox(skybox);
 
-        setupLights();
+        configureLights();
         this.camera.getPosition().x = 0.25f;
         this.camera.getPosition().y = 6.5f;
         this.camera.getPosition().z = 6.5f;
@@ -146,11 +162,32 @@ public class TestGame implements IEngineLogic {
         this.camera.getRotation().y = -1;
 
         this.hud = new Hud("DEMO");
-
-        STBImage.stbi_image_free(buf);
+        this.soundManager.init();
+        this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
+        configureSounds();
     }
 
-    private void setupLights() {
+    private void configureSounds() {
+        final SoundBuffer backgroundMusicBuffer = new SoundBuffer("assets/game/sounds/background.ogg");
+        this.soundManager.addSoundBuffer(backgroundMusicBuffer);
+        final SoundSource sourceBack = new SoundSource(true, true);
+        sourceBack.setBuffer(backgroundMusicBuffer.getBufferId());
+        this.soundManager.addSoundSource(Sounds.MUSIC.toString(), sourceBack);
+
+        final SoundBuffer fireAmbienceBuffer = new SoundBuffer("assets/game/sounds/fire.ogg");
+        this.soundManager.addSoundBuffer(fireAmbienceBuffer);
+        final SoundSource sourceFire = new SoundSource(true, false);
+        sourceFire.setPosition(this.particleEmitter.getBaseParticle().getPosition());
+        sourceFire.setBuffer(fireAmbienceBuffer.getBufferId());
+        this.soundManager.addSoundSource(Sounds.FIRE.toString(), sourceFire);
+        sourceFire.play();
+
+        this.soundManager.setListener(new SoundListener(new Vector3f()));
+
+        sourceBack.play();
+    }
+
+    private void configureLights() {
         final SceneLight sceneLight = new SceneLight();
         this.scene.setSceneLight(sceneLight);
 
@@ -191,6 +228,11 @@ public class TestGame implements IEngineLogic {
         } else {
             this.angleInc = 0;
         }
+        if (window.isKeyPressed(GLFW_KEY_LEFT_CONTROL) || window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) {
+            this.accelerationMultiplier = CAMERA_POS_STEP_ACCELERATED;
+        } else {
+            this.accelerationMultiplier = CAMERA_POS_STEP;
+        }
     }
 
     @Override
@@ -207,9 +249,9 @@ public class TestGame implements IEngineLogic {
 
         final Vector3f prevPos = new Vector3f(this.camera.getPosition());
         this.camera.movePosition(
-                this.cameraInc.x * CAMERA_POS_STEP,
-                this.cameraInc.y * CAMERA_POS_STEP,
-                this.cameraInc.z * CAMERA_POS_STEP
+                this.cameraInc.x * this.accelerationMultiplier,
+                this.cameraInc.y * this.accelerationMultiplier,
+                this.cameraInc.z * this.accelerationMultiplier
         );
 
         final float height = this.terrain != null ? this.terrain.getHeight(this.camera.getPosition()) : -Float.MAX_VALUE;
@@ -226,6 +268,7 @@ public class TestGame implements IEngineLogic {
         lightDirection.z = zValue;
         lightDirection.normalize();
         this.particleEmitter.update((long) (interval * 1000));
+        this.soundManager.updateListenerPosition(this.camera);
     }
 
     @Override

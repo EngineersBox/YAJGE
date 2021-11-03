@@ -4,7 +4,6 @@ import com.engineersbox.yajge.logging.LoggerCompat;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
@@ -110,13 +109,13 @@ public class Window {
         GL.createCapabilities();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glEnable(GL_DEPTH_TEST);
-        if (this.opts.showTriangles) {
+        if (this.opts.showTriangles()) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        if (this.opts.cullFace) {
+        if (this.opts.cullFace()) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
         }
