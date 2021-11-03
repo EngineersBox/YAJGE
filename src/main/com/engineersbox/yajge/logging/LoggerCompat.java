@@ -14,9 +14,9 @@ public abstract class LoggerCompat {
         return new PrintStream(IoBuilder.forLogger(logger).setLevel(level).buildOutputStream());
     }
 
+    @SuppressWarnings("java:S2095")
     public static void registerGLFWErrorLogger(final Logger logger,
                                                final Level level) {
         GLFWErrorCallback.createPrint(LoggerCompat.asPrintStream(logger, level)).set();
     }
-
 }

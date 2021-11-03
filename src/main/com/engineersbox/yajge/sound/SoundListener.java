@@ -14,6 +14,20 @@ public class SoundListener {
         alListener3f(AL_POSITION, position.x, position.y, position.z);
         alListener3f(AL_VELOCITY, 0, 0, 0);
     }
+
+    public void setVolume(final float volume) {
+        if (volume < 0 || volume > 1) {
+            throw new RuntimeException(String.format(
+                    "Volume must be in range [0,1] not %f",
+                    volume
+            ));
+        }
+        alListenerf(AL_GAIN, volume);
+    }
+
+    public float getVolume() {
+        return alGetListenerf(AL_GAIN);
+    }
     
     public void setSpeed(final Vector3f speed) {
         alListener3f(AL_VELOCITY, speed.x, speed.y, speed.z);

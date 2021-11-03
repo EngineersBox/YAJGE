@@ -15,7 +15,8 @@
 * Fixed borked shadow mapping with directional light
 * Implement shadows for point and spot lights
 * Dynamic light instance counts (non-fixed limit of 5)
-* Fix particle texure not masked by shadow
+* Fix particle texture not masked by shadow
+* Implement animation lerp for linear, non-linear and custom curves
 
 ## Assimp Structure
 

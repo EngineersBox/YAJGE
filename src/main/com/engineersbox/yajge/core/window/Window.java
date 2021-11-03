@@ -1,11 +1,16 @@
 package com.engineersbox.yajge.core.window;
 
 import com.engineersbox.yajge.logging.LoggerCompat;
+import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -45,6 +50,9 @@ public class Window {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        if (ConfigHandler.CONFIG.engine.glOptions.debugLogs) {
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+        }
     }
 
     private void configureCallbacks() {
@@ -90,11 +98,12 @@ public class Window {
         if (this.windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
+        LOGGER.info("Using configured monitor {} [id: {}]", ConfigHandler.CONFIG.video.monitor, findMonitorByIndex(ConfigHandler.CONFIG.video.monitor));
         configureCallbacks();
         if (maximized) {
             glfwMaximizeWindow(this.windowHandle);
         } else {
-            final GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            final GLFWVidMode vidmode = glfwGetVideoMode(findMonitorByIndex(ConfigHandler.CONFIG.video.monitor));
             glfwSetWindowPos(
                     this.windowHandle,
                     (vidmode.width() - this.width) / 2,
@@ -121,6 +130,24 @@ public class Window {
         }
     }
 
+    private long findMonitorByIndex(final int idx) {
+        final PointerBuffer monitors = glfwGetMonitors();
+        if (monitors == null || !monitors.hasRemaining()) {
+            throw new RuntimeException("No monitors connected");
+        }
+        final int monitorsCount = monitors.limit();
+        if (idx < 0 || idx >= monitorsCount) {
+            throw new RuntimeException(String.format(
+                    "Invalid monitor %d, must be one of []",
+                    idx,
+                    IntStream.range(0, monitorsCount)
+                            .mapToObj(String::valueOf)
+                            .collect(Collectors.joining(","))
+            ));
+        }
+        return monitors.get(idx);
+    }
+
     public long getWindowHandle() {
         return this.windowHandle;
     }
@@ -132,7 +159,15 @@ public class Window {
         glClearColor(r, g, b, alpha);
     }
 
-    public boolean isKeyPressed(final int keyCode) {
+    public String getWindowTitle() {
+        return this.title;
+    }
+
+    public void setWindowTitle(final String title) {
+        glfwSetWindowTitle(this.windowHandle, title);
+    }
+
+        public boolean isKeyPressed(final int keyCode) {
         return glfwGetKey(this.windowHandle, keyCode) == GLFW_PRESS;
     }
 

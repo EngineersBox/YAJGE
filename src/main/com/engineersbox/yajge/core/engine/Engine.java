@@ -18,6 +18,9 @@ public class Engine implements Runnable {
     private final Timer timer;
     private final IEngineLogic gameLogic;
     private final MouseInput mouseInput;
+    private double lastFps;
+    private int fps;
+    private String windowTitle;
     private boolean running = false;
 
     public Engine() {
@@ -29,14 +32,21 @@ public class Engine implements Runnable {
     }
 
     public Engine(final String windowTitle,
-                  final boolean vSync,
+                  final IEngineLogic gameLogic) {
+        this(
+                windowTitle,
+                WindowOptions.createFromConfig(),
+                gameLogic
+        );
+    }
+
+    public Engine(final String windowTitle,
                   final WindowOptions opts,
                   final IEngineLogic gameLogic) {
         this(
                 windowTitle,
                 0,
                 0,
-                vSync,
                 opts,
                 gameLogic
         );
@@ -45,7 +55,19 @@ public class Engine implements Runnable {
     public Engine(final String windowTitle,
                   final int width,
                   final int height,
-                  final boolean vSync,
+                  final IEngineLogic gameLogic) {
+        this(
+                windowTitle,
+                width,
+                height,
+                WindowOptions.createFromConfig(),
+                gameLogic
+        );
+    }
+
+    public Engine(final String windowTitle,
+                  final int width,
+                  final int height,
                   final WindowOptions opts,
                   final IEngineLogic gameLogic) {
         LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
@@ -53,9 +75,10 @@ public class Engine implements Runnable {
                 windowTitle,
                 width,
                 height,
-                vSync,
+                ConfigHandler.CONFIG.video.vsync,
                 opts
         );
+        this.windowTitle = windowTitle;
         this.mouseInput = new MouseInput();
         this.gameLogic = gameLogic;
         this.timer = new Timer();
@@ -112,7 +135,7 @@ public class Engine implements Runnable {
         try {
             Thread.sleep((long) (endTime - this.timer.getTime()));
         } catch (final InterruptedException e) {
-            e.printStackTrace(LoggerCompat.asPrintStream(LOGGER, Level.ERROR));
+            LOGGER.error(e);
         }
     }
 
@@ -126,6 +149,12 @@ public class Engine implements Runnable {
     }
 
     protected void render() {
+        if (ConfigHandler.CONFIG.video.showFps && this.timer.getLastLoopTime() - this.lastFps > 1) {
+            this.lastFps = this.timer.getLastLoopTime();
+            this.window.setWindowTitle(this.windowTitle + " - " + this.fps + " FPS");
+            this.fps = 0;
+        }
+        this.fps++;
         this.gameLogic.render(this.window);
         this.window.update();
     }

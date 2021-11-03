@@ -287,6 +287,7 @@ public class TestGame implements IEngineLogic {
     @Override
     public void cleanup() {
         this.renderer.cleanup();
+        this.soundManager.cleanup();
         this.scene.cleanup();
         if (this.hud != null) {
             this.hud.cleanup();
