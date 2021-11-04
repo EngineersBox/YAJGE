@@ -50,7 +50,7 @@ public class TestGame implements IEngineLogic {
     private final SoundManager soundManager;
     private final Camera camera;
     private Scene scene;
-    private Hud hud;
+    private final Hud hud;
     private Terrain terrain;
     private float angleInc;
     private float lightAngle;
@@ -64,6 +64,7 @@ public class TestGame implements IEngineLogic {
     public TestGame() {
         this.renderer = new Renderer();
         this.soundManager = new SoundManager();
+        this.hud = new Hud();
         this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
@@ -74,6 +75,7 @@ public class TestGame implements IEngineLogic {
     public void init(final Window window) {
         this.renderer.init(window);
         this.scene = new Scene();
+//        this.hud.init(window);
         this.selectionDetector = new MouseAABBSelectionDetector();
 
         final float reflectance = 1f;
@@ -168,7 +170,6 @@ public class TestGame implements IEngineLogic {
         this.camera.getRotation().x = 25;
         this.camera.getRotation().y = -1;
 
-        this.hud = new Hud("DEMO");
         this.soundManager.init();
         this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
         configureSounds();
@@ -289,15 +290,12 @@ public class TestGame implements IEngineLogic {
 
     @Override
     public void render(final Window window) {
-        if (this.hud != null) {
-            this.hud.updateSize(window);
-        }
         this.renderer.render(
                 window,
                 this.camera,
-                this.scene,
-                this.hud
+                this.scene
         );
+//        this.hud.render(window);
     }
 
     @Override
@@ -305,8 +303,6 @@ public class TestGame implements IEngineLogic {
         this.renderer.cleanup();
         this.soundManager.cleanup();
         this.scene.cleanup();
-        if (this.hud != null) {
-            this.hud.cleanup();
-        }
+//        this.hud.cleanup();
     }
 }

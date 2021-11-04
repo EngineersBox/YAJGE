@@ -90,7 +90,7 @@ public class Engine implements Runnable {
             init();
             gameLoop();
         } catch (final Exception e) {
-            LOGGER.error(e);
+            e.printStackTrace(LoggerCompat.asPrintStream(LOGGER, Level.ERROR));
         } finally {
             cleanup();
         }
@@ -135,7 +135,7 @@ public class Engine implements Runnable {
         try {
             Thread.sleep((long) (endTime - this.timer.getTime()));
         } catch (final InterruptedException e) {
-            LOGGER.error(e);
+            e.printStackTrace(LoggerCompat.asPrintStream(LOGGER, Level.ERROR));
         }
     }
 

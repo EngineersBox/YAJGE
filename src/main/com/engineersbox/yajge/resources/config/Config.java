@@ -28,6 +28,7 @@ public class Config {
     }
 
     public static class GlOptions {
+      public final boolean antialiasing;
       public final boolean compatProfile;
       public final boolean cullface;
       public final boolean debugLogs;
@@ -37,6 +38,7 @@ public class Config {
           com.typesafe.config.Config c,
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
+        this.antialiasing = !c.hasPathOrNull("antialiasing") || c.getBoolean("antialiasing");
         this.compatProfile = !c.hasPathOrNull("compatProfile") || c.getBoolean("compatProfile");
         this.cullface = !c.hasPathOrNull("cullface") || c.getBoolean("cullface");
         this.debugLogs = c.hasPathOrNull("debugLogs") && c.getBoolean("debugLogs");

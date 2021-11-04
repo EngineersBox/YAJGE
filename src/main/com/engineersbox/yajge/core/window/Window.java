@@ -132,6 +132,7 @@ public class Window {
         GL.createCapabilities();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
         if (this.opts.showTriangles()) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
@@ -141,6 +142,9 @@ public class Window {
         if (this.opts.cullFace()) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
+        }
+        if (this.opts.antialiasing()) {
+            glfwWindowHint(GLFW_SAMPLES, 4);
         }
     }
 
@@ -250,5 +254,15 @@ public class Window {
         glfwDestroyWindow(this.windowHandle);
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+    }
+
+    public void restoreState() {
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }
     }
 }

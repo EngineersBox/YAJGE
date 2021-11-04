@@ -17,7 +17,6 @@ import com.engineersbox.yajge.scene.element.animation.AnimatedSceneElement;
 import com.engineersbox.yajge.scene.element.object.composite.InstancedMesh;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.particles.IParticleEmitter;
-import com.engineersbox.yajge.scene.gui.IHud;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -42,7 +41,6 @@ public class Renderer {
     private ShadowMap shadowMap;
     private Shader depthShader;
     private Shader sceneShader;
-    private Shader hudShader;
     private Shader skyboxShader;
     private Shader particlesShader;
     private final float specularPower;
@@ -59,13 +57,11 @@ public class Renderer {
         setupSkyboxShader();
         setupSceneShader();
         setupParticlesShader();
-        setupHudShader();
     }
 
     public void render(final Window window,
                        final Camera camera,
-                       final Scene scene,
-                       final IHud hud) {
+                       final Scene scene) {
         clear();
         renderDepthMap(scene);
         glViewport(0, 0, window.getWidth(), window.getHeight());
@@ -75,7 +71,6 @@ public class Renderer {
         renderScene(window, camera, scene);
         renderSkyBox(window, camera, scene);
         renderParticles(window, camera, scene);
-        renderHud(window, hud);
         renderCrossHair(window);
 //        renderAxes(window, camera);
     }
@@ -154,21 +149,8 @@ public class Renderer {
         ).forEach(this.sceneShader::createUniform);
     }
 
-    private void setupHudShader() {
-        this.hudShader = new Shader();
-        this.hudShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.vert"));
-        this.hudShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/hud/hud.frag"));
-        this.hudShader.link();
-
-        Stream.of(
-                "projModelMatrix",
-                "colour",
-                "hasTexture"
-        ).forEach(this.hudShader::createUniform);
-    }
-
     public void clear() {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     private void renderParticles(final Window window,
@@ -389,23 +371,6 @@ public class Renderer {
         this.sceneShader.setUniform("directionalLight", currDirLight);
     }
 
-    private void renderHud(final Window window, final IHud hud) {
-        if (hud != null) {
-            this.hudShader.bind();
-
-            final Matrix4f ortho = this.transform.getOrtho2DProjectionMatrix(0, window.getWidth(), window.getHeight(), 0);
-            for (final SceneElement sceneElement : hud.getSceneElements()) {
-                final Mesh mesh = sceneElement.getMesh();
-                final Matrix4f projModelMatrix = this.transform.buildOrthoProjModelMatrix(sceneElement, ortho);
-                this.hudShader.setUniform("projModelMatrix", projModelMatrix);
-                this.hudShader.setUniform("colour", sceneElement.getMesh().getMaterial().getAmbientColour());
-                this.hudShader.setUniform("hasTexture", sceneElement.getMesh().getMaterial().isTextured() ? 1 : 0);
-                mesh.render();
-            }
-            this.hudShader.unbind();
-        }
-    }
-
     private void renderCrossHair(final Window window) {
         if (!window.getOptions().compatProfile()) {
             return;
@@ -477,9 +442,6 @@ public class Renderer {
         }
         if (this.sceneShader != null) {
             this.sceneShader.cleanup();
-        }
-        if (this.hudShader != null) {
-            this.hudShader.cleanup();
         }
         if (this.particlesShader != null) {
             this.particlesShader.cleanup();
