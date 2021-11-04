@@ -110,6 +110,7 @@ public class Config {
 
     public static class Camera {
       public final double fov;
+      public final boolean frustrumCulling;
       public final double zFar;
       public final double zNear;
 
@@ -118,6 +119,8 @@ public class Config {
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
         this.fov = c.hasPathOrNull("fov") ? c.getDouble("fov") : 60.0;
+        this.frustrumCulling =
+            !c.hasPathOrNull("frustrumCulling") || c.getBoolean("frustrumCulling");
         this.zFar = c.hasPathOrNull("zFar") ? c.getDouble("zFar") : 1000.0;
         this.zNear = c.hasPathOrNull("zNear") ? c.getDouble("zNear") : 0.01;
       }

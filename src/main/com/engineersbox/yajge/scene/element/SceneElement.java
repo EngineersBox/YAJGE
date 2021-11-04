@@ -13,7 +13,9 @@ public class SceneElement {
     private float scale;
     private final Quaternionf rotation;
     private int textPos;
-    private boolean selected;
+    private boolean selected = false;
+    private boolean insideFrustum;
+    private boolean frustrumCullingEnabled = true;
 
     public SceneElement() {
         this.position = new Vector3f();
@@ -97,5 +99,21 @@ public class SceneElement {
 
     public void setSelected(final boolean selected) {
         this.selected = selected;
+    }
+
+    public boolean isInsideFrustum() {
+        return this.insideFrustum;
+    }
+
+    public void setInsideFrustrum(final boolean insideFrustum) {
+        this.insideFrustum = insideFrustum;
+    }
+
+    public boolean frustrumCullingEnabled() {
+        return this.frustrumCullingEnabled;
+    }
+
+    public void setFrustumCulling(final boolean frustumCulling) {
+        this.frustrumCullingEnabled = frustumCulling;
     }
 }

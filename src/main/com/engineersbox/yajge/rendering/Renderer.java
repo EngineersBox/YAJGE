@@ -6,9 +6,11 @@ import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
 import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
 import com.engineersbox.yajge.rendering.view.Camera;
 import com.engineersbox.yajge.rendering.view.Transform;
+import com.engineersbox.yajge.rendering.view.culling.FrustrumCullingFilter;
 import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.resources.assets.shader.Shader;
 import com.engineersbox.yajge.resources.assets.shader.ShadowMap;
+import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import com.engineersbox.yajge.resources.loader.ResourceLoader;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
@@ -22,6 +24,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -43,10 +46,14 @@ public class Renderer {
     private Shader sceneShader;
     private Shader skyboxShader;
     private Shader particlesShader;
+    private final FrustrumCullingFilter frustrumCullingFilter;
+    private final List<SceneElement> filteredSceneElements;
     private final float specularPower;
 
     public Renderer() {
         this.transform = new Transform();
+        this.frustrumCullingFilter = new FrustrumCullingFilter();
+        this.filteredSceneElements = new ArrayList<>();
         this.specularPower = 10f;
     }
 
@@ -63,6 +70,13 @@ public class Renderer {
                        final Camera camera,
                        final Scene scene) {
         clear();
+
+        if (ConfigHandler.CONFIG.render.camera.frustrumCulling) {
+            this.frustrumCullingFilter.updateFrustum(window.getProjectionMatrix(), camera.getViewMatrix());
+            this.frustrumCullingFilter.filter(scene.getMeshSceneElements());
+            this.frustrumCullingFilter.filter(scene.getInstancedMeshSceneElements());
+        }
+
         renderDepthMap(scene);
         glViewport(0, 0, window.getWidth(), window.getHeight());
 
@@ -325,7 +339,13 @@ public class Renderer {
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D, this.shadowMap.getDepthMapTexture().getId());
             }
-            entry.getKey().renderListInstanced(entry.getValue(), this.transform, viewMatrix, lightViewMatrix);
+            this.filteredSceneElements.clear();
+            entry.getValue().forEach((final SceneElement sceneElement) -> {
+                if (sceneElement.isInsideFrustum() ) {
+                    this.filteredSceneElements.add(sceneElement);
+                }
+            });
+            entry.getKey().renderListInstanced(this.filteredSceneElements, this.transform, viewMatrix, lightViewMatrix);
         }
     }
 

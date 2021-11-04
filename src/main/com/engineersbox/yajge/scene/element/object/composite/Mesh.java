@@ -27,6 +27,7 @@ public class Mesh {
     protected final List<Integer> vboIdList;
     private final int vertexCount;
     private Material material;
+    private float boundingRadius;
 
     public Mesh(final float[] positions, final float[] texCoords, final float[] normals, final int[] indices) {
         this(
@@ -187,5 +188,13 @@ public class Mesh {
 
     public int getVertexCount() {
         return this.vertexCount;
+    }
+
+    public float getBoundingRadius() {
+        return this.boundingRadius;
+    }
+
+    public void setBoundingRadius(final float boundingRadius) {
+        this.boundingRadius = boundingRadius;
     }
 }

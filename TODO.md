@@ -17,6 +17,7 @@
 * Dynamic light instance counts (non-fixed limit of 5)
 * Fix particle texture not masked by shadow
 * Implement animation lerp for linear, non-linear and custom curves
+* Refactor to support changing frustrum membership test based on mapping closest to sphere, cube, etc
 
 ## Assimp Structure
 
