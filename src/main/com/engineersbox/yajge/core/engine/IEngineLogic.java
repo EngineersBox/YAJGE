@@ -7,7 +7,7 @@ public interface IEngineLogic {
 
     void init(final Window window);
     void input(final Window window, final MouseInput mouseInput);
-    void update(final float interval, final MouseInput mouseInput);
+    void update(final float interval, final MouseInput mouseInput, final Window window);
     void render(final Window window);
     void cleanup();
 }

@@ -35,7 +35,7 @@ public class MouseInput {
         });
     }
 
-    public Vector2f getDisplVec() {
+    public Vector2f getDisplayVec() {
         return this.displVec;
     }
 
@@ -62,5 +62,9 @@ public class MouseInput {
 
     public boolean isRightButtonPressed() {
         return this.rightButtonPressed;
+    }
+
+    public Vector2d getCurrentPos() {
+        return this.currentPos;
     }
 }

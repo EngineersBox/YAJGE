@@ -11,12 +11,14 @@ layout (location=4) in ivec4 jointIndices;
 layout (location=5) in mat4 viewModelInstancedMatrix;
 layout (location=9) in mat4 modelLightViewInstancedMatrix;
 layout (location=13) in vec2 texOffset;
+layout (location=14) in float selectedInstanced;
 
 out vec2 outTexCoord;
 out vec3 mvVertexNormal;
 out vec3 mvVertexPos;
 out vec4 mlightviewVertexPos;
 out mat4 outViewModelMatrix;
+out float outSelected;
 
 uniform int isInstanced;
 uniform mat4 viewModelNonInstancedMatrix;
@@ -24,9 +26,9 @@ uniform mat4 jointsMatrix[MAX_JOINTS];
 uniform mat4 projectionMatrix;
 uniform mat4 modelLightViewNonInstancedMatrix;
 uniform mat4 orthoProjectionMatrix;
-
 uniform int cols;
 uniform int rows;
+uniform float selectedNonInstanced;
 
 void main() {
     vec4 initPos = vec4(0, 0, 0, 0);
@@ -34,12 +36,14 @@ void main() {
     mat4 viewModelMatrix;
     mat4 lightViewMatrix;
     if (isInstanced > 0) {
+        outSelected = selectedInstanced;
         viewModelMatrix = viewModelInstancedMatrix;
         lightViewMatrix = modelLightViewInstancedMatrix;
 
         initPos = vec4(position, 1.0);
         initNormal = vec4(vertexNormal, 0.0);
     } else {
+        outSelected = selectedNonInstanced;
         viewModelMatrix = viewModelNonInstancedMatrix;
         lightViewMatrix = modelLightViewNonInstancedMatrix;
 

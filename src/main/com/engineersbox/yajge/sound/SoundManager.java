@@ -21,6 +21,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class SoundManager {
 
+    private static final ByteBuffer DEFAULT_OPENAL_DEVICE_SPECIFIER = null;
+
     private long device;
     private long context;
     private SoundListener listener;
@@ -35,7 +37,7 @@ public class SoundManager {
     }
 
     public void init() {
-        this.device = alcOpenDevice((ByteBuffer) null);
+        this.device = alcOpenDevice(DEFAULT_OPENAL_DEVICE_SPECIFIER);
         if (this.device == NULL) {
             throw new IllegalStateException("Failed to open the default OpenAL device.");
         }

@@ -5,6 +5,7 @@ import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -28,6 +29,7 @@ public class Window {
     private boolean resized;
     private boolean vSync;
     private final WindowOptions opts;
+    private final Matrix4f projectionMatrix;
     
     public Window(final String title,
                   final int width,
@@ -40,6 +42,7 @@ public class Window {
         this.vSync = vSync;
         this.resized = false;
         this.opts = opts;
+        this.projectionMatrix = new Matrix4f();
     }
 
     private void configureHints() {
@@ -48,8 +51,12 @@ public class Window {
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        if (this.opts.compatProfile()) {
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+        } else {
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        }
         if (ConfigHandler.CONFIG.engine.glOptions.debugLogs) {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
         }
@@ -98,18 +105,25 @@ public class Window {
         if (this.windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-        LOGGER.info("Using configured monitor {} [id: {}]", ConfigHandler.CONFIG.video.monitor, findMonitorByIndex(ConfigHandler.CONFIG.video.monitor));
+        final long monitorId = findMonitorByIndex(ConfigHandler.CONFIG.video.monitor);
         configureCallbacks();
         if (maximized) {
             glfwMaximizeWindow(this.windowHandle);
         } else {
-            final GLFWVidMode vidmode = glfwGetVideoMode(findMonitorByIndex(ConfigHandler.CONFIG.video.monitor));
+            final GLFWVidMode videoMode = glfwGetVideoMode(monitorId);
+            if (videoMode == null) {
+                throw new RuntimeException(String.format(
+                        "Failed to get video mode for monitor %d",
+                        ConfigHandler.CONFIG.video.monitor
+                ));
+            }
             glfwSetWindowPos(
                     this.windowHandle,
-                    (vidmode.width() - this.width) / 2,
-                    (vidmode.height() - this.height) / 2
+                    (videoMode.width() - this.width) / 2,
+                    (videoMode.height() - this.height) / 2
             );
         }
+        LOGGER.info("Using configured monitor {} [id: {}]", ConfigHandler.CONFIG.video.monitor, monitorId);
         glfwMakeContextCurrent(this.windowHandle);
         if (isVSyncEnabled()) {
             glfwSwapInterval(1);
@@ -138,7 +152,7 @@ public class Window {
         final int monitorsCount = monitors.limit();
         if (idx < 0 || idx >= monitorsCount) {
             throw new RuntimeException(String.format(
-                    "Invalid monitor %d, must be one of []",
+                    "Invalid monitor %d, must be one of [%s]",
                     idx,
                     IntStream.range(0, monitorsCount)
                             .mapToObj(String::valueOf)
@@ -156,7 +170,12 @@ public class Window {
                               final float g,
                               final float b,
                               final float alpha) {
-        glClearColor(r, g, b, alpha);
+        glClearColor(
+                r,
+                g,
+                b,
+                alpha
+        );
     }
 
     public String getWindowTitle() {
@@ -167,7 +186,7 @@ public class Window {
         glfwSetWindowTitle(this.windowHandle, title);
     }
 
-        public boolean isKeyPressed(final int keyCode) {
+    public boolean isKeyPressed(final int keyCode) {
         return glfwGetKey(this.windowHandle, keyCode) == GLFW_PRESS;
     }
 
@@ -185,6 +204,24 @@ public class Window {
 
     public int getHeight() {
         return this.height;
+    }
+
+    public WindowOptions getOptions() {
+        return this.opts;
+    }
+
+    public Matrix4f getProjectionMatrix() {
+        return this.projectionMatrix;
+    }
+
+    public Matrix4f updateProjectionMatrix() {
+        final float aspectRatio = (float) this.width / (float) this.height;
+        return this.projectionMatrix.setPerspective(
+                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
+                aspectRatio,
+                (float) ConfigHandler.CONFIG.render.camera.zNear,
+                (float) ConfigHandler.CONFIG.render.camera.zFar
+        );
     }
 
     public boolean isResized() {

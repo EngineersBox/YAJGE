@@ -4,6 +4,8 @@ import com.engineersbox.yajge.rendering.view.Transform;
 import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.util.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryUtil;
 
@@ -19,12 +21,14 @@ import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 
 public class InstancedMesh extends Mesh {
+
+    private static final Logger LOGGER = LogManager.getLogger(InstancedMesh.class);
     private static final int FLOAT_SIZE_BYTES = 4;
     private static final int VECTOR4F_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
     private static final int MAT4F_SIZE_FLOATS = 4 * 4;
     private static final int MAT4F_SIZE_BYTES = MAT4F_SIZE_FLOATS * FLOAT_SIZE_BYTES;
-    private static final int INSTANCE_SIZE_BYTES = MAT4F_SIZE_BYTES * 2 + FLOAT_SIZE_BYTES * 2;
-    private static final int INSTANCE_SIZE_FLOATS = MAT4F_SIZE_FLOATS * 2 + 2;
+    private static final int INSTANCE_SIZE_BYTES = MAT4F_SIZE_BYTES * 2 + FLOAT_SIZE_BYTES * 2 + FLOAT_SIZE_BYTES;
+    private static final int INSTANCE_SIZE_FLOATS = MAT4F_SIZE_FLOATS * 2 + 3;
 
     private final int chunkSizeInstances;
     private final int instanceDataVBO;
@@ -46,11 +50,11 @@ public class InstancedMesh extends Mesh {
         this.chunkSizeInstances = chunkSizeInstances;
         glBindVertexArray(this.vaoId);
 
+        // View model matrix
         this.instanceDataVBO = glGenBuffers();
         this.vboIdList.add(this.instanceDataVBO);
         this.instanceDataBuffer = MemoryUtil.memAllocFloat(chunkSizeInstances * INSTANCE_SIZE_FLOATS);
         glBindBuffer(GL_ARRAY_BUFFER, this.instanceDataVBO);
-
         int start = 5;
         int strideStart = 0;
         for (int i = 0; i < 4; i++) {
@@ -61,6 +65,7 @@ public class InstancedMesh extends Mesh {
             strideStart += VECTOR4F_SIZE_BYTES;
         }
 
+        // Light view matrix
         for (int i = 0; i < 4; i++) {
             glVertexAttribPointer(start, 4, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
             glVertexAttribDivisor(start, 1);
@@ -69,9 +74,18 @@ public class InstancedMesh extends Mesh {
             strideStart += VECTOR4F_SIZE_BYTES;
         }
 
+        // Texture offsets
         glVertexAttribPointer(start, 2, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
         glEnableVertexAttribArray(start);
+        strideStart += FLOAT_SIZE_BYTES * 2;
+        start++;
+
+        // Element selection
+        glVertexAttribPointer(start, 1, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
+        glVertexAttribDivisor(start, 1);
+        glEnableVertexAttribArray(start);
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -136,6 +150,8 @@ public class InstancedMesh extends Mesh {
                 this.instanceDataBuffer.put(buffPos, textXOffset);
                 this.instanceDataBuffer.put(buffPos + 1, textYOffset);
             }
+            final int buffPos = INSTANCE_SIZE_FLOATS * i + MAT4F_SIZE_FLOATS * 2 + 2;
+            this.instanceDataBuffer.put(buffPos, sceneElement.isSelected() ? 1f : 0f);
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, this.instanceDataVBO);

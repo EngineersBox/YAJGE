@@ -14,6 +14,7 @@ import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.element.Terrain;
+import com.engineersbox.yajge.scene.element.interaction.MouseAABBSelectionDetector;
 import com.engineersbox.yajge.scene.element.object.composite.HeightMapMesh;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.element.particles.FlowParticleEmitter;
@@ -23,6 +24,8 @@ import com.engineersbox.yajge.sound.SoundBuffer;
 import com.engineersbox.yajge.sound.SoundListener;
 import com.engineersbox.yajge.sound.SoundManager;
 import com.engineersbox.yajge.sound.SoundSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -37,6 +40,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class TestGame implements IEngineLogic {
 
+    private static final Logger LOGGER = LogManager.getLogger(TestGame.class);
     private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 0.10f;
     private static final float CAMERA_POS_STEP_ACCELERATED = 0.30f;
@@ -51,7 +55,9 @@ public class TestGame implements IEngineLogic {
     private float angleInc;
     private float lightAngle;
     private FlowParticleEmitter particleEmitter;
+    private MouseAABBSelectionDetector selectionDetector;
     private float accelerationMultiplier = CAMERA_POS_STEP;
+    private SceneElement[] sceneElements;
 
     private enum Sounds { MUSIC, FIRE }
 
@@ -68,18 +74,19 @@ public class TestGame implements IEngineLogic {
     public void init(final Window window) {
         this.renderer.init(window);
         this.scene = new Scene();
+        this.selectionDetector = new MouseAABBSelectionDetector();
 
         final float reflectance = 1f;
         final float blockScale = 0.5f;
         final float skyboxScale = 100.0f;
         final float extension = 2.0f;
-        final float startx = extension * (-skyboxScale + blockScale);
-        final float startz = extension * (skyboxScale - blockScale);
-        final float starty = -1.0f;
+        final float startX = extension * (-skyboxScale + blockScale);
+        final float startZ = extension * (skyboxScale - blockScale);
+        final float startY = -1.0f;
         final float inc = blockScale * 2;
-        float posx = startx;
-        float posz = startz;
-        float incy;
+        float posX = startX;
+        float posZ = startZ;
+        float incY;
 
         final ByteBuffer buf;
         final int width;
@@ -103,24 +110,24 @@ public class TestGame implements IEngineLogic {
         final Texture texture = new Texture("assets/game/textures/terrain_textures.png", 2, 1);
         final Material material = new Material(texture, reflectance);
         mesh.setMaterial(material);
-        final SceneElement[] sceneElements = new SceneElement[instances];
+        this.sceneElements = new SceneElement[instances];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                final SceneElement gameItem = new SceneElement(mesh);
-                gameItem.setScale(blockScale);
+                final SceneElement sceneElement = new SceneElement(mesh);
+                sceneElement.setScale(blockScale);
                 final int rgb = HeightMapMesh.getRGB(i, j, width, buf);
-                incy = rgb / (float) (10 * 255 * 255);
-                gameItem.setPosition(posx, starty + incy, posz);
+                incY = rgb / 650250; // 10 * 255 * 255;
+                sceneElement.setPosition(posX, startY + incY, posZ);
                 final int textPos = Math.random() > 0.5f ? 0 : 1;
-                gameItem.setTextPos(textPos);
-                sceneElements[i * width + j] = gameItem;
+                sceneElement.setTextPos(textPos);
+                this.sceneElements[i * width + j] = sceneElement;
 
-                posx += inc;
+                posX += inc;
             }
-            posx = startx;
-            posz -= inc;
+            posX = startX;
+            posZ -= inc;
         }
-        this.scene.setSceneElements(sceneElements);
+        this.scene.setSceneElements(this.sceneElements);
         STBImage.stbi_image_free(buf);
 
         final int maxParticles = 200;
@@ -183,7 +190,6 @@ public class TestGame implements IEngineLogic {
         sourceFire.play();
 
         this.soundManager.setListener(new SoundListener(new Vector3f()));
-
         sourceBack.play();
     }
 
@@ -237,9 +243,10 @@ public class TestGame implements IEngineLogic {
 
     @Override
     public void update(final float interval,
-                       final MouseInput mouseInput) {
+                       final MouseInput mouseInput,
+                       final Window window) {
         if (mouseInput.isRightButtonPressed()) {
-            final Vector2f rotVec = mouseInput.getDisplVec();
+            final Vector2f rotVec = mouseInput.getDisplayVec();
             this.camera.moveRotation(
                     rotVec.x * MOUSE_SENSITIVITY,
                     rotVec.y * MOUSE_SENSITIVITY,
@@ -268,7 +275,16 @@ public class TestGame implements IEngineLogic {
         lightDirection.z = zValue;
         lightDirection.normalize();
         this.particleEmitter.update((long) (interval * 1000));
+        this.camera.updateViewMatrix();
         this.soundManager.updateListenerPosition(this.camera);
+        if (mouseInput.isLeftButtonPressed()) {
+            this.selectionDetector.selectGameItem(
+                    this.sceneElements,
+                    window,
+                    mouseInput.getCurrentPos(),
+                    this.camera
+            );
+        }
     }
 
     @Override

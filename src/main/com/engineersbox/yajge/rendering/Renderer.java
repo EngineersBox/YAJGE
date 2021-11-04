@@ -9,7 +9,6 @@ import com.engineersbox.yajge.rendering.view.Transform;
 import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.resources.assets.shader.Shader;
 import com.engineersbox.yajge.resources.assets.shader.ShadowMap;
-import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import com.engineersbox.yajge.resources.loader.ResourceLoader;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
@@ -57,7 +56,7 @@ public class Renderer {
         this.shadowMap = new ShadowMap();
 
         setupDepthShader();
-        setupSkyBoxShader();
+        setupSkyboxShader();
         setupSceneShader();
         setupParticlesShader();
         setupHudShader();
@@ -71,19 +70,14 @@ public class Renderer {
         renderDepthMap(scene);
         glViewport(0, 0, window.getWidth(), window.getHeight());
 
-        this.transform.updateProjectionMatrix(
-                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
-                window.getWidth(),
-                window.getHeight(),
-                (float) ConfigHandler.CONFIG.render.camera.zNear,
-                (float) ConfigHandler.CONFIG.render.camera.zFar
-        );
-        this.transform.updateViewMatrix(camera);
+        window.updateProjectionMatrix();
 
-        renderScene(scene);
-        renderSkyBox(scene);
-        renderParticles(scene);
+        renderScene(window, camera, scene);
+        renderSkyBox(window, camera, scene);
+        renderParticles(window, camera, scene);
         renderHud(window, hud);
+        renderCrossHair(window);
+//        renderAxes(window, camera);
     }
 
     private void setupParticlesShader() {
@@ -114,7 +108,7 @@ public class Renderer {
         ).forEach(this.depthShader::createUniform);
     }
 
-    private void setupSkyBoxShader() {
+    private void setupSkyboxShader() {
         this.skyboxShader = new Shader();
         this.skyboxShader.createVertexShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.vert"));
         this.skyboxShader.createFragmentShader(ResourceLoader.loadAsString("assets/game/shaders/skybox/skybox.frag"));
@@ -155,7 +149,8 @@ public class Renderer {
                 "jointsMatrix",
                 "isInstanced",
                 "rows",
-                "cols"
+                "cols",
+                "selectedNonInstanced"
         ).forEach(this.sceneShader::createUniform);
     }
 
@@ -176,14 +171,16 @@ public class Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    private void renderParticles(final Scene scene) {
+    private void renderParticles(final Window window,
+                                 final Camera camera,
+                                 final Scene scene) {
         this.particlesShader.bind();
 
         this.particlesShader.setUniform("textureSampler", 0);
-        final Matrix4f projectionMatrix = this.transform.getProjectionMatrix();
+        final Matrix4f projectionMatrix = window.getProjectionMatrix();
         this.particlesShader.setUniform("projectionMatrix", projectionMatrix);
 
-        final Matrix4f viewMatrix = this.transform.getViewMatrix();
+        final Matrix4f viewMatrix = camera.getViewMatrix();
         final IParticleEmitter[] emitters = scene.getParticleEmitters();
         if (emitters == null) {
             this.particlesShader.unbind();
@@ -238,15 +235,17 @@ public class Renderer {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    private void renderSkyBox(final Scene scene) {
+    private void renderSkyBox(final Window window,
+                              final Camera camera,
+                              final Scene scene) {
         final Skybox skybox = scene.getSkybox();
         if (skybox == null) {
             return;
         }
         this.skyboxShader.bind();
         this.skyboxShader.setUniform("textureSampler", 0);
-        this.skyboxShader.setUniform("projectionMatrix", this.transform.getProjectionMatrix());
-        final Matrix4f viewMatrix = this.transform.getViewMatrix();
+        this.skyboxShader.setUniform("projectionMatrix", window.getProjectionMatrix());
+        final Matrix4f viewMatrix = camera.getViewMatrix();
         final float m30 = viewMatrix.m30();
         viewMatrix.m30(0);
         final float m31 = viewMatrix.m31();
@@ -268,14 +267,16 @@ public class Renderer {
         this.skyboxShader.unbind();
     }
 
-    public void renderScene(final Scene scene) {
+    public void renderScene(final Window window,
+                            final Camera camera,
+                            final Scene scene) {
         this.sceneShader.bind();
 
-        this.sceneShader.setUniform("projectionMatrix", this.transform.getProjectionMatrix());
+        this.sceneShader.setUniform("projectionMatrix", window.getProjectionMatrix());
         this.sceneShader.setUniform("orthoProjectionMatrix", this.transform.getOrthoProjectionMatrix());
-        final Matrix4f lightViewMatrix = this.transform.getLightViewMatrix();
-        final Matrix4f viewMatrix = this.transform.getViewMatrix();
 
+        final Matrix4f lightViewMatrix = this.transform.getLightViewMatrix();
+        final Matrix4f viewMatrix = camera.getViewMatrix();
         final SceneLight sceneLight = scene.getSceneLight();
         renderLights(viewMatrix, sceneLight);
 
@@ -290,7 +291,10 @@ public class Renderer {
         this.sceneShader.unbind();
     }
 
-    private void renderNonInstancedMeshes(final Scene scene, final Shader shader, final Matrix4f viewMatrix, final Matrix4f lightViewMatrix) {
+    private void renderNonInstancedMeshes(final Scene scene,
+                                          final Shader shader,
+                                          final Matrix4f viewMatrix,
+                                          final Matrix4f lightViewMatrix) {
         this.sceneShader.setUniform("isInstanced", 0);
         for (final Map.Entry<Mesh, List<SceneElement>> entry : scene.getMeshSceneElements().entrySet()) {
             if (viewMatrix != null) {
@@ -308,6 +312,7 @@ public class Renderer {
             entry.getKey().renderList(
                     entry.getValue(),
                     (final SceneElement sceneElement) -> {
+                        this.sceneShader.setUniform("selectedNonInstanced", sceneElement.isSelected() ? 1.0f : 0.0f);
                         final Matrix4f modelMatrix = this.transform.buildModelMatrix(sceneElement);
                         if (viewMatrix != null) {
                             final Matrix4f viewModelMatrix = this.transform.buildViewModelMatrix(modelMatrix, viewMatrix);
@@ -401,7 +406,37 @@ public class Renderer {
         }
     }
 
-    private void renderAxes(final Camera camera) {
+    private void renderCrossHair(final Window window) {
+        if (!window.getOptions().compatProfile()) {
+            return;
+        }
+        glPushMatrix();
+        glLoadIdentity();
+
+        glLineWidth(2.0f);
+        glBegin(GL_LINES);
+
+        glColor3f(1.0f, 1.0f, 1.0f);
+
+        // Horizontal line
+        glVertex3f(-0.009f, 0.0f, 0.0f);
+        glVertex3f(+0.01f, 0.0f, 0.0f);
+        glEnd();
+
+        // Vertical line
+        glBegin(GL_LINES);
+        glVertex3f(0.0f, -0.017f, 0.0f);
+        glVertex3f(0.0f, +0.017f, 0.0f);
+        glEnd();
+
+        glPopMatrix();
+    }
+
+    private void renderAxes(final Window window,
+                            final Camera camera) {
+        if (!window.getOptions().compatProfile()) {
+            return;
+        }
         glPushMatrix();
         glLoadIdentity();
         final float rotX = camera.getRotation().x;
@@ -416,15 +451,15 @@ public class Renderer {
         // X Axis
         glColor3f(1.0f, 0.0f, 0.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(1.0f, 0.0f, 0.0f);
+        glVertex3f(0.02f, 0.0f, 0.0f);
         // Y Axis
         glColor3f(0.0f, 1.0f, 0.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(0.0f, 0.03f, 0.0f);
         // Z Axis
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(0.0f, 0.0f, 1.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(0.0f, 0.0f, 0.02f);
         glEnd();
 
         glPopMatrix();

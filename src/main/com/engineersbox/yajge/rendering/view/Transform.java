@@ -7,39 +7,22 @@ import org.joml.Vector3f;
 
 public class Transform {
 
-    private final Matrix4f projectionMatrix;
     private final Matrix4f modelMatrix;
     private final Matrix4f viewModelMatrix;
     private final Matrix4f modelLightViewMatrix;
-    private final Matrix4f viewMatrix;
     private final Matrix4f lightViewMatrix;
     private final Matrix4f orthoProjMatrix;
     private final Matrix4f ortho2DMatrix;
     private final Matrix4f orthoModelMatrix;
 
     public Transform() {
-        this.projectionMatrix = new Matrix4f();
         this.modelMatrix = new Matrix4f();
         this.viewModelMatrix = new Matrix4f();
         this.modelLightViewMatrix = new Matrix4f();
-        this.viewMatrix = new Matrix4f();
         this.orthoProjMatrix = new Matrix4f();
         this.ortho2DMatrix = new Matrix4f();
         this.orthoModelMatrix = new Matrix4f();
         this.lightViewMatrix = new Matrix4f();
-    }
-
-    public Matrix4f getProjectionMatrix() {
-        return this.projectionMatrix;
-    }
-
-    public Matrix4f updateProjectionMatrix(final float fov,
-                                           final float width,
-                                           final float height,
-                                           final float zNear,
-                                           final float zFar) {
-        final float aspectRatio = width / height;
-        return this.projectionMatrix.setPerspective(fov, aspectRatio, zNear, zFar);
     }
 
     public final Matrix4f getOrthoProjectionMatrix() {
@@ -64,14 +47,6 @@ public class Transform {
                                                 final float zNear,
                                                 final float zFar) {
         return this.orthoProjMatrix.setOrtho(left, right, bottom, top, zNear, zFar);
-    }
-
-    public Matrix4f getViewMatrix() {
-        return this.viewMatrix;
-    }
-
-    public Matrix4f updateViewMatrix(final Camera camera) {
-        return updateGenericViewMatrix(camera.getPosition(), camera.getRotation(), this.viewMatrix);
     }
 
     public Matrix4f getLightViewMatrix() {

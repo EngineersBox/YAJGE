@@ -28,6 +28,7 @@ public class Config {
     }
 
     public static class GlOptions {
+      public final boolean compatProfile;
       public final boolean cullface;
       public final boolean debugLogs;
       public final boolean showTrianges;
@@ -36,6 +37,7 @@ public class Config {
           com.typesafe.config.Config c,
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
+        this.compatProfile = !c.hasPathOrNull("compatProfile") || c.getBoolean("compatProfile");
         this.cullface = !c.hasPathOrNull("cullface") || c.getBoolean("cullface");
         this.debugLogs = c.hasPathOrNull("debugLogs") && c.getBoolean("debugLogs");
         this.showTrianges = c.hasPathOrNull("showTrianges") && c.getBoolean("showTrianges");

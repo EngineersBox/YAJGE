@@ -13,6 +13,7 @@ public class SceneElement {
     private float scale;
     private final Quaternionf rotation;
     private int textPos;
+    private boolean selected;
 
     public SceneElement() {
         this.position = new Vector3f();
@@ -88,5 +89,13 @@ public class SceneElement {
 
     public void setTextPos(final int textPos) {
         this.textPos = textPos;
+    }
+
+    public boolean isSelected() {
+        return this.selected;
+    }
+
+    public void setSelected(final boolean selected) {
+        this.selected = selected;
     }
 }

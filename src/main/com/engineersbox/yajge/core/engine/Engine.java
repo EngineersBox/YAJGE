@@ -90,7 +90,7 @@ public class Engine implements Runnable {
             init();
             gameLoop();
         } catch (final Exception e) {
-            e.printStackTrace(LoggerCompat.asPrintStream(LOGGER, Level.ERROR));
+            LOGGER.error(e);
         } finally {
             cleanup();
         }
@@ -145,7 +145,7 @@ public class Engine implements Runnable {
     }
 
     protected void update(final float interval) {
-        this.gameLogic.update(interval, this.mouseInput);
+        this.gameLogic.update(interval, this.mouseInput, this.window);
     }
 
     protected void render() {
