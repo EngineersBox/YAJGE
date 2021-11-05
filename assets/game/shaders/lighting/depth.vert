@@ -8,22 +8,23 @@ layout (location=1) in vec2 texCoord;
 layout (location=2) in vec3 vertexNormal;
 layout (location=3) in vec4 jointWeights;
 layout (location=4) in ivec4 jointIndices;
-layout (location=5) in mat4 viewModelInstancedMatrix;
-layout (location=9) in mat4 modelLightViewInstancedMatrix;
+layout (location=5) in mat4 modelInstancedMatrix;
 
 uniform int isInstanced;
-uniform mat4 modelLightViewNonInstancedMatrix;
+uniform mat4 modelNonInstancedMatrix;
+uniform mat4 lightViewMatrix;
 uniform mat4 jointsMatrix[MAX_JOINTS];
 uniform mat4 orthoProjectionMatrix;
 
 void main() {
     vec4 initPos = vec4(0, 0, 0, 0);
-    mat4 modelLightViewMatrix;
+    mat4 modelMatrix;
     if (isInstanced > 0) {
-        modelLightViewMatrix = modelLightViewInstancedMatrix;
+        modelMatrix = modelInstancedMatrix;
         initPos = vec4(position, 1.0);
-    } else  {
-        modelLightViewMatrix = modelLightViewNonInstancedMatrix;
+    } else {
+        modelMatrix = modelNonInstancedMatrix;
+
         int count = 0;
         for(int i = 0; i < MAX_WEIGHTS; i++) {
             float weight = jointWeights[i];
@@ -38,5 +39,5 @@ void main() {
             initPos = vec4(position, 1.0);
         }
     }
-    gl_Position = orthoProjectionMatrix * modelLightViewMatrix * initPos;
+    gl_Position = orthoProjectionMatrix * lightViewMatrix * modelMatrix * initPos;
 }

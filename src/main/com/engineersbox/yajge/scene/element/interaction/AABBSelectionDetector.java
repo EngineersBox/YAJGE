@@ -7,7 +7,6 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class AABBSelectionDetector {
-
     /*
      * Re-creating each vec3 every time we look for an item is expensive,
      * so instead just set the values to reuse existing declarations
@@ -24,13 +23,17 @@ public class AABBSelectionDetector {
         this.nearFar = new Vector2f();
     }
 
-    public void selectSceneElement(final SceneElement[] sceneElements, final Camera camera) {
+    public void selectSceneElement(final SceneElement[] sceneElements,
+                                   final Camera camera) {
         this.dir = camera.getViewMatrix().positiveZ(this.dir).negate();
         selectSceneElement(sceneElements, camera.getPosition(), this.dir);
     }
 
-    protected void selectSceneElement(final SceneElement[] sceneElements, final Vector3f center, final Vector3f dir) {
-        SceneElement selectedSceneElement = null;
+    protected boolean selectSceneElement(final SceneElement[] sceneElements,
+                                         final Vector3f center,
+                                         final Vector3f dir) {
+        boolean selected = false;
+        SceneElement selectedGameItem = null;
         float closestDistance = Float.POSITIVE_INFINITY;
 
         for (final SceneElement sceneElement : sceneElements) {
@@ -44,13 +47,15 @@ public class AABBSelectionDetector {
                     this.nearFar
             ) && this.nearFar.x < closestDistance) {
                 closestDistance = this.nearFar.x;
-                selectedSceneElement = sceneElement;
+                selectedGameItem = sceneElement;
             }
         }
 
-        if (selectedSceneElement != null) {
-            selectedSceneElement.setSelected(true);
+        if (selectedGameItem != null) {
+            selectedGameItem.setSelected(true);
+            selected = true;
         }
+        return selected;
     }
 
     private void constructElementMinMax(final SceneElement sceneElement) {

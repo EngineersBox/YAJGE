@@ -113,12 +113,12 @@ public class Mesh {
     }
 
     protected void startRender() {
-        final Texture texture = this.material.getTexture();
+        final Texture texture = this.material != null ? this.material.getTexture() : null;
         if (texture != null) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
-        final Texture normalMap = this.material.getNormalMap();
+        final Texture normalMap = this.material != null ? this.material.getNormalMap() : null;
         if (normalMap != null) {
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, normalMap.getId());

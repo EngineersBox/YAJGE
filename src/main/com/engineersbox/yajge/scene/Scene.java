@@ -36,7 +36,7 @@ public class Scene {
         return this.instancedMeshSceneElements;
     }
 
-    public boolean isRenderShadows() {
+    public boolean shadowsEnabled() {
         return this.renderShadows;
     }
 

@@ -9,7 +9,6 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class MouseAABBSelectionDetector extends AABBSelectionDetector {
-
     private final Matrix4f invProjectionMatrix;
     private final Matrix4f invViewMatrix;
     private final Vector3f mouseDir;
@@ -23,24 +22,32 @@ public class MouseAABBSelectionDetector extends AABBSelectionDetector {
         this.finalizedDirectionVec = new Vector4f();
     }
 
-    public void selectGameItem(final SceneElement[] sceneElements,
-                               final Window window,
-                               final Vector2d mousePos,
-                               final Camera camera) {
-        final float x = (float) (2 * mousePos.x) / (float) window.getWidth() - 1.0f;
-        final float y = 1.0f - (float) (2 * mousePos.y) / (float) window.getHeight();
+    public boolean selectSceneElement(final SceneElement[] sceneElements,
+                                      final Window window,
+                                      final Vector2d mousePos,
+                                      final Camera camera) {
+        final int wdwWitdh = window.getWidth();
+        final int wdwHeight = window.getHeight();
+
+        final float x = (float)(2 * mousePos.x) / (float) wdwWitdh - 1.0f;
+        final float y = 1.0f - (float)(2 * mousePos.y) / (float) wdwHeight;
         final float z = -1.0f;
 
-        this.invProjectionMatrix.set(window.getProjectionMatrix()).invert();
+        this.invProjectionMatrix.set(window.getProjectionMatrix());
+        this.invProjectionMatrix.invert();
 
-        this.finalizedDirectionVec.set(x, y, z, 1.0f).mul(this.invProjectionMatrix);
+        this.finalizedDirectionVec.set(x, y, z, 1.0f);
+        this.finalizedDirectionVec.mul(this.invProjectionMatrix);
         this.finalizedDirectionVec.z = -1.0f;
         this.finalizedDirectionVec.w = 0.0f;
 
-        this.invViewMatrix.set(camera.getViewMatrix()).invert();
+        final Matrix4f viewMatrix = camera.getViewMatrix();
+        this.invViewMatrix.set(viewMatrix);
+        this.invViewMatrix.invert();
         this.finalizedDirectionVec.mul(this.invViewMatrix);
 
         this.mouseDir.set(this.finalizedDirectionVec.x, this.finalizedDirectionVec.y, this.finalizedDirectionVec.z);
-        super.selectSceneElement(sceneElements, camera.getPosition(), this.mouseDir);
+
+        return super.selectSceneElement(sceneElements, camera.getPosition(), this.mouseDir);
     }
 }

@@ -46,6 +46,12 @@ public class Shader {
         this.uniforms.put(uniformName, uniformLocation);
     }
 
+    public void createUniform(final String uniformName, final int size) {
+        for (int i = 0; i < size; i++) {
+            createUniform(uniformName + "[" + i + "]");
+        }
+    }
+
     public void createPointLightListUniform(final String uniformName, final int size) {
         for (int i = 0; i < size; i++) {
             createPointLightUniform(uniformName + "[" + i + "]");
@@ -104,6 +110,10 @@ public class Shader {
         }
     }
 
+    public void setUniform(final String uniformName, final Matrix4f value, final int index) {
+        setUniform(uniformName + "[" + index  + "]", value);
+    }
+
     public void setUniform(final String uniformName, final Matrix4f[] matrices) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final int length = matrices != null ? matrices.length : 0;
@@ -121,6 +131,10 @@ public class Shader {
 
     public void setUniform(final String uniformName, final float value) {
         glUniform1f(this.uniforms.get(uniformName), value);
+    }
+
+    public void setUniform(final String uniformName, final float value, final int index) {
+        setUniform(uniformName + "[" + index  + "]", value);
     }
 
     public void setUniform(final String uniformName, final Vector3f value) {

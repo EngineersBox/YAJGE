@@ -1,0 +1,52 @@
+package com.engineersbox.yajge.rendering.scene.shadow;
+
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_MODE;
+
+public class TextureArray {
+
+    private final int[] ids;
+    private final int width;
+    private final int height;
+
+    public TextureArray(final int numTextures,
+                        final int width,
+                        final int height,
+                        final int pixelFormat) {
+        this.ids = new int[numTextures];
+        glGenTextures(this.ids);
+        this.width = width;
+        this.height = height;
+
+        for (int i = 0; i < numTextures; i++) {
+            glBindTexture(GL_TEXTURE_2D, this.ids[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, this.width, this.height, 0, pixelFormat, GL_FLOAT, (ByteBuffer) null);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public int getHeight() {
+        return this.height;
+    }
+
+    public int[] getIds() {
+        return this.ids;
+    }
+
+    public void cleanup() {
+        for (final int id : this.ids) {
+            glDeleteTextures(id);
+        }
+    }
+}
