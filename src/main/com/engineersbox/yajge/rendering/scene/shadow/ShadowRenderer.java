@@ -29,8 +29,8 @@ public class ShadowRenderer {
 
     public static final int NUM_CASCADES = 3;
     public static final float[] CASCADE_SPLITS = new float[]{
-            (float) (ConfigHandler.CONFIG.render.camera.zFar / 20.0f),
-            (float) (ConfigHandler.CONFIG.render.camera.zFar / 10.0f),
+            ((float) ConfigHandler.CONFIG.render.camera.zFar) / 20.0f,
+            ((float) ConfigHandler.CONFIG.render.camera.zFar) / 10.0f,
             (float) ConfigHandler.CONFIG.render.camera.zFar
     };
 

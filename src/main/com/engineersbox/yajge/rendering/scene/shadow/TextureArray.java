@@ -1,6 +1,9 @@
 package com.engineersbox.yajge.rendering.scene.shadow;
 
+import org.lwjgl.opengl.GL11;
+
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
@@ -45,8 +48,6 @@ public class TextureArray {
     }
 
     public void cleanup() {
-        for (final int id : this.ids) {
-            glDeleteTextures(id);
-        }
+        Arrays.stream(this.ids).forEach(GL11::glDeleteTextures);
     }
 }

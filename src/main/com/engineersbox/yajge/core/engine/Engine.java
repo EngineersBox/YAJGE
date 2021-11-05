@@ -101,6 +101,8 @@ public class Engine implements Runnable {
         this.timer.init();
         this.mouseInput.init(this.window);
         this.gameLogic.init(this.window);
+        this.lastFps = this.timer.getTime();
+        this.fps = 0;
     }
 
     protected void gameLoop() {

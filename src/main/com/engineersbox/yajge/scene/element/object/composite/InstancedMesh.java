@@ -98,15 +98,17 @@ public class InstancedMesh extends Mesh {
                                     final Transform transform,
                                     final Matrix4f viewMatrix) {
         startRender();
-
         final int chunkSize = this.numInstances;
         final int length = sceneElements.size();
         for (int i = 0; i < length; i += chunkSize) {
             final int end = Math.min(length, i + chunkSize);
-            final List<SceneElement> subList = sceneElements.subList(i, end);
-            renderChunkInstanced(subList, billBoard, transform, viewMatrix);
+            renderChunkInstanced(
+                    sceneElements.subList(i, end),
+                    billBoard,
+                    transform,
+                    viewMatrix
+            );
         }
-
         endRender();
     }
 

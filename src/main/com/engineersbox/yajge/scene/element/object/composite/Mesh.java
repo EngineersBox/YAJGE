@@ -5,6 +5,7 @@ import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.util.AllocUtils;
 import com.engineersbox.yajge.util.ArrayUtils;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -60,7 +61,20 @@ public class Mesh {
 
             posBuffer = allocateFloatBuffer(0, 3, positions);
             texCoordsBuffer = allocateFloatBuffer(1, 2, texCoords);
-            vecNormalsBuffer = allocateFloatBuffer(2, 3, normals);
+
+            final int vboId = glGenBuffers();
+            this.vboIdList.add(vboId);
+            vecNormalsBuffer = MemoryUtil.memAllocFloat(normals.length);
+            if (vecNormalsBuffer.capacity() > 0) {
+                vecNormalsBuffer.put(normals).flip();
+            } else {
+                vecNormalsBuffer = MemoryUtil.memAllocFloat(positions.length);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, vecNormalsBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
+
             weightsBuffer = allocateFloatBuffer(3, 4, weights);
             jointIndicesBuffer = allocateIntBuffer(4, 4, jointIndices);
             indicesBuffer = allocateIndexBuffer(indices);
@@ -135,10 +149,12 @@ public class Mesh {
     public void renderList(final List<SceneElement> sceneElements,
                            final Consumer<SceneElement> consumer) {
         startRender();
-        for (final SceneElement sceneElement : sceneElements) {
-            consumer.accept(sceneElement);
-            glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
-        }
+        sceneElements.stream()
+                .filter(SceneElement::isInsideFrustum)
+                .forEach((final SceneElement sceneElement) -> {
+                    consumer.accept(sceneElement);
+                    glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
+                });
         endRender();
     }
 
@@ -151,9 +167,7 @@ public class Mesh {
     public void cleanUp() {
         glDisableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        for (final int vboId : this.vboIdList) {
-            glDeleteBuffers(vboId);
-        }
+        this.vboIdList.forEach(GL15::glDeleteBuffers);
         final Texture texture = this.material.getTexture();
         if (texture != null) {
             texture.cleanup();
@@ -166,9 +180,7 @@ public class Mesh {
         glDisableVertexAttribArray(0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        for (final int vboId : this.vboIdList) {
-            glDeleteBuffers(vboId);
-        }
+        this.vboIdList.forEach(GL15::glDeleteBuffers);
 
         glBindVertexArray(0);
         glDeleteVertexArrays(this.vaoId);

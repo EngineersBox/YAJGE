@@ -31,27 +31,22 @@ uniform int cols;
 uniform int rows;
 uniform float selectedNonInstanced;
 
-void main()
-{
+void main() {
     vec4 initPos = vec4(0, 0, 0, 0);
     vec4 initNormal = vec4(0, 0, 0, 0);
     mat4 modelMatrix;
-    if ( isInstanced > 0 )
-    {
+    if (isInstanced > 0) {
         outSelected = selectedInstanced;
         modelMatrix = modelInstancedMatrix;
 
         initPos = vec4(position, 1.0);
         initNormal = vec4(vertexNormal, 0.0);
-    }
-    else
-    {
+    } else {
         outSelected = selectedNonInstanced;
         modelMatrix = modelNonInstancedMatrix;
 
         int count = 0;
-        for(int i = 0; i < MAX_WEIGHTS; i++)
-        {
+        for (int i = 0; i < MAX_WEIGHTS; i++){
             float weight = jointWeights[i];
             if(weight > 0) {
                 count++;
@@ -63,8 +58,7 @@ void main()
                 initNormal += weight * tmpNormal;
             }
         }
-        if (count == 0)
-        {
+        if (count == 0) {
             initPos = vec4(position, 1.0);
             initNormal = vec4(vertexNormal, 0.0);
         }
@@ -73,7 +67,6 @@ void main()
     vec4 mvPos = modelViewMatrix * initPos;
     gl_Position = projectionMatrix * mvPos;
 
-    // Support for texture atlas, update texture coordinates
     float x = (texCoord.x / cols + texOffset.x);
     float y = (texCoord.y / rows + texOffset.y);
     outTexCoord = vec2(x, y);

@@ -48,13 +48,13 @@ public class Camera {
     public void movePosition(final float offsetX,
                              final float offsetY,
                              final float offsetZ) {
-        if ( offsetZ != 0 ) {
-            this.position.x += (float)Math.sin(Math.toRadians(this.rotation.y)) * -1.0f * offsetZ;
-            this.position.z += (float)Math.cos(Math.toRadians(this.rotation.y)) * offsetZ;
+        if (offsetZ != 0) {
+            this.position.x += (float) Math.sin(Math.toRadians(this.rotation.y)) * -1.0f * offsetZ;
+            this.position.z += (float) Math.cos(Math.toRadians(this.rotation.y)) * offsetZ;
         }
-        if ( offsetX != 0) {
-            this.position.x += (float)Math.sin(Math.toRadians(this.rotation.y - 90)) * -1.0f * offsetX;
-            this.position.z += (float)Math.cos(Math.toRadians(this.rotation.y - 90)) * offsetX;
+        if (offsetX != 0) {
+            this.position.x += (float) Math.sin(Math.toRadians(this.rotation.y - 90)) * -1.0f * offsetX;
+            this.position.z += (float) Math.cos(Math.toRadians(this.rotation.y - 90)) * offsetX;
         }
         this.position.y += offsetY;
     }

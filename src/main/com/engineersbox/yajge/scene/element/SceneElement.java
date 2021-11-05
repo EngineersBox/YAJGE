@@ -14,7 +14,7 @@ public class SceneElement {
     private final Quaternionf rotation;
     private int textPos;
     private boolean selected = false;
-    private boolean insideFrustum;
+    private boolean insideFrustum = true;
     private boolean frustrumCullingEnabled = true;
 
     public SceneElement() {

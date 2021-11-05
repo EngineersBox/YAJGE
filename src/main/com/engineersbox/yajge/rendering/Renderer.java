@@ -85,7 +85,6 @@ public class Renderer {
         }
 
         glViewport(0, 0, window.getWidth(), window.getHeight());
-
         window.updateProjectionMatrix();
 
         renderScene(window, camera, scene);
@@ -297,7 +296,6 @@ public class Renderer {
 
     private void renderInstancedMeshes(final Scene scene, final Matrix4f viewMatrix) {
         this.sceneShader.setUniform("isInstanced", 1);
-
         for (final Map.Entry<InstancedMesh, List<SceneElement>> entry : scene.getInstancedMeshSceneElements().entrySet()) {
             final Texture texture = entry.getKey().getMaterial().getTexture();
             if (texture != null) {

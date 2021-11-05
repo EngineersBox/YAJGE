@@ -49,7 +49,7 @@ public class ShadowCascade {
                        final DirectionalLight light) {
         final float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
         this.projViewMatrix.setPerspective(
-                (float) ConfigHandler.CONFIG.render.camera.fov,
+                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
                 aspectRatio,
                 this.zNear,
                 this.zFar
@@ -81,15 +81,10 @@ public class ShadowCascade {
 
     private void updateLightViewMatrix(final Vector3f lightDirection,
                                        final Vector3f lightPosition) {
-        Transform.updateGenericViewMatrix(
-                lightPosition,
-                new Vector3f(
-                        (float) Math.toDegrees(Math.acos(lightDirection.z)),
-                        (float) Math.toDegrees(Math.asin(lightDirection.x)),
-                        0
-                ),
-                this.lightViewMatrix
-        );
+        final float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z));
+        final float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x));
+        final float lightAngleZ = 0;
+        Transform.updateGenericViewMatrix(lightPosition, new Vector3f(lightAngleX, lightAngleY, lightAngleZ), this.lightViewMatrix);
     }
 
     private void updateLightProjectionMatrix() {
