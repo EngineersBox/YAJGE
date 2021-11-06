@@ -2,22 +2,17 @@
 
 * Create custom exceptions
 * Throw exceptions to be caught in engine try-catch rather than progressing (when applicable)
-* Variable shadow map resolutions
-* Cascaded shadow mapping
-  * Create tangent space transform to ensure object space or adapt shader view matrix to account for it
+* Create tangent space transform to ensure object space or adapt shader view matrix to account for it
 * Created enum declarations for uniform names and update magic string references
-* Refactor to Assimp library for handling more model formats
 * Create deferred shading pipeline
-* Audio system
 * Physics system
 * PBR and IBL
 * Scalable LOD
-* Fixed borked shadow mapping with directional light
-* Implement shadows for point and spot lights
+* Implement shadows for point lights and spotlights
 * Dynamic light instance counts (non-fixed limit of 5)
-* Fix particle texture not masked by shadow
+* Fix particle texture not masked by shadow or fog
 * Implement animation lerp for linear, non-linear and custom curves
-* Refactor to support changing frustrum membership test based on mapping closest to sphere, cube, etc
+* Auto create bounding box for meshes based on best fit to cube, sphere, etc
 
 ## Assimp Structure
 
