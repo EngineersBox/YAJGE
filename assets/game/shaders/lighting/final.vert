@@ -48,7 +48,7 @@ void main() {
         int count = 0;
         for (int i = 0; i < MAX_WEIGHTS; i++){
             float weight = jointWeights[i];
-            if(weight > 0) {
+            if (weight > 0) {
                 count++;
                 int jointIndex = jointIndices[i];
                 vec4 tmpPos = jointsMatrix[jointIndex] * vec4(position, 1.0);
@@ -67,8 +67,8 @@ void main() {
     vec4 mvPos = modelViewMatrix * initPos;
     gl_Position = projectionMatrix * mvPos;
 
-    float x = (texCoord.x / cols + texOffset.x);
-    float y = (texCoord.y / rows + texOffset.y);
+    float x = texCoord.x / cols + texOffset.x;
+    float y = texCoord.y / rows + texOffset.y;
     outTexCoord = vec2(x, y);
 
     mvVertexNormal = normalize(modelViewMatrix * initNormal).xyz;

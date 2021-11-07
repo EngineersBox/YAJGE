@@ -26,7 +26,7 @@ void main() {
         modelMatrix = modelNonInstancedMatrix;
 
         int count = 0;
-        for(int i = 0; i < MAX_WEIGHTS; i++) {
+        for (int i = 0; i < MAX_WEIGHTS; i++) {
             float weight = jointWeights[i];
             if (weight > 0) {
                 count++;

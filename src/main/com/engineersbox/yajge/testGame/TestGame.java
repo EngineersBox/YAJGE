@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.testgame;
 
+import com.engineersbox.yajge.animation.Animation;
 import com.engineersbox.yajge.core.engine.IEngineLogic;
 import com.engineersbox.yajge.core.window.Window;
 import com.engineersbox.yajge.input.MouseInput;
@@ -7,10 +8,14 @@ import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.view.Camera;
+import com.engineersbox.yajge.resources.assets.material.Material;
+import com.engineersbox.yajge.resources.assets.material.Texture;
+import com.engineersbox.yajge.resources.loader.assimp.AnimatedMeshLoader;
 import com.engineersbox.yajge.resources.loader.assimp.StaticMeshLoader;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
+import com.engineersbox.yajge.scene.element.animation.AnimatedSceneElement;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
 import org.joml.Vector2f;
@@ -37,6 +42,8 @@ public class TestGame implements IEngineLogic {
     private float accelerationMultiplier = CAMERA_POS_STEP;
     private boolean sceneChanged;
     private boolean firstTime;
+    private Animation animation;
+    private AnimatedSceneElement animatedSceneElement;
 
     public TestGame() {
         this.renderer = new Renderer();
@@ -52,17 +59,21 @@ public class TestGame implements IEngineLogic {
     @Override
     public void init(final Window window) {
         this.renderer.init(window);
-
         this.scene = new Scene();
-
-        final Mesh[] houseMesh = StaticMeshLoader.load("assets/game/models/house/house.obj", "assets/game/models/house");
-        final SceneElement house = new SceneElement(houseMesh);
 
         final Mesh[] terrainMesh = StaticMeshLoader.load("assets/game/models/terrain/terrain.obj", "assets/game/models/terrain");
         final SceneElement terrain = new SceneElement(terrainMesh);
         terrain.setScale(100.0f);
 
-        this.scene.setSceneElements(new SceneElement[]{house, terrain});
+        final Mesh[] cubeMeshes = StaticMeshLoader.load("assets/game/models/cube.obj", "");
+        final Material material = new Material(new Texture("assets/game/textures/grassblock.png"));
+        cubeMeshes[0].setMaterial(material);
+        final SceneElement cube = new SceneElement(cubeMeshes);
+
+        this.animatedSceneElement = AnimatedMeshLoader.loadAnimSceneElement("assets/game/models/bob/boblamp.md5mesh", "assets/game/textures");
+        this.animatedSceneElement.setScale(0.05f);
+        this.animation = this.animatedSceneElement.getCurrentAnimation();
+        this.scene.setSceneElements(new SceneElement[]{this.animatedSceneElement, cube, terrain});
         this.scene.setRenderShadows(true);
 
         final Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
@@ -74,11 +85,11 @@ public class TestGame implements IEngineLogic {
         this.scene.setSkybox(skyBox);
         configureLights();
 
-        this.camera.getPosition().x = -17.0f;
-        this.camera.getPosition().y =  17.0f;
-        this.camera.getPosition().z = -30.0f;
-        this.camera.getRotation().x = 20.0f;
-        this.camera.getRotation().y = 140.f;
+        this.camera.getPosition().x = -1.5f;
+        this.camera.getPosition().y = 3.0f;
+        this.camera.getPosition().z = 4.5f;
+        this.camera.getRotation().x = 15.0f;
+        this.camera.getRotation().y = 390.0f;
     }
 
     private void configureLights() {
@@ -141,6 +152,12 @@ public class TestGame implements IEngineLogic {
             this.accelerationMultiplier = CAMERA_POS_STEP_ACCELERATED;
         } else {
             this.accelerationMultiplier = CAMERA_POS_STEP;
+        }
+        if (window.isKeyPressed(GLFW_KEY_Z)) {
+            this.sceneChanged = true;
+            if (this.animation != null) {
+                this.animation.nextFrame();
+            }
         }
     }
 

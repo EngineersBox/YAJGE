@@ -121,7 +121,7 @@ vec4 calcSpotLight(SpotLight light, vec3 position, vec3 normal) {
 
     if (spotAlpha > light.cutoff)  {
         colour = calcPointLight(light.pl, position, normal);
-        colour *= (1.0 - (1.0 - spotAlpha) / (1.0 - light.cutoff));
+        colour *= 1.0 - (1.0 - spotAlpha) / (1.0 - light.cutoff);
     }
     return colour;
 }
@@ -134,7 +134,7 @@ vec4 calcFog(vec3 pos, vec4 colour, Fog fog, vec3 ambientLight, DirectionalLight
     vec3 fogColor = fog.colour * (ambientLight + dirLight.colour * dirLight.intensity);
     float distance = length(pos);
     float fogFactor = 1.0 / exp((distance * fog.density)* (distance * fog.density));
-    fogFactor = clamp( fogFactor, 0.0, 1.0 );
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
 
     vec3 resultColour = mix(fogColor, colour.xyz, fogFactor);
     return vec4(resultColour.xyz, colour.w);
@@ -193,17 +193,17 @@ float calcShadow(vec4 position, int idx) {
 void main() {
     configureColours(material, outTexCoord);
     vec3 currNomal = calcNormal(material, mvVertexNormal, outTexCoord, outViewModelMatrix);
-    vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, mvVertexPos, currNomal);
+    vec4 diffuseSpecularComposition = calcDirectionalLight(directionalLight, mvVertexPos, currNomal);
 
     for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
         if (pointLights[i].intensity > 0) {
-            diffuseSpecularComp += calcPointLight(pointLights[i], mvVertexPos, currNomal);
+            diffuseSpecularComposition += calcPointLight(pointLights[i], mvVertexPos, currNomal);
         }
     }
 
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
         if (spotLights[i].pl.intensity > 0) {
-            diffuseSpecularComp += calcSpotLight(spotLights[i], mvVertexPos, currNomal);
+            diffuseSpecularComposition += calcSpotLight(spotLights[i], mvVertexPos, currNomal);
         }
     }
     int idx;
@@ -214,7 +214,7 @@ void main() {
         }
     }
     float shadow = calcShadow(mlightviewVertexPos[idx], idx);
-    fragColor = clamp(ambientColour * vec4(ambientLight, 1) + diffuseSpecularComp * shadow, 0, 1);
+    fragColor = clamp(ambientColour * vec4(ambientLight, 1) + diffuseSpecularComposition * shadow, 0, 1);
     if (fog.isActive == 1) {
         fragColor = calcFog(mvVertexPos, fragColor, fog, ambientLight, directionalLight);
     }

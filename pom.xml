@@ -26,6 +26,7 @@
 		<pngdecoder.version>1.0</pngdecoder.version>
 		<eclipse.colections.version>10.4.0</eclipse.colections.version>
 		<typesafe.version>1.4.1</typesafe.version>
+		<commons-collections.version>4.4</commons-collections.version>
 
 		<!-- Maven Compiler Version -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -51,6 +52,14 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- Apache Commons Collections -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>${commons-collections.version}</version>
+		</dependency>
+
+
 		<!-- HOCON Typesafe -->
 		<dependency>
 			<groupId>com.typesafe</groupId>

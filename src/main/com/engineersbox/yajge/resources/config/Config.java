@@ -47,14 +47,20 @@ public class Config {
     }
 
     public static class Resources {
+      public final java.lang.String fonts;
+      public final java.lang.String models;
       public final java.lang.String shaders;
+      public final java.lang.String sounds;
       public final java.lang.String textures;
 
       public Resources(
           com.typesafe.config.Config c,
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
+        this.fonts = $_reqStr(parentPath, c, "fonts", $tsCfgValidator);
+        this.models = $_reqStr(parentPath, c, "models", $tsCfgValidator);
         this.shaders = $_reqStr(parentPath, c, "shaders", $tsCfgValidator);
+        this.sounds = $_reqStr(parentPath, c, "sounds", $tsCfgValidator);
         this.textures = $_reqStr(parentPath, c, "textures", $tsCfgValidator);
       }
 

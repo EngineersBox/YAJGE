@@ -91,7 +91,7 @@ public class Renderer {
         renderSkyBox(window, camera, scene);
         renderParticles(window, camera, scene);
 
-        renderCrossHair(window);
+//        renderCrossHair(window);
 //        renderAxes(window, camera);
     }
 
@@ -287,7 +287,7 @@ public class Renderer {
                         this.sceneShader.setUniform("selectedNonInstanced", sceneElement.isSelected() ? 1.0f : 0.0f);
                         this.sceneShader.setUniform("modelNonInstancedMatrix", this.transform.buildModelMatrix(sceneElement));
                         if (sceneElement instanceof AnimatedSceneElement animatedSceneElement) {
-                            this.sceneShader.setUniform("jointsMatrix", animatedSceneElement.getCurrentFrame().getJointMatrices());
+                            this.sceneShader.setUniform("jointsMatrix", animatedSceneElement.getCurrentAnimation().getCurrentFrame().getJointMatrices());
                         }
                     }
             );

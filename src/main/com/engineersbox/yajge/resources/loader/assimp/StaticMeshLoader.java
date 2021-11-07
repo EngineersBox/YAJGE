@@ -17,7 +17,7 @@ import static org.lwjgl.assimp.Assimp.*;
 
 public class StaticMeshLoader {
 
-    private StaticMeshLoader() {
+    StaticMeshLoader() {
         throw new IllegalStateException("Static accessor class");
     }
 
@@ -69,9 +69,9 @@ public class StaticMeshLoader {
         return meshes;
     }
 
-    private static void processMaterial(final AIMaterial aiMaterial,
-                                        final List<Material> materials,
-                                        final String texturesDir) {
+    static void processMaterial(final AIMaterial aiMaterial,
+                                final List<Material> materials,
+                                final String texturesDir) {
         final AIColor4D colour = AIColor4D.create();
         final AIString path = AIString.calloc();
         Assimp.aiGetMaterialTexture(
@@ -150,7 +150,7 @@ public class StaticMeshLoader {
         return mesh;
     }
 
-    private static List<Float> processVertices(final AIMesh aiMesh) {
+    static List<Float> processVertices(final AIMesh aiMesh) {
         final List<Float> vertices = new ArrayList<>();
         final AIVector3D.Buffer aiVertices = aiMesh.mVertices();
         while (aiVertices.remaining() > 0) {
@@ -162,7 +162,7 @@ public class StaticMeshLoader {
         return vertices;
     }
 
-    private static List<Float> processNormals(final AIMesh aiMesh) {
+    static List<Float> processNormals(final AIMesh aiMesh) {
         final List<Float> normals = new ArrayList<>();
         final AIVector3D.Buffer aiNormals = aiMesh.mNormals();
         if (aiNormals == null) {
@@ -177,21 +177,22 @@ public class StaticMeshLoader {
         return normals;
     }
 
-    private static List<Float> processTexCoords(final AIMesh aiMesh) {
+    static List<Float> processTexCoords(final AIMesh aiMesh) {
         final List<Float> textures = new ArrayList<>();
         final AIVector3D.Buffer texCoords = aiMesh.mTextureCoords(0);
         if (texCoords == null) {
             return textures;
         }
-        for (int i = 0; i < texCoords.remaining(); i++) {
-            final AIVector3D textCoord = texCoords.get();
-            textures.add(textCoord.x());
-            textures.add(1 - textCoord.y());
+        final int remainingTexCoords = texCoords.remaining();
+        for (int i = 0; i < remainingTexCoords; i++) {
+            final AIVector3D texCoord = texCoords.get();
+            textures.add(texCoord.x());
+            textures.add(1 - texCoord.y());
         }
         return textures;
     }
 
-    private static List<Integer> processIndices(final AIMesh aiMesh) {
+    static List<Integer> processIndices(final AIMesh aiMesh) {
         final List<Integer> indices = new ArrayList<>();
         final AIFace.Buffer aiFaces = aiMesh.mFaces();
         for (int i = 0; i < aiMesh.mNumFaces(); i++) {

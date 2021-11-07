@@ -1,48 +1,35 @@
 package com.engineersbox.yajge.scene.element.animation;
 
-import com.engineersbox.yajge.animation.AnimatedFrame;
+import com.engineersbox.yajge.animation.Animation;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
-import org.joml.Matrix4f;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class AnimatedSceneElement extends SceneElement {
 
-    private int currentFrame;
-    private List<AnimatedFrame> frames;
-    private final List<Matrix4f> invJointMatrices;
-    
+    private final Map<String, Animation> animations;
+
+    private Animation currentAnimation;
+
     public AnimatedSceneElement(final Mesh[] meshes,
-                                final List<AnimatedFrame> frames,
-                                final List<Matrix4f> invJointMatrices) {
+                                final Map<String, Animation> animations) {
         super(meshes);
-        this.frames = frames;
-        this.invJointMatrices = invJointMatrices;
-        this.currentFrame = 0;
+        this.animations = animations;
+        final Optional<Map.Entry<String, Animation>> entry = animations.entrySet().stream().findFirst();
+        this.currentAnimation = entry.map(Map.Entry::getValue).orElse(null);
     }
 
-    public List<AnimatedFrame> getFrames() {
-        return this.frames;
+    public Animation getAnimation(final String name) {
+        return this.animations.get(name);
     }
 
-    public void setFrames(final List<AnimatedFrame> frames) {
-        this.frames = frames;
-    }
-    
-    public AnimatedFrame getCurrentFrame() {
-        return this.frames.get(this.currentFrame);
-    }
-    
-    public AnimatedFrame getNextFrame() {
-        return this.frames.get((this.currentFrame + 1) % this.frames.size());
+    public Animation getCurrentAnimation() {
+        return this.currentAnimation;
     }
 
-    public void nextFrame() {
-        this.currentFrame = (this.currentFrame + 1) % this.frames.size();
-    }    
-
-    public List<Matrix4f> getInvJointMatrices() {
-        return this.invJointMatrices;
+    public void setCurrentAnimation(final Animation currentAnimation) {
+        this.currentAnimation = currentAnimation;
     }
 }

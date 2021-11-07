@@ -121,7 +121,7 @@ public class ShadowRenderer {
                         final Matrix4f modelMatrix = transform.buildModelMatrix(sceneElement);
                         this.depthShader.setUniform("modelNonInstancedMatrix", modelMatrix);
                         if (sceneElement instanceof AnimatedSceneElement animatedSceneElement) {
-                            this.depthShader.setUniform("jointsMatrix", animatedSceneElement.getCurrentFrame().getJointMatrices());
+                            this.depthShader.setUniform("jointsMatrix", animatedSceneElement.getCurrentAnimation().getCurrentFrame().getJointMatrices());
                         }
                     }
             );
