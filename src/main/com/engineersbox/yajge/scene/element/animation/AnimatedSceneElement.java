@@ -10,7 +10,6 @@ import java.util.Optional;
 public class AnimatedSceneElement extends SceneElement {
 
     private final Map<String, Animation> animations;
-
     private Animation currentAnimation;
 
     public AnimatedSceneElement(final Mesh[] meshes,

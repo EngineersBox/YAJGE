@@ -11,7 +11,6 @@ import org.lwjgl.assimp.*;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static org.lwjgl.assimp.Assimp.*;
 
@@ -30,7 +29,8 @@ public class StaticMeshLoader {
                         | aiProcess_JoinIdenticalVertices
                         | aiProcess_Triangulate
                         | aiProcess_FixInfacingNormals
-                        | aiProcess_PreTransformVertices);
+                        | aiProcess_PreTransformVertices
+        );
     }
 
     public static Mesh[] load(final String resourcePath,
@@ -41,14 +41,16 @@ public class StaticMeshLoader {
             throw new RuntimeException("Error loading model");
         }
 
+        final int numMaterials = aiScene.mNumMaterials();
         final PointerBuffer aiMaterials = aiScene.mMaterials();
         if (aiMaterials == null) {
-            throw new RuntimeException("Could not load model materials");
+            throw new RuntimeException("Could not get materials");
         }
         final List<Material> materials = new ArrayList<>();
-        for (int i = 0; i < aiScene.mNumMaterials(); i++) {
+        for (int i = 0; i < numMaterials; i++) {
+            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
             processMaterial(
-                    AIMaterial.create(aiMaterials.get(i)),
+                    aiMaterial,
                     materials,
                     texturesDir
             );
@@ -57,7 +59,7 @@ public class StaticMeshLoader {
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
         if (aiMeshes == null) {
-            throw new RuntimeException("Could not load model meshes");
+            throw new RuntimeException("Could not get meshes");
         }
         final Mesh[] meshes = new Mesh[numMeshes];
         for (int i = 0; i < numMeshes; i++) {
@@ -66,12 +68,27 @@ public class StaticMeshLoader {
                     materials
             );
         }
+
         return meshes;
     }
 
-    static void processMaterial(final AIMaterial aiMaterial,
-                                final List<Material> materials,
-                                final String texturesDir) {
+    protected static List<Integer> processIndices(final AIMesh aiMesh) {
+        final List<Integer> indices = new ArrayList<>();
+        final int numFaces = aiMesh.mNumFaces();
+        final AIFace.Buffer aiFaces = aiMesh.mFaces();
+        for (int i = 0; i < numFaces; i++) {
+            final AIFace aiFace = aiFaces.get(i);
+            final IntBuffer buffer = aiFace.mIndices();
+            while (buffer.remaining() > 0) {
+                indices.add(buffer.get());
+            }
+        }
+        return indices;
+    }
+
+    protected static void processMaterial(final AIMaterial aiMaterial,
+                                          final List<Material> materials,
+                                          final String texturesDir) {
         final AIColor4D colour = AIColor4D.create();
         final AIString path = AIString.calloc();
         Assimp.aiGetMaterialTexture(
@@ -89,13 +106,14 @@ public class StaticMeshLoader {
         final String textPath = path.dataString();
         Texture texture = null;
         if (!textPath.isEmpty()) {
+            final TextureCache textCache = TextureCache.getInstance();
             String textureFile = "";
             if (texturesDir != null && !texturesDir.isEmpty()) {
                 textureFile += texturesDir + "/";
             }
             textureFile += textPath;
             textureFile = textureFile.replace("//", "/");
-            texture = TextureCache.getInstance().getTexture(textureFile);
+            texture = textCache.getTexture(textureFile);
         }
 
         final Material material = new Material(
@@ -129,8 +147,10 @@ public class StaticMeshLoader {
         final List<Integer> indices = processIndices(aiMesh);
 
         if (textures.isEmpty()) {
-            IntStream.range(0, (vertices.size() / 3) * 2)
-                    .forEach((final int ignored) -> textures.add(0.0f));
+            final int numElements = (vertices.size() / 3) * 2;
+            for (int i = 0; i < numElements; i++) {
+                textures.add(0.0f);
+            }
         }
 
         final Mesh mesh = new Mesh(
@@ -150,19 +170,7 @@ public class StaticMeshLoader {
         return mesh;
     }
 
-    static List<Float> processVertices(final AIMesh aiMesh) {
-        final List<Float> vertices = new ArrayList<>();
-        final AIVector3D.Buffer aiVertices = aiMesh.mVertices();
-        while (aiVertices.remaining() > 0) {
-            final AIVector3D aiVertex = aiVertices.get();
-            vertices.add(aiVertex.x());
-            vertices.add(aiVertex.y());
-            vertices.add(aiVertex.z());
-        }
-        return vertices;
-    }
-
-    static List<Float> processNormals(final AIMesh aiMesh) {
+    protected static List<Float> processNormals(final AIMesh aiMesh) {
         final List<Float> normals = new ArrayList<>();
         final AIVector3D.Buffer aiNormals = aiMesh.mNormals();
         if (aiNormals == null) {
@@ -177,30 +185,30 @@ public class StaticMeshLoader {
         return normals;
     }
 
-    static List<Float> processTexCoords(final AIMesh aiMesh) {
+    protected static List<Float> processTexCoords(final AIMesh aiMesh) {
         final List<Float> textures = new ArrayList<>();
-        final AIVector3D.Buffer texCoords = aiMesh.mTextureCoords(0);
-        if (texCoords == null) {
+        final AIVector3D.Buffer textCoords = aiMesh.mTextureCoords(0);
+        if (textCoords == null) {
             return textures;
         }
-        final int remainingTexCoords = texCoords.remaining();
-        for (int i = 0; i < remainingTexCoords; i++) {
-            final AIVector3D texCoord = texCoords.get();
-            textures.add(texCoord.x());
-            textures.add(1 - texCoord.y());
+        final int numTextCoords = textCoords.remaining();
+        for (int i = 0; i < numTextCoords; i++) {
+            final AIVector3D textCoord = textCoords.get();
+            textures.add(textCoord.x());
+            textures.add(1 - textCoord.y());
         }
         return textures;
     }
 
-    static List<Integer> processIndices(final AIMesh aiMesh) {
-        final List<Integer> indices = new ArrayList<>();
-        final AIFace.Buffer aiFaces = aiMesh.mFaces();
-        for (int i = 0; i < aiMesh.mNumFaces(); i++) {
-            final IntBuffer buffer = aiFaces.get(i).mIndices();
-            while (buffer.remaining() > 0) {
-                indices.add(buffer.get());
-            }
+    protected static List<Float> processVertices(final AIMesh aiMesh) {
+        final List<Float> vertices = new ArrayList<>();
+        final AIVector3D.Buffer aiVertices = aiMesh.mVertices();
+        while (aiVertices.remaining() > 0) {
+            final AIVector3D aiVertex = aiVertices.get();
+            vertices.add(aiVertex.x());
+            vertices.add(aiVertex.y());
+            vertices.add(aiVertex.z());
         }
-        return indices;
+        return vertices;
     }
 }

@@ -54,6 +54,8 @@ public class Mesh {
         IntBuffer jointIndicesBuffer = null;
         IntBuffer indicesBuffer = null;
         try {
+            calculateBoundingRadius(positions);
+
             this.vertexCount = indices.length;
             this.vboIdList = new ArrayList<>();
             this.vaoId = glGenVertexArrays();
@@ -90,6 +92,13 @@ public class Mesh {
                     weightsBuffer,
                     jointIndicesBuffer
             );
+        }
+    }
+
+    private void calculateBoundingRadius(final float[] positions) {
+        this.boundingRadius = 0;
+        for (final float pos : positions) {
+            this.boundingRadius = Math.max(Math.abs(pos), this.boundingRadius);
         }
     }
 

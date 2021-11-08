@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.scene.element;
 
+import com.engineersbox.yajge.resources.loader.ResourceLoader;
 import com.engineersbox.yajge.scene.element.object.composite.HeightMapMesh;
 import com.engineersbox.yajge.scene.element.object.primitive.Box2D;
 import org.joml.Vector3f;
@@ -28,47 +29,34 @@ public class Terrain {
         this.terrainSize = terrainSize;
         this.sceneElements = new SceneElement[terrainSize * terrainSize];
 
-        final ByteBuffer imageBuffer;
-        final int width;
-        final int height;
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final IntBuffer w = stack.mallocInt(1);
             final IntBuffer h = stack.mallocInt(1);
-            final IntBuffer channels = stack.mallocInt(1);
+            final IntBuffer avChannels = stack.mallocInt(1);
+            final ByteBuffer imageData = ResourceLoader.ioResourceToByteBuffer(heightMapFile);
+            final ByteBuffer decodedImage = STBImage.stbi_load_from_memory(imageData, w, h, avChannels, 4);
 
-            imageBuffer = STBImage.stbi_load(heightMapFile, w, h, channels, 4);
-            if (imageBuffer == null) {
-                throw new RuntimeException(String.format(
-                        "Image %s could not be loaded: %s",
-                        heightMapFile,
-                        STBImage.stbi_failure_reason()
-                ));
-            }
+            final int width = w.get();
+            final int height = h.get();
+            this.verticesPerCol = width - 1;
+            this.verticesPerRow = height - 1;
+            this.heightMapMesh = new HeightMapMesh(minY, maxY, decodedImage, width, height, textureFile, textInc);
+            this.boundingBoxes = new Box2D[terrainSize][terrainSize];
 
-            width = w.get();
-            height = h.get();
-        }
+            for (int row = 0; row < terrainSize; row++) {
+                for (int col = 0; col < terrainSize; col++) {
+                    final float xDisplacement = (col - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getXLength();
+                    final float zDisplacement = (row - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getZLength();
 
-        this.verticesPerCol = width - 1;
-        this.verticesPerRow = height - 1;
+                    final SceneElement terrainBlock = new SceneElement(this.heightMapMesh.getMesh());
+                    terrainBlock.setScale(scale);
+                    terrainBlock.setPosition(xDisplacement, 0, zDisplacement);
+                    this.sceneElements[row * terrainSize + col] = terrainBlock;
 
-        this.heightMapMesh = new HeightMapMesh(minY, maxY, imageBuffer, width, height, textureFile, textInc);
-        this.boundingBoxes = new Box2D[terrainSize][terrainSize];
-        for (int row = 0; row < terrainSize; row++) {
-            for (int col = 0; col < terrainSize; col++) {
-                final float xDisplacement = (col - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getXLength();
-                final float zDisplacement = (row - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getZLength();
-
-                final SceneElement terrainChunk = new SceneElement(this.heightMapMesh.getMesh());
-                terrainChunk.setScale(scale);
-                terrainChunk.setPosition(xDisplacement, 0, zDisplacement);
-                this.sceneElements[row * terrainSize + col] = terrainChunk;
-
-                this.boundingBoxes[row][col] = getBoundingBox(terrainChunk);
+                    this.boundingBoxes[row][col] = getBoundingBox(terrainBlock);
+                }
             }
         }
-
-        STBImage.stbi_image_free(imageBuffer);
     }
 
     public float getHeight(final Vector3f position) {

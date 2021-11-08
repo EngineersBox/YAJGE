@@ -1,11 +1,12 @@
 package com.engineersbox.yajge.resources.loader;
 
+import com.engineersbox.yajge.util.ChannelUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,21 +75,12 @@ public class ResourceLoader {
             ));
         }
         try (final SeekableByteChannel fc = Files.newByteChannel(path)) {
-            buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
-            while (fc.read(buffer) != -1) {
-                ;
-            }
+            buffer = MemoryUtil.memAlloc((int) fc.size() + 1);
+            ChannelUtils.readAll(fc, buffer);
             buffer.flip();
         } catch (final IOException e) {
             LOGGER.error(e);
         }
         return buffer;
-    }
-
-    private static ByteBuffer resizeBuffer(final ByteBuffer buffer, final int newCapacity) {
-        final ByteBuffer newBuffer = BufferUtils.createByteBuffer(newCapacity);
-        buffer.flip();
-        newBuffer.put(buffer);
-        return newBuffer;
     }
 }

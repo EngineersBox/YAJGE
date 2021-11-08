@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.resources.assets.material;
 
+import com.engineersbox.yajge.resources.loader.ResourceLoader;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
@@ -18,7 +19,7 @@ public class Texture {
     private int rows = 1;
     private int cols = 1;
 
-    public Texture(final int width, final int height, final int pixelFormat)  {
+    public Texture(final int width, final int height, final int pixelFormat) {
         this.id = glGenTextures();
         this.width = width;
         this.height = height;
@@ -40,69 +41,47 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
-    public Texture(final String fileName) {
-        final ByteBuffer buf;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer w = stack.mallocInt(1);
-            final IntBuffer h = stack.mallocInt(1);
-            final IntBuffer channels = stack.mallocInt(1);
-
-            buf = STBImage.stbi_load(fileName, w, h, channels, 4);
-            if (buf == null) {
-                throw new RuntimeException("Image file [" + fileName  + "] not loaded: " + STBImage.stbi_failure_reason());
-            }
-
-            this.width = w.get();
-            this.height = h.get();
-        }
-        this.id = createTexture(buf);
-        STBImage.stbi_image_free(buf);
-    }
-
-    public Texture(final String fileName, final int cols, final int rows)  {
+    public Texture(final String fileName, final int cols, final int rows) {
         this(fileName);
         this.cols = cols;
         this.rows = rows;
     }
 
-    public Texture(final ByteBuffer imageBuffer) {
-        final ByteBuffer buf;
+    public Texture(final String fileName) {
+        this(ResourceLoader.ioResourceToByteBuffer(fileName));
+    }
+
+    public Texture(final ByteBuffer imageData) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final IntBuffer w = stack.mallocInt(1);
             final IntBuffer h = stack.mallocInt(1);
-            final IntBuffer channels = stack.mallocInt(1);
+            final IntBuffer avChannels = stack.mallocInt(1);
 
-            buf = STBImage.stbi_load_from_memory(imageBuffer, w, h, channels, 4);
-            if (buf == null) {
-                throw new RuntimeException("Image file not loaded: " + STBImage.stbi_failure_reason());
-            }
+            final ByteBuffer decodedImage = STBImage.stbi_load_from_memory(imageData, w, h, avChannels, 4);
 
             this.width = w.get();
             this.height = h.get();
-        }
-        this.id = createTexture(buf);
-        STBImage.stbi_image_free(buf);
-    }
+            this.id = glGenTextures();
 
-    private int createTexture(final ByteBuffer imageBuffer) {
-        final int textureId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RGBA,
-                this.width,
-                this.height,
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                imageBuffer
-        );
-        glGenerateMipmap(GL_TEXTURE_2D);
-        return textureId;
+            glBindTexture(GL_TEXTURE_2D, this.id);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGBA,
+                    this.width,
+                    this.height,
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    decodedImage
+            );
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            STBImage.stbi_image_free(imageData);
+        }
     }
 
     public int getCols() {

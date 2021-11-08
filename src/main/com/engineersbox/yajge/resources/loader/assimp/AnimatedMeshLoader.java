@@ -281,7 +281,7 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
 
         if (textures.isEmpty()) {
             final int numElements = (vertices.size() / 3) * 2;
-            for (int i=0; i<numElements; i++) {
+            for (int i = 0; i < numElements; i++) {
                 textures.add(0.0f);
             }
         }
