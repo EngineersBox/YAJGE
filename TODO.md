@@ -13,7 +13,4 @@
 * Fix particle texture not masked by shadow or fog
 * Implement animation lerp for linear, non-linear and custom curves
 * Auto create bounding box for meshes based on best fit to cube, sphere, etc
-
-## Assimp Structure
-
-![](docs/images/assimp_structure.png)
+* Enable early fragment testing to increase performance with shaders
