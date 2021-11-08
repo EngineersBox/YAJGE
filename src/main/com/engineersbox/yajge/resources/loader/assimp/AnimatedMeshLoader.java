@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.lwjgl.assimp.Assimp.*;
 
@@ -27,7 +26,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
 
     public static AnimatedSceneElement loadAnimSceneElement(final String resourcePath,
                                                             final String texturesDir) {
-        return loadAnimSceneElement(resourcePath, texturesDir,
+        return loadAnimSceneElement(
+                resourcePath,
+                texturesDir,
                 aiProcess_GenSmoothNormals
                         | aiProcess_JoinIdenticalVertices
                         | aiProcess_Triangulate
@@ -45,6 +46,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
 
         final int numMaterials = aiScene.mNumMaterials();
         final PointerBuffer aiMaterials = aiScene.mMaterials();
+        if (aiMaterials == null) {
+            throw new RuntimeException("Could not get materials");
+        }
         final List<Material> materials = new ArrayList<>();
         for (int i = 0; i < numMaterials; i++) {
             processMaterial(
@@ -57,6 +61,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final List<Bone> boneList = new ArrayList<>();
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
+        if (aiMeshes == null) {
+            throw new RuntimeException("Could not get meshes");
+        }
         final Mesh[] meshes = new Mesh[numMeshes];
         for (int i = 0; i < numMeshes; i++) {
             final Mesh mesh = processMesh(
@@ -67,8 +74,12 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
             meshes[i] = mesh;
         }
 
-        final Node rootNode = buildNodesTree(aiScene.mRootNode(), null);
-        final Matrix4f globalInverseTransformation = toMatrix(aiScene.mRootNode().mTransformation()).invert();
+        final AINode aiRootNode = aiScene.mRootNode();
+        if (aiRootNode == null) {
+            throw new RuntimeException("Could not get root node");
+        }
+        final Node rootNode = buildNodesTree(aiRootNode, null);
+        final Matrix4f globalInverseTransformation = toMatrix(aiRootNode.mTransformation()).invert();
         final Map<String, Animation> animations = processAnimations(
                 aiScene,
                 boneList,
@@ -85,6 +96,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
 
         final int numChildren = aiNode.mNumChildren();
         final PointerBuffer aiChildren = aiNode.mChildren();
+        if (aiChildren == null) {
+            return node;
+        }
         for (int i = 0; i < numChildren; i++) {
             final Node childNode = buildNodesTree(
                     AINode.create(aiChildren.get(i)),
@@ -102,6 +116,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final Map<String, Animation> animations = new HashMap<>();
         final int numAnimations = aiScene.mNumAnimations();
         final PointerBuffer aiAnimations = aiScene.mAnimations();
+        if (aiAnimations == null) {
+            return animations;
+        }
         for (int i = 0; i < numAnimations; i++) {
             final AIAnimation aiAnimation = AIAnimation.create(aiAnimations.get(i));
             final int maxFrames = calcAnimationMaxFrames(aiAnimation);
@@ -146,10 +163,13 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         }
         final Matrix4f nodeGlobalTransform = new Matrix4f(parentTransformation).mul(nodeTransform);
 
-        final List<Bone> affectedBones = boneList.stream().filter(b -> b.getBoneName().equals(nodeName)).collect(Collectors.toList());
-        for (final Bone bone: affectedBones) {
-            final Matrix4f boneTransform = new Matrix4f(globalInverseTransform).mul(nodeGlobalTransform).
-                    mul(bone.getOffsetMatrix());
+        final List<Bone> affectedBones = boneList.stream()
+                .filter((final Bone b) -> b.getBoneName().equals(nodeName))
+                .toList();
+        for (final Bone bone : affectedBones) {
+            final Matrix4f boneTransform = new Matrix4f(globalInverseTransform)
+                    .mul(nodeGlobalTransform)
+                    .mul(bone.getOffsetMatrix());
             animatedFrame.setMatrix(bone.getBoneId(), boneTransform);
         }
 
@@ -177,17 +197,24 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
 
         final Matrix4f nodeTransform = new Matrix4f();
         final int numPositions = aiNodeAnim.mNumPositionKeys();
-        if (numPositions > 0) {
+        if (positionKeys != null && numPositions > 0) {
             aiVecKey = positionKeys.get(Math.min(numPositions - 1, frame));
             vec = aiVecKey.mValue();
             nodeTransform.translate(vec.x(), vec.y(), vec.z());
         }
         final int numRotations = aiNodeAnim.mNumRotationKeys();
-        if (numRotations > 0) {
+        if (rotationKeys != null && numRotations > 0) {
             final AIQuatKey quatKey = rotationKeys.get(Math.min(numRotations - 1, frame));
-            final AIQuaternion aiQuat = quatKey.mValue();
-            final Quaternionf quat = new Quaternionf(aiQuat.x(), aiQuat.y(), aiQuat.z(), aiQuat.w());
-            nodeTransform.rotate(quat);
+            final AIQuaternion aiQuaternion = quatKey.mValue();
+            nodeTransform.rotate(new Quaternionf(
+                    aiQuaternion.x(),
+                    aiQuaternion.y(),
+                    aiQuaternion.z(),
+                    aiQuaternion.w()
+            ));
+        }
+        if (scalingKeys == null) {
+            return nodeTransform;
         }
         final int numScalingKeys = aiNodeAnim.mNumScalingKeys();
         if (numScalingKeys > 0) {
@@ -204,7 +231,7 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         AINodeAnim result = null;
         final int numAnimNodes = aiAnimation.mNumChannels();
         final PointerBuffer aiChannels = aiAnimation.mChannels();
-        for (int i=0; i<numAnimNodes; i++) {
+        for (int i = 0; i < numAnimNodes; i++) {
             final AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
             if (nodeName.equals(aiNodeAnim.mNodeName().dataString())) {
                 result = aiNodeAnim;
@@ -218,7 +245,7 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         int maxFrames = 0;
         final int numNodeAnims = aiAnimation.mNumChannels();
         final PointerBuffer aiChannels = aiAnimation.mChannels();
-        for (int i=0; i<numNodeAnims; i++) {
+        for (int i = 0; i < numNodeAnims; i++) {
             final AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
             final int numFrames = Math.max(Math.max(aiNodeAnim.mNumPositionKeys(), aiNodeAnim.mNumScalingKeys()), aiNodeAnim.mNumRotationKeys());
             maxFrames = Math.max(maxFrames, numFrames);
@@ -243,8 +270,11 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
             final AIVertexWeight.Buffer aiWeights = aiBone.mWeights();
             for (int j = 0; j < numWeights; j++) {
                 final AIVertexWeight aiWeight = aiWeights.get(j);
-                final VertexWeight vw = new VertexWeight(bone.getBoneId(), aiWeight.mVertexId(),
-                        aiWeight.mWeight());
+                final VertexWeight vw = new VertexWeight(
+                        bone.getBoneId(),
+                        aiWeight.mVertexId(),
+                        aiWeight.mWeight()
+                );
                 final List<VertexWeight> vertexWeightList = weightSet.computeIfAbsent(vw.getVertexId(), k -> new ArrayList<>());
                 vertexWeightList.add(vw);
             }
@@ -253,7 +283,10 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final int numVertices = aiMesh.mNumVertices();
         for (int i = 0; i < numVertices; i++) {
             final List<VertexWeight> vertexWeightList = weightSet.get(i);
-            final int size = vertexWeightList != null ? vertexWeightList.size() : 0;
+            if (vertexWeightList == null) {
+                continue;
+            }
+            final int size = vertexWeightList.size();
             for (int j = 0; j < Mesh.MAX_WEIGHTS; j++) {
                 if (j < size) {
                     final VertexWeight vw = vertexWeightList.get(j);
