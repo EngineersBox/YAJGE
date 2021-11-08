@@ -8,8 +8,6 @@ import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.scene.atmosphere.Fog;
 import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.view.Camera;
-import com.engineersbox.yajge.resources.assets.material.Material;
-import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.resources.loader.assimp.AnimatedMeshLoader;
 import com.engineersbox.yajge.resources.loader.assimp.StaticMeshLoader;
 import com.engineersbox.yajge.scene.Scene;
@@ -65,15 +63,10 @@ public class TestGame implements IEngineLogic {
         final SceneElement terrain = new SceneElement(terrainMesh);
         terrain.setScale(100.0f);
 
-        final Mesh[] cubeMeshes = StaticMeshLoader.load("assets/game/models/cube.obj", "");
-        final Material material = new Material(new Texture("assets/game/textures/grassblock.png"));
-        cubeMeshes[0].setMaterial(material);
-        final SceneElement cube = new SceneElement(cubeMeshes);
-
         this.animatedSceneElement = AnimatedMeshLoader.loadAnimSceneElement("assets/game/models/bob/boblamp.md5mesh", "assets/game/textures");
         this.animatedSceneElement.setScale(0.05f);
         this.animation = this.animatedSceneElement.getCurrentAnimation();
-        this.scene.setSceneElements(new SceneElement[]{this.animatedSceneElement, cube, terrain});
+        this.scene.setSceneElements(new SceneElement[]{this.animatedSceneElement, terrain});
         this.scene.setRenderShadows(true);
 
         final Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
