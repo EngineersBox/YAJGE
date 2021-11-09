@@ -14,3 +14,4 @@
 * Implement animation lerp for linear, non-linear and custom curves
 * Auto create bounding box for meshes based on best fit to cube, sphere, etc
 * Enable early fragment testing to increase performance with shaders
+* Refactor from log4j to slf4j
