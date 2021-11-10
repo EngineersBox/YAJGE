@@ -11,7 +11,9 @@ public class Node {
     private final Node parent;
     private final Matrix4f nodeTransform;
 
-    public Node(final String name, final Node parent, final Matrix4f nodeTransform) {
+    public Node(final String name,
+                final Node parent,
+                final Matrix4f nodeTransform) {
         this.name = name;
         this.parent = parent;
         this.nodeTransform = nodeTransform;

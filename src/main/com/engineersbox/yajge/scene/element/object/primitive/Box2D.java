@@ -1,11 +1,10 @@
 package com.engineersbox.yajge.scene.element.object.primitive;
 
 public class Box2D {
-
-    public float x;
-    public float y;
-    public float width;
-    public float height;
+    public final float x;
+    public final float y;
+    public final float width;
+    public final float height;
 
     public Box2D(final float x,
                  final float y,

@@ -18,15 +18,11 @@ import java.util.Map;
 
 import static org.lwjgl.assimp.Assimp.*;
 
-public class AnimatedMeshLoader extends StaticMeshLoader {
+public class AnimatedMeshesLoader extends StaticMeshesLoader {
 
-    private AnimatedMeshLoader() {
-        super();
-    }
-
-    public static AnimatedSceneElement loadAnimSceneElement(final String resourcePath,
-                                                            final String texturesDir) {
-        return loadAnimSceneElement(
+    public static AnimatedSceneElement loadAnimatedSceneElement(final String resourcePath,
+                                                                final String texturesDir)  {
+        return loadAnimatedSceneElement(
                 resourcePath,
                 texturesDir,
                 aiProcess_GenSmoothNormals
@@ -36,9 +32,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
                         | aiProcess_LimitBoneWeights);
     }
 
-    public static AnimatedSceneElement loadAnimSceneElement(final String resourcePath,
-                                                            final String texturesDir,
-                                                            final int flags) {
+    public static AnimatedSceneElement loadAnimatedSceneElement(final String resourcePath,
+                                                                final String texturesDir,
+                                                                final int flags) {
         final AIScene aiScene = aiImportFile(resourcePath, flags);
         if (aiScene == null) {
             throw new RuntimeException("Error loading model");
@@ -47,39 +43,32 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final int numMaterials = aiScene.mNumMaterials();
         final PointerBuffer aiMaterials = aiScene.mMaterials();
         if (aiMaterials == null) {
-            throw new RuntimeException("Could not get materials");
+            throw new RuntimeException("Could not retrieve materials");
         }
         final List<Material> materials = new ArrayList<>();
         for (int i = 0; i < numMaterials; i++) {
-            processMaterial(
-                    AIMaterial.create(aiMaterials.get(i)),
-                    materials,
-                    texturesDir
-            );
+            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
+            processMaterial(aiMaterial, materials, texturesDir);
         }
 
         final List<Bone> boneList = new ArrayList<>();
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
         if (aiMeshes == null) {
-            throw new RuntimeException("Could not get meshes");
+            throw new RuntimeException("Could not retrieve meshes");
         }
         final Mesh[] meshes = new Mesh[numMeshes];
         for (int i = 0; i < numMeshes; i++) {
-            final Mesh mesh = processMesh(
-                    AIMesh.create(aiMeshes.get(i)),
-                    materials,
-                    boneList
-            );
+            final AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
+            final Mesh mesh = processMesh(aiMesh, materials, boneList);
             meshes[i] = mesh;
         }
-
-        final AINode aiRootNode = aiScene.mRootNode();
-        if (aiRootNode == null) {
-            throw new RuntimeException("Could not get root node");
+        final AINode sceneRoot = aiScene.mRootNode();
+        if (sceneRoot == null) {
+            throw new RuntimeException("Could not retrieve scene root node");
         }
-        final Node rootNode = buildNodesTree(aiRootNode, null);
-        final Matrix4f globalInverseTransformation = toMatrix(aiRootNode.mTransformation()).invert();
+        final Node rootNode = buildNodesTree(sceneRoot, null);
+        final Matrix4f globalInverseTransformation = toMatrix(sceneRoot.mTransformation()).invert();
         final Map<String, Animation> animations = processAnimations(
                 aiScene,
                 boneList,
@@ -97,13 +86,11 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final int numChildren = aiNode.mNumChildren();
         final PointerBuffer aiChildren = aiNode.mChildren();
         if (aiChildren == null) {
-            return node;
+            throw new RuntimeException("Could not retrieve node children");
         }
         for (int i = 0; i < numChildren; i++) {
-            final Node childNode = buildNodesTree(
-                    AINode.create(aiChildren.get(i)),
-                    node
-            );
+            final AINode aiChildNode = AINode.create(aiChildren.get(i));
+            final Node childNode = buildNodesTree(aiChildNode, node);
             node.addChild(childNode);
         }
         return node;
@@ -124,24 +111,13 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
             final int maxFrames = calcAnimationMaxFrames(aiAnimation);
 
             final List<AnimatedFrame> frames = new ArrayList<>();
-            final Animation animation = new Animation(
-                    aiAnimation.mName().dataString(),
-                    frames,
-                    aiAnimation.mDuration()
-            );
+            final Animation animation = new Animation(aiAnimation.mName().dataString(), frames, aiAnimation.mDuration());
             animations.put(animation.getName(), animation);
 
             for (int j = 0; j < maxFrames; j++) {
                 final AnimatedFrame animatedFrame = new AnimatedFrame();
-                buildFrameMatrices(
-                        aiAnimation,
-                        boneList,
-                        animatedFrame,
-                        j,
-                        rootNode,
-                        rootNode.getNodeTransform(),
-                        globalInverseTransformation
-                );
+                buildFrameMatrices(aiAnimation, boneList, animatedFrame, j, rootNode,
+                        rootNode.getNodeTransform(), globalInverseTransformation);
                 frames.add(animatedFrame);
             }
         }
@@ -164,13 +140,13 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final Matrix4f nodeGlobalTransform = new Matrix4f(parentTransformation).mul(nodeTransform);
 
         final List<Bone> affectedBones = boneList.stream()
-                .filter((final Bone b) -> b.getBoneName().equals(nodeName))
+                .filter(b -> b.boneName().equals(nodeName))
                 .toList();
-        for (final Bone bone : affectedBones) {
+        for (final Bone bone: affectedBones) {
             final Matrix4f boneTransform = new Matrix4f(globalInverseTransform)
                     .mul(nodeGlobalTransform)
-                    .mul(bone.getOffsetMatrix());
-            animatedFrame.setMatrix(bone.getBoneId(), boneTransform);
+                    .mul(bone.offsetMatrix());
+            animatedFrame.setMatrix(bone.boneId(), boneTransform);
         }
 
         for (final Node childNode : node.getChildren()) {
@@ -189,32 +165,39 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
     private static Matrix4f buildNodeTransformationMatrix(final AINodeAnim aiNodeAnim,
                                                           final int frame) {
         final AIVectorKey.Buffer positionKeys = aiNodeAnim.mPositionKeys();
+        if (positionKeys == null) {
+            throw new RuntimeException("Could not retrieve position keys");
+        }
         final AIVectorKey.Buffer scalingKeys = aiNodeAnim.mScalingKeys();
+        if (scalingKeys == null) {
+            throw new RuntimeException("Could not retrieve scaling keys");
+        }
         final AIQuatKey.Buffer rotationKeys = aiNodeAnim.mRotationKeys();
+        if (rotationKeys == null) {
+            throw new RuntimeException("Could not retrieve rotation keys");
+        }
 
         AIVectorKey aiVecKey;
         AIVector3D vec;
 
         final Matrix4f nodeTransform = new Matrix4f();
         final int numPositions = aiNodeAnim.mNumPositionKeys();
-        if (positionKeys != null && numPositions > 0) {
+        if (numPositions > 0) {
             aiVecKey = positionKeys.get(Math.min(numPositions - 1, frame));
             vec = aiVecKey.mValue();
             nodeTransform.translate(vec.x(), vec.y(), vec.z());
         }
         final int numRotations = aiNodeAnim.mNumRotationKeys();
-        if (rotationKeys != null && numRotations > 0) {
+        if (numRotations > 0) {
             final AIQuatKey quatKey = rotationKeys.get(Math.min(numRotations - 1, frame));
             final AIQuaternion aiQuaternion = quatKey.mValue();
-            nodeTransform.rotate(new Quaternionf(
+            final Quaternionf quaternion = new Quaternionf(
                     aiQuaternion.x(),
                     aiQuaternion.y(),
                     aiQuaternion.z(),
                     aiQuaternion.w()
-            ));
-        }
-        if (scalingKeys == null) {
-            return nodeTransform;
+            );
+            nodeTransform.rotate(quaternion);
         }
         final int numScalingKeys = aiNodeAnim.mNumScalingKeys();
         if (numScalingKeys > 0) {
@@ -231,9 +214,12 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         AINodeAnim result = null;
         final int numAnimNodes = aiAnimation.mNumChannels();
         final PointerBuffer aiChannels = aiAnimation.mChannels();
+        if (aiChannels == null) {
+            throw new RuntimeException("Could not retrieve channels");
+        }
         for (int i = 0; i < numAnimNodes; i++) {
             final AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
-            if (nodeName.equals(aiNodeAnim.mNodeName().dataString())) {
+            if ( nodeName.equals(aiNodeAnim.mNodeName().dataString())) {
                 result = aiNodeAnim;
                 break;
             }
@@ -245,9 +231,13 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         int maxFrames = 0;
         final int numNodeAnims = aiAnimation.mNumChannels();
         final PointerBuffer aiChannels = aiAnimation.mChannels();
-        for (int i = 0; i < numNodeAnims; i++) {
+        if (aiChannels == null) {
+            throw new RuntimeException("Could not retrieve channels");
+        }
+        for (int i=0; i<numNodeAnims; i++) {
             final AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
-            final int numFrames = Math.max(Math.max(aiNodeAnim.mNumPositionKeys(), aiNodeAnim.mNumScalingKeys()), aiNodeAnim.mNumRotationKeys());
+            final int numFrames = Math.max(Math.max(aiNodeAnim.mNumPositionKeys(), aiNodeAnim.mNumScalingKeys()),
+                    aiNodeAnim.mNumRotationKeys());
             maxFrames = Math.max(maxFrames, numFrames);
         }
 
@@ -261,6 +251,9 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final Map<Integer, List<VertexWeight>> weightSet = new HashMap<>();
         final int numBones = aiMesh.mNumBones();
         final PointerBuffer aiBones = aiMesh.mBones();
+        if (aiBones == null) {
+            throw new RuntimeException("Could not retrieve bones");
+        }
         for (int i = 0; i < numBones; i++) {
             final AIBone aiBone = AIBone.create(aiBones.get(i));
             final int id = boneList.size();
@@ -270,11 +263,8 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
             final AIVertexWeight.Buffer aiWeights = aiBone.mWeights();
             for (int j = 0; j < numWeights; j++) {
                 final AIVertexWeight aiWeight = aiWeights.get(j);
-                final VertexWeight vw = new VertexWeight(
-                        bone.getBoneId(),
-                        aiWeight.mVertexId(),
-                        aiWeight.mWeight()
-                );
+                final VertexWeight vw = new VertexWeight(bone.boneId(), aiWeight.mVertexId(),
+                        aiWeight.mWeight());
                 final List<VertexWeight> vertexWeightList = weightSet.computeIfAbsent(vw.getVertexId(), k -> new ArrayList<>());
                 vertexWeightList.add(vw);
             }
@@ -283,12 +273,11 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
         final int numVertices = aiMesh.mNumVertices();
         for (int i = 0; i < numVertices; i++) {
             final List<VertexWeight> vertexWeightList = weightSet.get(i);
-            if (vertexWeightList == null) {
-                continue;
+            if (vertexWeightList == null || vertexWeightList.isEmpty()) {
+                return;
             }
-            final int size = vertexWeightList.size();
             for (int j = 0; j < Mesh.MAX_WEIGHTS; j++) {
-                if (j < size) {
+                if (j < vertexWeightList.size()) {
                     final VertexWeight vw = vertexWeightList.get(j);
                     weights.add(vw.getWeight());
                     boneIds.add(vw.getBoneId());
@@ -308,9 +297,14 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
 
         final List<Float> vertices = processVertices(aiMesh);
         final List<Float> normals = processNormals(aiMesh);
-        final List<Float> textures = processTexCoords(aiMesh);
+        final List<Float> textures = processTextCoords(aiMesh);
         final List<Integer> indices = processIndices(aiMesh);
-        processBones(aiMesh, boneList, boneIds, weights);
+        processBones(
+                aiMesh,
+                boneList,
+                boneIds,
+                weights
+        );
 
         if (textures.isEmpty()) {
             final int numElements = (vertices.size() / 3) * 2;
@@ -335,7 +329,6 @@ public class AnimatedMeshLoader extends StaticMeshLoader {
             material = new Material();
         }
         mesh.setMaterial(material);
-
         return mesh;
     }
 

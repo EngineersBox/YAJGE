@@ -21,10 +21,9 @@ public class ShadowCascade {
     private final Vector3f[] frustumCorners;
     private final float zNear;
     private final float zFar;
-    private final Vector4f finalizedProjection;
+    private final Vector4f tmpVec;
     
-    public ShadowCascade(final float zNear,
-                         final float zFar) {
+    public ShadowCascade(final float zNear, final float zFar) {
         this.zNear = zNear;
         this.zFar = zFar;
         this.projViewMatrix = new Matrix4f();
@@ -33,7 +32,7 @@ public class ShadowCascade {
         this.lightViewMatrix = new Matrix4f();
         this.frustumCorners = new Vector3f[FRUSTUM_CORNERS];
         Arrays.setAll(this.frustumCorners, Vector3f::new);
-        this.finalizedProjection = new Vector4f();
+        this.tmpVec = new Vector4f();
     }
 
     public Matrix4f getLightViewMatrix() {
@@ -44,9 +43,7 @@ public class ShadowCascade {
         return this.orthoProjMatrix;
     }
 
-    public void update(final Window window,
-                       final Matrix4f viewMatrix,
-                       final DirectionalLight light) {
+    public void update(final Window window, final Matrix4f viewMatrix, final DirectionalLight light) {
         final float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
         this.projViewMatrix.setPerspective(
                 (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
@@ -81,10 +78,15 @@ public class ShadowCascade {
 
     private void updateLightViewMatrix(final Vector3f lightDirection,
                                        final Vector3f lightPosition) {
-        final float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z));
-        final float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x));
-        final float lightAngleZ = 0;
-        Transform.updateGenericViewMatrix(lightPosition, new Vector3f(lightAngleX, lightAngleY, lightAngleZ), this.lightViewMatrix);
+        Transform.updateGenericViewMatrix(
+                lightPosition,
+                new Vector3f(
+                        (float) Math.toDegrees(Math.acos(lightDirection.z)),
+                        (float) Math.toDegrees(Math.asin(lightDirection.x)),
+                        0
+                ),
+                this.lightViewMatrix
+        );
     }
 
     private void updateLightProjectionMatrix() {
@@ -94,17 +96,17 @@ public class ShadowCascade {
         float maxY = -Float.MIN_VALUE;
         float minZ =  Float.MAX_VALUE;
         float maxZ = -Float.MIN_VALUE;
-        for (final Vector3f corner : this.frustumCorners) {
-            this.finalizedProjection.set(corner, 1);
-            this.finalizedProjection.mul(this.lightViewMatrix);
-            minX = Math.min(this.finalizedProjection.x, minX);
-            maxX = Math.max(this.finalizedProjection.x, maxX);
-            minY = Math.min(this.finalizedProjection.y, minY);
-            maxY = Math.max(this.finalizedProjection.y, maxY);
-            minZ = Math.min(this.finalizedProjection.z, minZ);
-            maxZ = Math.max(this.finalizedProjection.z, maxZ);
+        for (int i = 0; i < FRUSTUM_CORNERS; i++) {
+            final Vector3f corner = this.frustumCorners[i];
+            this.tmpVec.set(corner, 1);
+            this.tmpVec.mul(this.lightViewMatrix);
+            minX = Math.min(this.tmpVec.x, minX);
+            maxX = Math.max(this.tmpVec.x, maxX);
+            minY = Math.min(this.tmpVec.y, minY);
+            maxY = Math.max(this.tmpVec.y, maxY);
+            minZ = Math.min(this.tmpVec.z, minZ);
+            maxZ = Math.max(this.tmpVec.z, maxZ);
         }
-
         this.orthoProjMatrix.setOrtho(
                 minX,
                 maxX,

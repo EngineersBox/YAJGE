@@ -18,7 +18,8 @@ public class TextElement extends SceneElement {
     private final FontTexture fontTexture;
     private String text;
 
-    public TextElement(final String text, final FontTexture fontTexture) {
+    public TextElement(final String text,
+                       final FontTexture fontTexture) {
         super();
         this.text = text;
         this.fontTexture = fontTexture;
@@ -34,7 +35,7 @@ public class TextElement extends SceneElement {
         final int numChars = characters.length;
 
         float startx = 0;
-        for(int i=0; i<numChars; i++) {
+        for(int i = 0; i < numChars; i++) {
             final CharInfo charInfo = this.fontTexture.getCharInfo(characters[i]);
 
             // Left Top vertex
@@ -76,10 +77,12 @@ public class TextElement extends SceneElement {
             startx += charInfo.width();
         }
 
-        final float[] posArr = ListUtils.floatListToArray(positions);
-        final float[] texCoordsArr = ListUtils.floatListToArray(texCoords);
-        final int[] indicesArr = ListUtils.intListToArray(indices);
-        final Mesh mesh = new Mesh(posArr, texCoordsArr, normals, indicesArr);
+        final Mesh mesh = new Mesh(
+                ListUtils.floatListToArray(positions),
+                ListUtils.floatListToArray(texCoords),
+                normals,
+                ListUtils.intListToArray(indices)
+        );
         mesh.setMaterial(new Material(this.fontTexture.getTexture()));
         return mesh;
     }

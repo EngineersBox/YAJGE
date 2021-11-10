@@ -14,14 +14,10 @@ import java.util.List;
 
 import static org.lwjgl.assimp.Assimp.*;
 
-public class StaticMeshLoader {
-
-    StaticMeshLoader() {
-        throw new IllegalStateException("Static accessor class");
-    }
+public class StaticMeshesLoader {
 
     public static Mesh[] load(final String resourcePath,
-                              final String texturesDir) {
+                              final String texturesDir)  {
         return load(
                 resourcePath,
                 texturesDir,
@@ -34,8 +30,7 @@ public class StaticMeshLoader {
     }
 
     public static Mesh[] load(final String resourcePath,
-                              final String texturesDir,
-                              final int flags) {
+                              final String texturesDir, final int flags)  {
         final AIScene aiScene = aiImportFile(resourcePath, flags);
         if (aiScene == null) {
             throw new RuntimeException("Error loading model");
@@ -44,29 +39,24 @@ public class StaticMeshLoader {
         final int numMaterials = aiScene.mNumMaterials();
         final PointerBuffer aiMaterials = aiScene.mMaterials();
         if (aiMaterials == null) {
-            throw new RuntimeException("Could not get materials");
+            throw new RuntimeException("Could not retrieve materials");
         }
         final List<Material> materials = new ArrayList<>();
         for (int i = 0; i < numMaterials; i++) {
             final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            processMaterial(
-                    aiMaterial,
-                    materials,
-                    texturesDir
-            );
+            processMaterial(aiMaterial, materials, texturesDir);
         }
 
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
         if (aiMeshes == null) {
-            throw new RuntimeException("Could not get meshes");
+            throw new RuntimeException("Could not retrieve meshes");
         }
         final Mesh[] meshes = new Mesh[numMeshes];
         for (int i = 0; i < numMeshes; i++) {
-            meshes[i] = processMesh(
-                    AIMesh.create(aiMeshes.get(i)),
-                    materials
-            );
+            final AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
+            final Mesh mesh = processMesh(aiMesh, materials);
+            meshes[i] = mesh;
         }
 
         return meshes;
@@ -74,10 +64,7 @@ public class StaticMeshLoader {
 
     protected static List<Integer> processIndices(final AIMesh aiMesh) {
         final List<Integer> indices = new ArrayList<>();
-        final int numFaces = aiMesh.mNumFaces();
-        final AIFace.Buffer aiFaces = aiMesh.mFaces();
-        for (int i = 0; i < numFaces; i++) {
-            final AIFace aiFace = aiFaces.get(i);
+        for (final AIFace aiFace : aiMesh.mFaces()) {
             final IntBuffer buffer = aiFace.mIndices();
             while (buffer.remaining() > 0) {
                 indices.add(buffer.get());
@@ -88,8 +75,9 @@ public class StaticMeshLoader {
 
     protected static void processMaterial(final AIMaterial aiMaterial,
                                           final List<Material> materials,
-                                          final String texturesDir) {
+                                          final String texturesDir)  {
         final AIColor4D colour = AIColor4D.create();
+
         final AIString path = AIString.calloc();
         Assimp.aiGetMaterialTexture(
                 aiMaterial,
@@ -103,16 +91,15 @@ public class StaticMeshLoader {
                 null,
                 null
         );
-        final String textPath = path.dataString();
+        final String texturePath = path.dataString();
         Texture texture = null;
-        if (!textPath.isEmpty()) {
+        if (!texturePath.isEmpty()) {
             final TextureCache textCache = TextureCache.getInstance();
             String textureFile = "";
             if (texturesDir != null && !texturesDir.isEmpty()) {
                 textureFile += texturesDir + "/";
             }
-            textureFile += textPath;
-            textureFile = textureFile.replace("//", "/");
+            textureFile = (textureFile + texturePath).replace("//", "/");
             texture = textCache.getTexture(textureFile);
         }
 
@@ -139,13 +126,13 @@ public class StaticMeshLoader {
         return result == 0 ? new Vector4f(colour.r(),colour.g(), colour.b(), colour.a()) : Material.DEFAULT_COLOUR;
     }
 
-    private static Mesh processMesh(final AIMesh aiMesh,
-                                    final List<Material> materials) {
+    private static Mesh processMesh(final AIMesh aiMesh, final List<Material> materials) {
         final List<Float> vertices = processVertices(aiMesh);
         final List<Float> normals = processNormals(aiMesh);
-        final List<Float> textures = processTexCoords(aiMesh);
+        final List<Float> textures = processTextCoords(aiMesh);
         final List<Integer> indices = processIndices(aiMesh);
 
+        // Texture coordinates may not have been populated. We need at least the empty slots
         if (textures.isEmpty()) {
             final int numElements = (vertices.size() / 3) * 2;
             for (int i = 0; i < numElements; i++) {
@@ -173,10 +160,7 @@ public class StaticMeshLoader {
     protected static List<Float> processNormals(final AIMesh aiMesh) {
         final List<Float> normals = new ArrayList<>();
         final AIVector3D.Buffer aiNormals = aiMesh.mNormals();
-        if (aiNormals == null) {
-            return normals;
-        }
-        while (aiNormals.remaining() > 0) {
+        while (aiNormals != null && aiNormals.remaining() > 0) {
             final AIVector3D aiNormal = aiNormals.get();
             normals.add(aiNormal.x());
             normals.add(aiNormal.y());
@@ -185,13 +169,10 @@ public class StaticMeshLoader {
         return normals;
     }
 
-    protected static List<Float> processTexCoords(final AIMesh aiMesh) {
+    protected static List<Float> processTextCoords(final AIMesh aiMesh) {
         final List<Float> textures = new ArrayList<>();
         final AIVector3D.Buffer textCoords = aiMesh.mTextureCoords(0);
-        if (textCoords == null) {
-            return textures;
-        }
-        final int numTextCoords = textCoords.remaining();
+        final int numTextCoords = textCoords != null ? textCoords.remaining() : 0;
         for (int i = 0; i < numTextCoords; i++) {
             final AIVector3D textCoord = textCoords.get();
             textures.add(textCoord.x());

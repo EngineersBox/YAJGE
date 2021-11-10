@@ -7,7 +7,7 @@ public class DirectionalLight {
     private Vector3f color;
     private Vector3f direction;
     private float intensity;
-    
+
     public DirectionalLight(final Vector3f color,
                             final Vector3f direction,
                             final float intensity) {
@@ -23,7 +23,7 @@ public class DirectionalLight {
                 light.getIntensity()
         );
     }
-    
+
     public Vector3f getColor() {
         return this.color;
     }

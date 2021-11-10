@@ -3,9 +3,7 @@ package com.engineersbox.yajge.rendering.scene.lighting;
 public class Attenuation {
 
     private float constant;
-
     private float linear;
-
     private float exponent;
 
     public Attenuation(final float constant,

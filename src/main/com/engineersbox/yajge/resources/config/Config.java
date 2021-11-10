@@ -18,12 +18,14 @@ public class Config {
 
     public static class Features {
       public final GraphicsAPIType graphicsAPI;
+      public final boolean showFPS;
 
       public Features(
           com.typesafe.config.Config c,
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
         this.graphicsAPI = GraphicsAPIType.valueOf(c.getString("graphicsAPI"));
+        this.showFPS = c.hasPathOrNull("showFPS") && c.getBoolean("showFPS");
       }
     }
 
@@ -112,7 +114,6 @@ public class Config {
 
   public static class Render {
     public final Render.Camera camera;
-    public final Render.Lighting lighting;
 
     public static class Camera {
       public final double fov;
@@ -132,24 +133,6 @@ public class Config {
       }
     }
 
-    public static class Lighting {
-      public final int maxPointLights;
-      public final int maxSpotLights;
-      public final int shadowMapHeight;
-      public final int shadowMapWidth;
-
-      public Lighting(
-          com.typesafe.config.Config c,
-          java.lang.String parentPath,
-          $TsCfgValidator $tsCfgValidator) {
-        this.maxPointLights = c.hasPathOrNull("maxPointLights") ? c.getInt("maxPointLights") : 5;
-        this.maxSpotLights = c.hasPathOrNull("maxSpotLights") ? c.getInt("maxSpotLights") : 5;
-        this.shadowMapHeight =
-            c.hasPathOrNull("shadowMapHeight") ? c.getInt("shadowMapHeight") : 1024;
-        this.shadowMapWidth = c.hasPathOrNull("shadowMapWidth") ? c.getInt("shadowMapWidth") : 1024;
-      }
-    }
-
     public Render(
         com.typesafe.config.Config c,
         java.lang.String parentPath,
@@ -160,14 +143,6 @@ public class Config {
               : new Render.Camera(
                   com.typesafe.config.ConfigFactory.parseString("camera{}"),
                   parentPath + "camera.",
-                  $tsCfgValidator);
-      this.lighting =
-          c.hasPathOrNull("lighting")
-              ? new Render.Lighting(
-                  c.getConfig("lighting"), parentPath + "lighting.", $tsCfgValidator)
-              : new Render.Lighting(
-                  com.typesafe.config.ConfigFactory.parseString("lighting{}"),
-                  parentPath + "lighting.",
                   $tsCfgValidator);
     }
   }

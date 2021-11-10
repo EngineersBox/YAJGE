@@ -21,8 +21,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class SoundManager {
 
-    private static final ByteBuffer DEFAULT_OPENAL_DEVICE_SPECIFIER = null;
-
     private long device;
     private long context;
     private SoundListener listener;
@@ -36,8 +34,8 @@ public class SoundManager {
         this.cameraMatrix = new Matrix4f();
     }
 
-    public void init() {
-        this.device = alcOpenDevice(DEFAULT_OPENAL_DEVICE_SPECIFIER);
+    public void init()  {
+        this.device = alcOpenDevice((ByteBuffer) null);
         if (this.device == NULL) {
             throw new IllegalStateException("Failed to open the default OpenAL device.");
         }
@@ -50,7 +48,8 @@ public class SoundManager {
         AL.createCapabilities(deviceCaps);
     }
 
-    public void addSoundSource(final String name, final SoundSource soundSource) {
+    public void addSoundSource(final String name,
+                               final SoundSource soundSource) {
         this.soundSourceMap.put(name, soundSource);
     }
 
@@ -82,11 +81,7 @@ public class SoundManager {
     }
 
     public void updateListenerPosition(final Camera camera) {
-        Transform.updateGenericViewMatrix(
-                camera.getPosition(),
-                camera.getRotation(),
-                this.cameraMatrix
-        );
+        Transform.updateGenericViewMatrix(camera.getPosition(), camera.getRotation(), this.cameraMatrix);
 
         this.listener.setPosition(camera.getPosition());
         final Vector3f at = new Vector3f();
@@ -101,13 +96,9 @@ public class SoundManager {
     }
     
     public void cleanup() {
-        for (final SoundSource soundSource : this.soundSourceMap.values()) {
-            soundSource.cleanup();
-        }
+        this.soundSourceMap.values().forEach(SoundSource::cleanup);
         this.soundSourceMap.clear();
-        for (final SoundBuffer soundBuffer : this.soundBufferList) {
-            soundBuffer.cleanup();
-        }
+        this.soundBufferList.forEach(SoundBuffer::cleanup);
         this.soundBufferList.clear();
         if (this.context != NULL) {
             alcDestroyContext(this.context);

@@ -12,31 +12,30 @@ import java.util.*;
 
 public class Scene {
 
-    private final Map<Mesh, List<SceneElement>> meshSceneElements;
-    private final Map<InstancedMesh, List<SceneElement>> instancedMeshSceneElements;
-    private Skybox skybox;
+    private final Map<Mesh, List<SceneElement>> nonInstancedMeshes;
+    private final Map<InstancedMesh, List<SceneElement>> instancedMeshes;
+    private Skybox skyBox;
     private SceneLight sceneLight;
     private Fog fog;
     private boolean renderShadows;
-
     private IParticleEmitter[] particleEmitters;
 
     public Scene() {
-        this.meshSceneElements = new HashMap();
-        this.instancedMeshSceneElements = new HashMap();
-        this.fog = Fog.NOFOG;
+        this.nonInstancedMeshes = new HashMap<>();
+        this.instancedMeshes = new HashMap<>();
+        this.fog = Fog.NO_FOG;
         this.renderShadows = true;
     }
 
-    public Map<Mesh, List<SceneElement>> getMeshSceneElements() {
-        return this.meshSceneElements;
+    public Map<Mesh, List<SceneElement>> getNonInstancedMeshes() {
+        return this.nonInstancedMeshes;
     }
 
-    public Map<InstancedMesh, List<SceneElement>> getInstancedMeshSceneElements() {
-        return this.instancedMeshSceneElements;
+    public Map<InstancedMesh, List<SceneElement>> getInstancedMeshes() {
+        return this.instancedMeshes;
     }
 
-    public boolean shadowsEnabled() {
+    public boolean isRenderShadows() {
         return this.renderShadows;
     }
 
@@ -48,15 +47,13 @@ public class Scene {
             final Mesh[] meshes = sceneElement.getMeshes();
             for (final Mesh mesh : meshes) {
                 final boolean instancedMesh = mesh instanceof InstancedMesh;
-                List<SceneElement> list = instancedMesh
-                        ? this.instancedMeshSceneElements.get(mesh)
-                        : this.meshSceneElements.get(mesh);
+                List<SceneElement> list = instancedMesh ? this.instancedMeshes.get(mesh) : this.nonInstancedMeshes.get(mesh);
                 if (list == null) {
                     list = new ArrayList<>();
                     if (instancedMesh) {
-                        this.instancedMeshSceneElements.put((InstancedMesh) mesh, list);
+                        this.instancedMeshes.put((InstancedMesh) mesh, list);
                     } else {
-                        this.meshSceneElements.put(mesh, list);
+                        this.nonInstancedMeshes.put(mesh, list);
                     }
                 }
                 list.add(sceneElement);
@@ -65,23 +62,23 @@ public class Scene {
     }
 
     public void cleanup() {
-        this.meshSceneElements.keySet().forEach(Mesh::cleanUp);
-        this.instancedMeshSceneElements.keySet().forEach(Mesh::cleanUp);
+        this.nonInstancedMeshes.keySet().forEach(Mesh::cleanUp);
+        this.instancedMeshes.keySet().forEach(Mesh::cleanUp);
         if (this.particleEmitters != null) {
             Arrays.stream(this.particleEmitters).forEach(IParticleEmitter::cleanup);
         }
     }
 
     public Skybox getSkybox() {
-        return this.skybox;
+        return this.skyBox;
     }
 
     public void setRenderShadows(final boolean renderShadows) {
         this.renderShadows = renderShadows;
     }
 
-    public void setSkybox(final Skybox skybox) {
-        this.skybox = skybox;
+    public void setSkybox(final Skybox skyBox) {
+        this.skyBox = skyBox;
     }
 
     public SceneLight getSceneLight() {

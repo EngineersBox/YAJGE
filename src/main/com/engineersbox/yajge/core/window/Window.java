@@ -13,7 +13,6 @@ import org.lwjgl.opengl.GL;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -30,7 +29,7 @@ public class Window {
     private boolean vSync;
     private final WindowOptions opts;
     private final Matrix4f projectionMatrix;
-    
+
     public Window(final String title,
                   final int width,
                   final int height,
@@ -51,43 +50,37 @@ public class Window {
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        if (this.opts.compatProfile()) {
+        if (this.opts.compatibleProfile()) {
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
         } else {
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
-        if (ConfigHandler.CONFIG.engine.glOptions.debugLogs) {
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-        }
     }
 
     private void configureCallbacks() {
-        glfwSetFramebufferSizeCallback(
-                this.windowHandle,
-                (final long window, final int width, final int height) -> {
-                    this.width = width;
-                    this.height = height;
-                    this.setResized(true);
-                }
-        );
+        glfwSetFramebufferSizeCallback(this.windowHandle, (window, width, height) -> {
+            this.width = width;
+            this.height = height;
+            this.setResized(true);
+        });
 
-        glfwSetKeyCallback(
-                this.windowHandle,
-                (final long window, final int key, final int scancode, final int action, final int mods) -> {
-                    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                        glfwSetWindowShouldClose(window, true);
-                    }
-                }
-        );
+        glfwSetKeyCallback(this.windowHandle, (window, key, scancode, action, mods) -> {
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            }
+        });
     }
 
     public void init() {
         LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
+
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
+
         configureHints();
+
         boolean maximized = false;
         if (this.width == 0 || this.height == 0) {
             this.width = 100;
@@ -95,16 +88,11 @@ public class Window {
             glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             maximized = true;
         }
-        this.windowHandle = glfwCreateWindow(
-                this.width,
-                this.height,
-                this.title,
-                NULL,
-                NULL
-        );
+        this.windowHandle = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
         if (this.windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
+
         final long monitorId = findMonitorByIndex(ConfigHandler.CONFIG.video.monitor);
         configureCallbacks();
         if (maximized) {
@@ -123,11 +111,13 @@ public class Window {
                     (videoMode.height() - this.height) / 2
             );
         }
-        LOGGER.info("Using configured monitor {} [id: {}]", ConfigHandler.CONFIG.video.monitor, monitorId);
+        LOGGER.debug("Using configured monitor {} [id: {}]", ConfigHandler.CONFIG.video.monitor, monitorId);
+
         glfwMakeContextCurrent(this.windowHandle);
-        if (isVSyncEnabled()) {
+        if (isvSync()) {
             glfwSwapInterval(1);
         }
+
         glfwShowWindow(this.windowHandle);
         GL.createCapabilities();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -136,9 +126,6 @@ public class Window {
         if (this.opts.showTriangles()) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         if (this.opts.cullFace()) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
@@ -165,21 +152,19 @@ public class Window {
         }
         return monitors.get(idx);
     }
+    
+    public void restoreState() {
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }
+    }
 
     public long getWindowHandle() {
         return this.windowHandle;
-    }
-
-    public void setClearColor(final float r,
-                              final float g,
-                              final float b,
-                              final float alpha) {
-        glClearColor(
-                r,
-                g,
-                b,
-                alpha
-        );
     }
 
     public String getWindowTitle() {
@@ -188,6 +173,43 @@ public class Window {
 
     public void setWindowTitle(final String title) {
         glfwSetWindowTitle(this.windowHandle, title);
+    }
+
+    public WindowOptions getWindowOptions() {
+        return this.opts;
+    }
+
+    public Matrix4f getProjectionMatrix() {
+        return this.projectionMatrix;
+    }
+
+    public Matrix4f updateProjectionMatrix() {
+        final float aspectRatio = (float) this.width / (float) this.height;
+        return this.projectionMatrix.setPerspective(
+                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
+                aspectRatio,
+                (float) ConfigHandler.CONFIG.render.camera.zNear,
+                (float) ConfigHandler.CONFIG.render.camera.zFar
+        );
+    }
+
+    public static Matrix4f updateProjectionMatrix(final Matrix4f matrix,
+                                                  final int width,
+                                                  final int height) {
+        final float aspectRatio = (float) width / (float) height;
+        return matrix.setPerspective(
+                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
+                aspectRatio,
+                (float) ConfigHandler.CONFIG.render.camera.zNear,
+                (float) ConfigHandler.CONFIG.render.camera.zFar
+        );
+    }
+
+    public void setClearColor(final float r,
+                              final float g,
+                              final float b,
+                              final float a) {
+        glClearColor(r, g, b, a);
     }
 
     public boolean isKeyPressed(final int keyCode) {
@@ -210,24 +232,6 @@ public class Window {
         return this.height;
     }
 
-    public WindowOptions getOptions() {
-        return this.opts;
-    }
-
-    public Matrix4f getProjectionMatrix() {
-        return this.projectionMatrix;
-    }
-
-    public Matrix4f updateProjectionMatrix() {
-        final float aspectRatio = (float) this.width / (float) this.height;
-        return this.projectionMatrix.setPerspective(
-                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
-                aspectRatio,
-                (float) ConfigHandler.CONFIG.render.camera.zNear,
-                (float) ConfigHandler.CONFIG.render.camera.zFar
-        );
-    }
-
     public boolean isResized() {
         return this.resized;
     }
@@ -236,7 +240,7 @@ public class Window {
         this.resized = resized;
     }
 
-    public boolean isVSyncEnabled() {
+    public boolean isvSync() {
         return this.vSync;
     }
 
@@ -249,20 +253,8 @@ public class Window {
         glfwPollEvents();
     }
 
-    public void cleanup() {
-        glfwFreeCallbacks(this.windowHandle);
-        glfwDestroyWindow(this.windowHandle);
-        glfwTerminate();
-        glfwSetErrorCallback(null).free();
+    public WindowOptions getOptions() {
+        return this.opts;
     }
 
-    public void restoreState() {
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_STENCIL_TEST);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-        }
-    }
 }

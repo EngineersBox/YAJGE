@@ -16,11 +16,11 @@ public class Engine implements Runnable {
 
     private final Window window;
     private final Timer timer;
-    private final IEngineLogic gameLogic;
+    private final IGameLogic gameLogic;
     private final MouseInput mouseInput;
     private double lastFps;
     private int fps;
-    private String windowTitle;
+    private final String windowTitle;
     private boolean running = false;
 
     public Engine() {
@@ -29,10 +29,11 @@ public class Engine implements Runnable {
         this.timer = null;
         this.gameLogic = null;
         this.mouseInput = null;
+        this.windowTitle = "YAJGE";
     }
 
     public Engine(final String windowTitle,
-                  final IEngineLogic gameLogic) {
+                  final IGameLogic gameLogic) {
         this(
                 windowTitle,
                 WindowOptions.createFromConfig(),
@@ -42,7 +43,7 @@ public class Engine implements Runnable {
 
     public Engine(final String windowTitle,
                   final WindowOptions opts,
-                  final IEngineLogic gameLogic) {
+                  final IGameLogic gameLogic) {
         this(
                 windowTitle,
                 0,
@@ -55,7 +56,7 @@ public class Engine implements Runnable {
     public Engine(final String windowTitle,
                   final int width,
                   final int height,
-                  final IEngineLogic gameLogic) {
+                  final IGameLogic gameLogic) {
         this(
                 windowTitle,
                 width,
@@ -69,7 +70,7 @@ public class Engine implements Runnable {
                   final int width,
                   final int height,
                   final WindowOptions opts,
-                  final IEngineLogic gameLogic) {
+                  final IGameLogic gameLogic) {
         LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
         this.window = new Window(
                 windowTitle,
@@ -96,7 +97,7 @@ public class Engine implements Runnable {
         }
     }
 
-    protected void init() {
+    protected void init()  {
         this.window.init();
         this.timer.init();
         this.mouseInput.init(this.window);
@@ -119,7 +120,7 @@ public class Engine implements Runnable {
                 accumulator -= interval;
             }
             render();
-            if (!this.window.isVSyncEnabled()) {
+            if (!this.window.isvSync()) {
                 sync();
             }
         }
@@ -128,7 +129,6 @@ public class Engine implements Runnable {
 
     protected void cleanup() {
         this.gameLogic.cleanup();
-        this.window.cleanup();
     }
     
     private void sync() {
@@ -151,7 +151,7 @@ public class Engine implements Runnable {
     }
 
     protected void render() {
-        if (ConfigHandler.CONFIG.video.showFps && this.timer.getLastLoopTime() - this.lastFps > 1) {
+        if (this.window.getWindowOptions().showFps() && this.timer.getLastLoopTime() - this.lastFps > 1) {
             this.lastFps = this.timer.getLastLoopTime();
             this.window.setWindowTitle(this.windowTitle + " - " + this.fps + " FPS");
             this.fps = 0;
@@ -164,5 +164,4 @@ public class Engine implements Runnable {
     protected boolean isRunning() {
         return this.running;
     }
-    
 }

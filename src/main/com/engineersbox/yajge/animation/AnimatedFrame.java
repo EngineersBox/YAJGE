@@ -24,3 +24,4 @@ public class AnimatedFrame {
         this.jointMatrices[pos] = jointMatrix;
     }
 }
+

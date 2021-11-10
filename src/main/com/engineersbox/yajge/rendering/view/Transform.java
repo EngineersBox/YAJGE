@@ -33,12 +33,16 @@ public class Transform {
 
     public Matrix4f updateLightViewMatrix(final Vector3f position,
                                           final Vector3f rotation) {
-        return updateGenericViewMatrix(position, rotation, this.lightViewMatrix);
+        return updateGenericViewMatrix(
+                position,
+                rotation,
+                this.lightViewMatrix
+        );
     }
 
-    public static Matrix4f updateGenericViewMatrix(final Vector3f position,
-                                                   final Vector3f rotation,
-                                                   final Matrix4f matrix) {
+    public static  Matrix4f updateGenericViewMatrix(final Vector3f position,
+                                                    final Vector3f rotation,
+                                                    final Matrix4f matrix) {
         return matrix.rotationX((float) Math.toRadians(rotation.x))
                 .rotateY((float) Math.toRadians(rotation.y))
                 .translate(
@@ -54,7 +58,7 @@ public class Transform {
                                                      final float top) {
         return this.ortho2DMatrix.setOrtho2D(left, right, bottom, top);
     }
-
+    
     public Matrix4f buildModelMatrix(final SceneElement sceneElement) {
         final Quaternionf rotation = sceneElement.getRotation();
         return this.modelMatrix.translationRotateScale(
@@ -68,7 +72,7 @@ public class Transform {
                                          final Matrix4f viewMatrix) {
         return buildViewModelMatrix(buildModelMatrix(sceneElement), viewMatrix);
     }
-
+    
     public Matrix4f buildViewModelMatrix(final Matrix4f modelMatrix,
                                          final Matrix4f viewMatrix) {
         return viewMatrix.mulAffine(modelMatrix, this.viewModelMatrix);

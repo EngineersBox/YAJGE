@@ -10,7 +10,6 @@ public class SoundSource {
 
     public SoundSource(final boolean loop, final boolean relative) {
         this.sourceId = alGenSources();
-
         if (loop) {
             alSourcei(this.sourceId, AL_LOOPING, AL_TRUE);
         }
@@ -25,23 +24,11 @@ public class SoundSource {
     }
 
     public void setPosition(final Vector3f position) {
-        alSource3f(
-                this.sourceId,
-                AL_POSITION,
-                position.x,
-                position.y,
-                position.z
-        );
+        alSource3f(this.sourceId, AL_POSITION, position.x, position.y, position.z);
     }
 
     public void setSpeed(final Vector3f speed) {
-        alSource3f(
-                this.sourceId,
-                AL_VELOCITY,
-                speed.x,
-                speed.y,
-                speed.z
-        );
+        alSource3f(this.sourceId, AL_VELOCITY, speed.x, speed.y, speed.z);
     }
 
     public void setGain(final float gain) {

@@ -11,7 +11,6 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
@@ -45,7 +44,6 @@ public class InstancedMesh extends Mesh {
                 ArrayUtils.createFilledArray(Mesh.MAX_WEIGHTS * positions.length / 3, 0),
                 ArrayUtils.createFilledArray(Mesh.MAX_WEIGHTS * positions.length / 3, 0f)
         );
-
         this.numInstances = numInstances;
         glBindVertexArray(this.vaoId);
         this.instanceDataVBO = glGenBuffers();
@@ -87,16 +85,16 @@ public class InstancedMesh extends Mesh {
         this.instanceDataBuffer = null;
     }
 
-    public void renderListInstanced(final List<SceneElement> sceneElements,
-                                    final Transform transform,
-                                    final Matrix4f viewMatrix) {
-        renderListInstanced(sceneElements, false, transform, viewMatrix);
+    public void renderInstanced(final List<SceneElement> sceneElements,
+                                final Transform transform,
+                                final Matrix4f viewMatrix) {
+        renderInstanced(sceneElements, false, transform, viewMatrix);
     }
 
-    public void renderListInstanced(final List<SceneElement> sceneElements,
-                                    final boolean billBoard,
-                                    final Transform transform,
-                                    final Matrix4f viewMatrix) {
+    public void renderInstanced(final List<SceneElement> sceneElements,
+                                final boolean billBoard,
+                                final Transform transform,
+                                final Matrix4f viewMatrix) {
         startRender();
         final int chunkSize = this.numInstances;
         final int length = sceneElements.size();
@@ -126,8 +124,8 @@ public class InstancedMesh extends Mesh {
             }
             modelMatrix.get(INSTANCE_SIZE_FLOATS * i, this.instanceDataBuffer);
             if (texture != null) {
-                final int col = sceneElement.getTextPos() % texture.getCols();
-                final int row = sceneElement.getTextPos() / texture.getCols();
+                final int col = sceneElement.getTexPos() % texture.getCols();
+                final int row = sceneElement.getTexPos() / texture.getCols();
                 final float textXOffset = (float) col / texture.getCols();
                 final float textYOffset = (float) row / texture.getRows();
                 final int buffPos = INSTANCE_SIZE_FLOATS * i + MAT4F_SIZE_FLOATS;

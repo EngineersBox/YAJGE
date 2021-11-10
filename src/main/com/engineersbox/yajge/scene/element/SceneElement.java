@@ -8,20 +8,23 @@ import java.util.Arrays;
 
 public class SceneElement {
 
+    private boolean selected;
     private Mesh[] meshes;
     private final Vector3f position;
     private float scale;
     private final Quaternionf rotation;
-    private int textPos;
-    private boolean selected = false;
-    private boolean insideFrustum = true;
-    private boolean frustrumCullingEnabled = true;
+    private int texPos;
+    private boolean disableFrustumCulling;
+    private boolean insideFrustum;
 
     public SceneElement() {
+        this.selected = false;
         this.position = new Vector3f();
         this.scale = 1;
         this.rotation = new Quaternionf();
-        this.textPos = 0;
+        this.texPos = 0;
+        this.insideFrustum = true;
+        this.disableFrustumCulling = false;
     }
 
     public SceneElement(final Mesh mesh) {
@@ -38,8 +41,12 @@ public class SceneElement {
         return this.position;
     }
 
-    public int getTextPos() {
-        return this.textPos;
+    public int getTexPos() {
+        return this.texPos;
+    }
+
+    public boolean isSelected() {
+        return this.selected;
     }
 
     public final void setPosition(final float x,
@@ -89,31 +96,27 @@ public class SceneElement {
         Arrays.stream(this.meshes).forEach(Mesh::cleanUp);
     }
 
-    public void setTextPos(final int textPos) {
-        this.textPos = textPos;
-    }
-
-    public boolean isSelected() {
-        return this.selected;
-    }
-
     public void setSelected(final boolean selected) {
         this.selected = selected;
+    }
+
+    public void setTexPos(final int texPos) {
+        this.texPos = texPos;
     }
 
     public boolean isInsideFrustum() {
         return this.insideFrustum;
     }
 
-    public void setInsideFrustrum(final boolean insideFrustum) {
+    public void setInsideFrustum(final boolean insideFrustum) {
         this.insideFrustum = insideFrustum;
     }
-
-    public boolean frustrumCullingEnabled() {
-        return this.frustrumCullingEnabled;
+    
+    public boolean isFrustumCullingDisabled() {
+        return this.disableFrustumCulling;
     }
 
     public void setFrustumCulling(final boolean frustumCulling) {
-        this.frustrumCullingEnabled = frustumCulling;
-    }
+        this.disableFrustumCulling = frustumCulling;
+    }    
 }

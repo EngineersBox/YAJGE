@@ -98,18 +98,18 @@ public class FlowParticleEmitter implements IParticleEmitter {
         if (this.lastCreationTime == 0) {
             this.lastCreationTime = now;
         }
-        final Iterator<? extends SceneElement> particleIterator = this.particles.iterator();
-        while (particleIterator.hasNext()) {
-            final Particle particle = (Particle) particleIterator.next();
-            if (particle.updateTtl(elapsedTime) < 0) {
-                particleIterator.remove();
+        final Iterator<? extends SceneElement> it = this.particles.iterator();
+        while (it.hasNext()) {
+            final Particle particle = (Particle) it.next();
+            if (particle.updateTTL(elapsedTime) < 0) {
+                it.remove();
             } else {
                 updatePosition(particle, elapsedTime);
             }
         }
 
-        if (now - this.lastCreationTime >= this.creationPeriodMillis
-            && this.getParticles().size() < this.maxParticles) {
+        final int length = this.getParticles().size();
+        if (now - this.lastCreationTime >= this.creationPeriodMillis && length < this.maxParticles) {
             createParticle();
             this.lastCreationTime = now;
         }
@@ -118,10 +118,10 @@ public class FlowParticleEmitter implements IParticleEmitter {
     private void createParticle() {
         final Particle particle = new Particle(this.getBaseParticle());
         final float sign = Math.random() > 0.5d ? -1.0f : 1.0f;
-        final float speedInc = sign * (float) Math.random() * this.speedRndRange;
-        final float posInc = sign * (float) Math.random() * this.positionRndRange;
-        final float scaleInc = sign * (float) Math.random() * this.scaleRndRange;
-        final long updateAnimInc = (long) sign * (long) (Math.random() * (float) this.animRange);
+        final float speedInc = sign * (float)Math.random() * this.speedRndRange;
+        final float posInc = sign * (float)Math.random() * this.positionRndRange;
+        final float scaleInc = sign * (float)Math.random() * this.scaleRndRange;
+        final long updateAnimInc = (long)sign *(long)(Math.random() * (float)this.animRange);
         particle.getPosition().add(posInc, posInc, posInc);
         particle.getSpeed().add(speedInc, speedInc, speedInc);
         particle.setScale(particle.getScale() + scaleInc);
@@ -129,19 +129,14 @@ public class FlowParticleEmitter implements IParticleEmitter {
         this.particles.add(particle);
     }
 
-    public void updatePosition(final Particle particle,
-                               final long elapsedTime) {
+    public void updatePosition(final Particle particle, final long elapsedTime) {
         final Vector3f speed = particle.getSpeed();
         final float delta = elapsedTime / 1000.0f;
         final float dx = speed.x * delta;
         final float dy = speed.y * delta;
         final float dz = speed.z * delta;
         final Vector3f pos = particle.getPosition();
-        particle.setPosition(
-                pos.x + dx,
-                pos.y + dy,
-                pos.z + dz
-        );
+        particle.setPosition(pos.x + dx, pos.y + dy, pos.z + dz);
     }
 
     @Override

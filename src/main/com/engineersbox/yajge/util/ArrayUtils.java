@@ -4,6 +4,10 @@ import java.util.Arrays;
 
 public class ArrayUtils {
 
+    private ArrayUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static float[] createFilledArray(final int length,
                                             final float defaultValue) {
         final float[] result = new float[length];

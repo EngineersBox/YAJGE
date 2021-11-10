@@ -3,15 +3,14 @@ package com.engineersbox.yajge.scene.lighting;
 import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
 import com.engineersbox.yajge.rendering.scene.lighting.SpotLight;
-import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Vector3f;
 
 public class SceneLight {
 
     private Vector3f ambientLight;
     private Vector3f skyboxLight;
-    private PointLight[] pointLights;
-    private SpotLight[] spotLights;
+    private PointLight[] pointLightList;
+    private SpotLight[] spotLightList;
     private DirectionalLight directionalLight;
 
     public Vector3f getAmbientLight() {
@@ -22,28 +21,20 @@ public class SceneLight {
         this.ambientLight = ambientLight;
     }
 
-    public PointLight[] getPointLights() {
-        return this.pointLights;
+    public PointLight[] getPointLightList() {
+        return this.pointLightList;
     }
 
-    public void addPointLight(final PointLight pointLight) {
-        this.pointLights = ArrayUtils.add(this.pointLights, pointLight);
+    public void setPointLights(final PointLight[] pointLightList) {
+        this.pointLightList = pointLightList;
     }
 
-    public void setPointLights(final PointLight[] pointLights) {
-        this.pointLights = pointLights;
+    public SpotLight[] getSpotLightList() {
+        return this.spotLightList;
     }
 
-    public SpotLight[] getSpotLights() {
-        return this.spotLights;
-    }
-
-    public void addSpotLight(final SpotLight spotLight) {
-        this.spotLights = ArrayUtils.add(this.spotLights, spotLight);
-    }
-
-    public void setSpotLights(final SpotLight[] spotLights) {
-        this.spotLights = spotLights;
+    public void setSpotLightList(final SpotLight[] spotLightList) {
+        this.spotLightList = spotLightList;
     }
 
     public DirectionalLight getDirectionalLight() {

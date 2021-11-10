@@ -18,21 +18,21 @@ public class TextureArray {
     public TextureArray(final int numTextures,
                         final int width,
                         final int height,
-                        final int pixelFormat) {
+                        final int pixelFormat)  {
         this.ids = new int[numTextures];
         glGenTextures(this.ids);
         this.width = width;
         this.height = height;
 
-        for (int i = 0; i < numTextures; i++) {
-            glBindTexture(GL_TEXTURE_2D, this.ids[i]);
+        Arrays.stream(this.ids).forEach((final int id) -> {
+            glBindTexture(GL_TEXTURE_2D, id);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, this.width, this.height, 0, pixelFormat, GL_FLOAT, (ByteBuffer) null);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        }
+        });
     }
 
     public int getWidth() {

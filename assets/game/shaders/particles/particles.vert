@@ -16,12 +16,16 @@ uniform int cols;
 uniform int rows;
 
 void main() {
-    mat4 modelViewMatrix = viewMatrix * modelMatrix;
-    modelViewMatrix[0][0] = scale;
-    modelViewMatrix[1][1] = scale;
-    modelViewMatrix[2][2] = scale;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    mat4 viewModelMatrix = viewMatrix * modelMatrix;
+    // Preserve scaling
+    viewModelMatrix[0][0] = scale;
+    viewModelMatrix[1][1] = scale;
+    viewModelMatrix[2][2] = scale;
+    gl_Position = projectionMatrix * viewModelMatrix * vec4(position, 1.0);
+    
+    // Support for texture atlas, update texture coordinates
     float x = (texCoord.x / cols + texOffset.x);
     float y = (texCoord.y / rows + texOffset.y);
+
     outTexCoord = vec2(x, y);
 }

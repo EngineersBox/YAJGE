@@ -67,12 +67,12 @@ public class Particle extends SceneElement {
         this.updateTextureMillis = updateTextureMillis;
     }
 
-    public long updateTtl(final long elapsedTime) {
+    public long updateTTL(final long elapsedTime) {
         this.ttl -= elapsedTime;
         this.currentAnimTimeMillis += elapsedTime;
         if (this.currentAnimTimeMillis >= this.getUpdateTextureMillis() && this.animFrames > 0) {
             this.currentAnimTimeMillis = 0;
-            super.setTextPos((super.getTextPos() + 1) % this.animFrames);
+            super.setTexPos((this.getTexPos() + 1) % this.animFrames);
         }
         return this.ttl;
     }

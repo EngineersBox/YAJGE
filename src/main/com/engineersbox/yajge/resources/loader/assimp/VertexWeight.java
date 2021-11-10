@@ -1,6 +1,7 @@
 package com.engineersbox.yajge.resources.loader.assimp;
 
 public class VertexWeight {
+
     private final int boneId;
     private int vertexId;
     private float weight;

@@ -6,7 +6,6 @@ import com.typesafe.config.ConfigFactory;
 import java.io.File;
 
 public abstract class ConfigHandler {
-
     private static final String CONFIG_FILE_PARAMETER = "yajge.config";
     public static final Config CONFIG;
 
@@ -15,5 +14,4 @@ public abstract class ConfigHandler {
         final com.typesafe.config.Config typesafeConfig = ConfigFactory.parseFile(configFile).resolve();
         CONFIG = new Config(typesafeConfig);
     }
-
 }

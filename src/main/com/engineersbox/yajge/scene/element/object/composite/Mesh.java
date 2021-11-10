@@ -5,19 +5,15 @@ import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.util.AllocUtils;
 import com.engineersbox.yajge.util.ArrayUtils;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Mesh {
@@ -30,7 +26,10 @@ public class Mesh {
     private Material material;
     private float boundingRadius;
 
-    public Mesh(final float[] positions, final float[] texCoords, final float[] normals, final int[] indices) {
+    public Mesh(final float[] positions,
+                final float[] texCoords,
+                final float[] normals,
+                final int[] indices) {
         this(
                 positions,
                 texCoords,
@@ -135,66 +134,6 @@ public class Mesh {
         return intBuffer;
     }
 
-    protected void startRender() {
-        final Texture texture = this.material != null ? this.material.getTexture() : null;
-        if (texture != null) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture.getId());
-        }
-        final Texture normalMap = this.material != null ? this.material.getNormalMap() : null;
-        if (normalMap != null) {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, normalMap.getId());
-        }
-
-        glBindVertexArray(getVaoId());
-    }
-
-    protected void endRender() {
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    public void renderList(final List<SceneElement> sceneElements,
-                           final Consumer<SceneElement> consumer) {
-        startRender();
-        sceneElements.stream()
-                .filter(SceneElement::isInsideFrustum)
-                .forEach((final SceneElement sceneElement) -> {
-                    consumer.accept(sceneElement);
-                    glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
-                });
-        endRender();
-    }
-
-    public void render() {
-        startRender();
-        glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
-        endRender();
-    }
-
-    public void cleanUp() {
-        glDisableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        this.vboIdList.forEach(GL15::glDeleteBuffers);
-        final Texture texture = this.material.getTexture();
-        if (texture != null) {
-            texture.cleanup();
-        }
-        glBindVertexArray(0);
-        glDeleteVertexArrays(this.vaoId);
-    }
-
-    public void deleteBuffers() {
-        glDisableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        this.vboIdList.forEach(GL15::glDeleteBuffers);
-
-        glBindVertexArray(0);
-        glDeleteVertexArrays(this.vaoId);
-    }
-
     public Material getMaterial() {
         return this.material;
     }
@@ -203,7 +142,7 @@ public class Mesh {
         this.material = material;
     }
 
-    public int getVaoId() {
+    public final int getVaoId() {
         return this.vaoId;
     }
 
@@ -218,4 +157,91 @@ public class Mesh {
     public void setBoundingRadius(final float boundingRadius) {
         this.boundingRadius = boundingRadius;
     }
+
+    protected void startRender() {
+        final Texture texture = this.material != null ? this.material.getTexture() : null;
+        if (texture != null) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+        }
+        final Texture normalMap = this.material != null ? this.material.getNormalMap() : null;
+        if (normalMap != null) {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, normalMap.getId());
+        }
+        glBindVertexArray(getVaoId());
+    }
+
+    protected void endRender() {
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public void render() {
+        startRender();
+        glDrawElements(
+                GL_TRIANGLES,
+                getVertexCount(),
+                GL_UNSIGNED_INT,
+                0
+        );
+        endRender();
+    }
+
+    public void renderList(final List<SceneElement> sceneElements,
+                           final Consumer<SceneElement> consumer) {
+        startRender();
+
+        for (final SceneElement sceneElement : sceneElements) {
+            if (sceneElement.isInsideFrustum()) {
+                consumer.accept(sceneElement);
+                glDrawElements(
+                        GL_TRIANGLES,
+                        getVertexCount(),
+                        GL_UNSIGNED_INT,
+                        0
+                );
+            }
+        }
+
+        endRender();
+    }
+
+    public void cleanUp() {
+        glDisableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        for (final int vboId : this.vboIdList) {
+            glDeleteBuffers(vboId);
+        }
+        final Texture texture = this.material.getTexture();
+        if (texture != null) {
+            texture.cleanup();
+        }
+        glBindVertexArray(0);
+        glDeleteVertexArrays(this.vaoId);
+    }
+
+    public void deleteBuffers() {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        for (final int vboId : this.vboIdList) {
+            glDeleteBuffers(vboId);
+        }
+        glBindVertexArray(0);
+        glDeleteVertexArrays(this.vaoId);
+    }
+
+    protected static float[] createEmptyFloatArray(final int length,
+                                                   final float defaultValue) {
+        final float[] result = new float[length];
+        Arrays.fill(result, defaultValue);
+        return result;
+    }
+
+    protected static int[] createEmptyIntArray(final int length,
+                                               final int defaultValue) {
+        final int[] result = new int[length];
+        Arrays.fill(result, defaultValue);
+        return result;
+    }
+
 }

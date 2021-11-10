@@ -8,6 +8,10 @@ import java.util.List;
 
 public class ListUtils {
 
+    private ListUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static float[] floatListToArray(final List<Float> floatList) {
         return floatList.stream()
                 .collect(Collectors2.collectFloat(

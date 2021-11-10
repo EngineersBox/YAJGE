@@ -9,10 +9,15 @@ import static org.lwjgl.glfw.GLFW.*;
 public class MouseInput {
 
     private final Vector2d previousPos;
+
     private final Vector2d currentPos;
+
     private final Vector2f displVec;
+
     private boolean inWindow = false;
+
     private boolean leftButtonPressed = false;
+
     private boolean rightButtonPressed = false;
 
     public MouseInput() {
@@ -26,9 +31,7 @@ public class MouseInput {
             this.currentPos.x = xpos;
             this.currentPos.y = ypos;
         });
-        glfwSetCursorEnterCallback(window.getWindowHandle(), (windowHandle, entered) -> {
-            this.inWindow = entered;
-        });
+        glfwSetCursorEnterCallback(window.getWindowHandle(), (windowHandle, entered) -> this.inWindow = entered);
         glfwSetMouseButtonCallback(window.getWindowHandle(), (windowHandle, button, action, mode) -> {
             this.leftButtonPressed = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
             this.rightButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS;
@@ -39,17 +42,23 @@ public class MouseInput {
         return this.displVec;
     }
 
+    public Vector2d getCurrentPos() {
+        return this.currentPos;
+    }
+    
     public void input(final Window window) {
         this.displVec.x = 0;
         this.displVec.y = 0;
         if (this.previousPos.x > 0 && this.previousPos.y > 0 && this.inWindow) {
-            final double deltaX = this.currentPos.x - this.previousPos.x;
-            final double deltaY = this.currentPos.y - this.previousPos.y;
-            if (deltaX != 0) {
-                this.displVec.y = (float) deltaX;
+            final double deltax = this.currentPos.x - this.previousPos.x;
+            final double deltay = this.currentPos.y - this.previousPos.y;
+            final boolean rotateX = deltax != 0;
+            final boolean rotateY = deltay != 0;
+            if (rotateX) {
+                this.displVec.y = (float) deltax;
             }
-            if (deltaY != 0) {
-                this.displVec.x = (float) deltaY;
+            if (rotateY) {
+                this.displVec.x = (float) deltay;
             }
         }
         this.previousPos.x = this.currentPos.x;
@@ -62,9 +71,5 @@ public class MouseInput {
 
     public boolean isRightButtonPressed() {
         return this.rightButtonPressed;
-    }
-
-    public Vector2d getCurrentPos() {
-        return this.currentPos;
     }
 }

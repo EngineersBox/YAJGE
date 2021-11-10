@@ -19,11 +19,16 @@ public class SoundBuffer {
     private final int bufferId;
     private ShortBuffer pcm = null;
 
-    public SoundBuffer(final String file) {
+    public SoundBuffer(final String file)  {
         this.bufferId = alGenBuffers();
         try (final STBVorbisInfo info = STBVorbisInfo.malloc()) {
             final ShortBuffer pcm = readVorbis(file, info);
-            alBufferData(this.bufferId, info.channels() == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16, pcm, info.sample_rate());
+            alBufferData(
+                    this.bufferId,
+                    info.channels() == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16,
+                    pcm,
+                    info.sample_rate()
+            );
         }
     }
 
@@ -37,7 +42,7 @@ public class SoundBuffer {
     }
 
     private ShortBuffer readVorbis(final String resource,
-                                   final STBVorbisInfo info) {
+                                   final STBVorbisInfo info)  {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer vorbis = ResourceLoader.ioResourceToByteBuffer(resource);
             final IntBuffer error = stack.mallocInt(1);
@@ -47,12 +52,12 @@ public class SoundBuffer {
             }
 
             STBVorbis.stb_vorbis_get_info(decoder, info);
-
             final int channels = info.channels();
             final int lengthSamples = STBVorbis.stb_vorbis_stream_length_in_samples(decoder);
             this.pcm = MemoryUtil.memAllocShort(lengthSamples);
             this.pcm.limit(STBVorbis.stb_vorbis_get_samples_short_interleaved(decoder, channels, this.pcm) * channels);
             STBVorbis.stb_vorbis_close(decoder);
+
             return this.pcm;
         }
     }

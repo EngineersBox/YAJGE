@@ -21,48 +21,25 @@ public class Material {
         this.reflectance = 0;
     }
 
-    public Material(final Vector4f colour, final float reflectance) {
-        this(
-                colour,
-                colour,
-                colour,
-                null,
-                reflectance
-        );
+    public Material(final Vector4f colour,
+                    final float reflectance) {
+        this(colour, colour, colour, null, reflectance);
     }
 
     public Material(final Texture texture) {
-        this(
-                DEFAULT_COLOUR,
-                DEFAULT_COLOUR,
-                DEFAULT_COLOUR,
-                texture,
-                0
-        );
+        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, texture, 0);
     }
 
     public Material(final Texture texture,
                     final float reflectance) {
-        this(
-                DEFAULT_COLOUR,
-                DEFAULT_COLOUR,
-                DEFAULT_COLOUR,
-                texture,
-                reflectance
-        );
+        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, texture, reflectance);
     }
 
     public Material(final Vector4f ambientColour,
                     final Vector4f diffuseColour,
                     final Vector4f specularColour,
                     final float reflectance) {
-        this(
-                ambientColour,
-                diffuseColour,
-                specularColour,
-                null,
-                reflectance
-        );
+        this(ambientColour, diffuseColour, specularColour, null, reflectance);
     }
 
     public Material(final Vector4f ambientColour,
@@ -120,7 +97,7 @@ public class Material {
     public void setTexture(final Texture texture) {
         this.texture = texture;
     }
-    
+
     public boolean hasNormalMap() {
         return this.normalMap != null;
     }

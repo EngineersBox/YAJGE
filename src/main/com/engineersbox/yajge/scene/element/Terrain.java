@@ -126,9 +126,9 @@ public class Terrain {
 
     protected float getWorldHeight(final int row,
                                    final int col,
-                                   final SceneElement gameItem) {
+                                   final SceneElement sceneElement) {
         final float y = this.heightMapMesh.getHeight(row, col);
-        return y * gameItem.getScale() + gameItem.getPosition().y;
+        return y * sceneElement.getScale() + sceneElement.getPosition().y;
     }
 
     protected float interpolateHeight(final Vector3f pA,

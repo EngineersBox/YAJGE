@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class Texture {
 
@@ -19,7 +20,9 @@ public class Texture {
     private int rows = 1;
     private int cols = 1;
 
-    public Texture(final int width, final int height, final int pixelFormat) {
+    public Texture(final int width,
+                   final int height,
+                   final int pixelFormat)  {
         this.id = glGenTextures();
         this.width = width;
         this.height = height;
@@ -41,46 +44,40 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
-    public Texture(final String fileName, final int cols, final int rows) {
+    public Texture(final String fileName,
+                   final int cols,
+                   final int rows)  {
         this(fileName);
         this.cols = cols;
         this.rows = rows;
     }
 
-    public Texture(final String fileName) {
+    public Texture(final String fileName)  {
         this(ResourceLoader.ioResourceToByteBuffer(fileName));
     }
 
     public Texture(final ByteBuffer imageData) {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
+        try (final MemoryStack stack = stackPush()) {
             final IntBuffer w = stack.mallocInt(1);
             final IntBuffer h = stack.mallocInt(1);
             final IntBuffer avChannels = stack.mallocInt(1);
 
             final ByteBuffer decodedImage = STBImage.stbi_load_from_memory(imageData, w, h, avChannels, 4);
+            if (decodedImage == null) {
+                throw new RuntimeException("Could not load image from memory");
+            }
 
             this.width = w.get();
             this.height = h.get();
-            this.id = glGenTextures();
 
+            this.id = glGenTextures();
             glBindTexture(GL_TEXTURE_2D, this.id);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    GL_RGBA,
-                    this.width,
-                    this.height,
-                    0,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,
-                    decodedImage
-            );
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, decodedImage);
             glGenerateMipmap(GL_TEXTURE_2D);
-
-            STBImage.stbi_image_free(imageData);
+            STBImage.stbi_image_free(decodedImage);
         }
     }
 

@@ -9,10 +9,23 @@ uniform vec4 colour;
 uniform vec3 ambientLight;
 uniform int hasTexture;
 
+uniform sampler2D depthsText;
+uniform vec2 screenSize;
+
+vec2 getTextCoord() {
+    return gl_FragCoord.xy / screenSize;
+}
+
 void main() {
-    if (hasTexture == 1) {
-        fragColor = vec4(ambientLight, 1) * texture(textureSampler, outTexCoord);
+	vec2 textCoord = getTextCoord();
+	float depth = texture2D(depthsText, textCoord).r;
+	if (depth == 1) {
+        if (hasTexture == 1) {
+            fragColor = vec4(ambientLight, 1) * texture(textureSampler, outTexCoord);
+        } else {
+            fragColor = colour;
+        }
     } else {
-        fragColor = colour;
+        discard;
     }
 }
