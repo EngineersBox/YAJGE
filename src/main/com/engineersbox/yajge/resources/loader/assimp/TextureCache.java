@@ -5,7 +5,7 @@ import com.engineersbox.yajge.resources.assets.material.Texture;
 public class TextureCache {
 
     private static TextureCache INSTANCE;
-    private static final long TTL = 5;
+    private static final long TTL = 60;
     private static final long SYNC_INTERVAL = 5;
     private static final int MAX_ITEMS = 1000;
     private final SyncCache<String, Texture> cacheMap;
