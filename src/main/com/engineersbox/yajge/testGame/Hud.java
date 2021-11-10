@@ -23,7 +23,6 @@ public class Hud {
 
     private long vg;
     private NVGColor colour;
-    private ByteBuffer fontBuffer;
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     private DoubleBuffer posX;
     private DoubleBuffer posY;
@@ -36,8 +35,8 @@ public class Hud {
             throw new RuntimeException("Could not init nanovg");
         }
 
-        this.fontBuffer = ResourceLoader.ioResourceToByteBuffer("assets/game/fonts/OpenSans-Bold.ttf");
-        final int font = nvgCreateFontMem(this.vg, FONT_NAME, this.fontBuffer, 0);
+        final ByteBuffer fontBuffer = ResourceLoader.ioResourceToByteBuffer("assets/game/fonts/OpenSans-Bold.ttf");
+        final int font = nvgCreateFontMem(this.vg, FONT_NAME, fontBuffer, 0);
         if (font == -1) {
             throw new RuntimeException("Could not add font");
         }

@@ -24,25 +24,25 @@ uniform int cols;
 uniform int rows;
 uniform float selectedNonInstanced;
 
-out vec2 vs_textcoord;
-out vec3 vs_normal;
-out vec4 vs_mvVertexPos;
-out vec4 vs_mlightviewVertexPos[NUM_CASCADES];
-out mat4 vs_modelMatrix;
-out float vs_selected;
+out vec2 vsTextcoord;
+out vec3 vsNormal;
+out vec4 vsMvVertexPos;
+out vec4 vsMlightviewVertexPos[NUM_CASCADES];
+out mat4 vsModelMatrix;
+out float vsSelected;
 
 void main() {
     vec4 initPos = vec4(0, 0, 0, 0);
     vec4 initNormal = vec4(0, 0, 0, 0);
     mat4 modelMatrix;
     if (isInstanced > 0) {
-        vs_selected = selectedInstanced;
+        vsSelected = selectedInstanced;
         modelMatrix = modelInstancedMatrix;
 
         initPos = vec4(position, 1.0);
         initNormal = vec4(vertexNormal, 0.0);
     } else {
-        vs_selected = selectedNonInstanced;
+        vsSelected = selectedNonInstanced;
         modelMatrix = modelNonInstancedMatrix;
 
         int count = 0;
@@ -64,18 +64,18 @@ void main() {
         }
     }
 	mat4 viewModelMatrix = viewMatrix * modelMatrix;
-	vs_mvVertexPos = viewModelMatrix * initPos;
-    gl_Position = projectionMatrix * vs_mvVertexPos;
+	vsMvVertexPos = viewModelMatrix * initPos;
+    gl_Position = projectionMatrix * vsMvVertexPos;
 
     float x = (texCoord.x / cols + texOffset.x);
     float y = (texCoord.y / rows + texOffset.y);
 
-    vs_textcoord = vec2(x, y);
-    vs_normal = normalize(viewModelMatrix * initNormal).xyz;
+    vsTextcoord = vec2(x, y);
+    vsNormal = normalize(viewModelMatrix * initNormal).xyz;
 
     for (int i = 0; i < NUM_CASCADES; i++) {
-        vs_mlightviewVertexPos[i] = orthoProjectionMatrix[i] * lightViewMatrix[i] * modelMatrix * initPos;
+        vsMlightviewVertexPos[i] = orthoProjectionMatrix[i] * lightViewMatrix[i] * modelMatrix * initPos;
     }
 	
-	vs_modelMatrix = modelMatrix;
+	vsModelMatrix = modelMatrix;
 }

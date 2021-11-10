@@ -2,18 +2,18 @@
 
 const int NUM_CASCADES = 3;
 
-in vec2  vs_textcoord;
-in vec3  vs_normal;
-in vec4  vs_mvVertexPos;
-in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
-in mat4  vs_modelMatrix;
-in float vs_selected;
+in vec2  vsTextcoord;
+in vec3  vsNormal;
+in vec4  vsMvVertexPos;
+in vec4  vsMlightviewVertexPos[NUM_CASCADES];
+in mat4  vsModelMatrix;
+in float vsSelected;
 
-layout (location = 0) out vec3 fs_worldpos;
-layout (location = 1) out vec3 fs_diffuse;
-layout (location = 2) out vec3 fs_specular;
-layout (location = 3) out vec3 fs_normal;
-layout (location = 4) out vec2 fs_shadow;
+layout (location = 0) out vec3 fsWorldpos;
+layout (location = 1) out vec3 fsDiffuse;
+layout (location = 2) out vec3 fsSpecular;
+layout (location = 3) out vec3 fsNormal;
+layout (location = 4) out vec2 fsShadow;
 
 uniform mat4 viewMatrix;
 
@@ -49,10 +49,10 @@ void getColour(Material material, vec2 textCoord) {
     specularColour = material.specular;
 }
 
-vec3 calcNormal(Material material, vec3 normal, vec2 text_coord, mat4 modelMatrix) {
+vec3 calcNormal(Material material, vec3 normal, vec2 textCoord, mat4 modelMatrix) {
     vec3 newNormal = normal;
     if (material.hasNormalMap == 1) {
-        newNormal = texture(normalMap, text_coord).rgb;
+        newNormal = texture(normalMap, textCoord).rgb;
         newNormal = normalize(newNormal * 2 - 1);
         newNormal = normalize(viewMatrix * modelMatrix * vec4(newNormal, 0.0)).xyz;
     }
@@ -100,23 +100,23 @@ float calcShadow(vec4 position, int idx) {
 } 
 
 void main() {
-    getColour(material, vs_textcoord);
+    getColour(material, vsTextcoord);
 
-    fs_worldpos   = vs_mvVertexPos.xyz;
-    fs_diffuse    = diffuseColour.xyz;
-    fs_specular   = specularColour.xyz;
-    fs_normal     = normalize(calcNormal(material, vs_normal, vs_textcoord, vs_modelMatrix));
+    fsWorldpos   = vsMvVertexPos.xyz;
+    fsDiffuse    = diffuseColour.xyz;
+    fsSpecular   = specularColour.xyz;
+    fsNormal     = normalize(calcNormal(material, vsNormal, vsTextcoord, vsModelMatrix));
 
     int idx;
     for (int i = 0; i < NUM_CASCADES; i++) {
-        if (abs(vs_mvVertexPos.z) < cascadeFarPlanes[i]) {
+        if (abs(vsMvVertexPos.z) < cascadeFarPlanes[i]) {
             idx = i;
             break;
         }
     }
-	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
+	fsShadow  = vec2(calcShadow(vsMlightviewVertexPos[idx], idx), material.reflectance);
 
-    if (vs_selected > 0) {
-        fs_diffuse = vec3(fs_diffuse.x, fs_diffuse.y, 1);
+    if (vsSelected > 0) {
+        fsDiffuse = vec3(fsDiffuse.x, fsDiffuse.y, 1);
     }
 }
