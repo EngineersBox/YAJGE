@@ -49,13 +49,11 @@ public class Hud {
     public void render(final Window window) {
         nvgBeginFrame(this.vg, window.getWidth(), window.getHeight(), 1);
 
-        // Upper ribbon
         nvgBeginPath(this.vg);
         nvgRect(this.vg, 0, window.getHeight() - 100, window.getWidth(), 50);
         nvgFillColor(this.vg, rgba(0x23, 0xa1, 0xf1, 200, this.colour));
         nvgFill(this.vg);
 
-        // Lower ribbon
         nvgBeginPath(this.vg);
         nvgRect(this.vg, 0, window.getHeight() - 50f, window.getWidth(), 10);
         nvgFillColor(this.vg, rgba(0xc1, 0xe3, 0xf9, 200, this.colour));
@@ -69,13 +67,11 @@ public class Hud {
         final int y = (int) this.posY.get(0);
         final boolean hover = Math.pow(x - xcenter, 2) + Math.pow(y - ycenter, 2) < Math.pow(radius, 2);
 
-        // Circle
         nvgBeginPath(this.vg);
         nvgCircle(this.vg, xcenter, ycenter, radius);
         nvgFillColor(this.vg, rgba(0xc1, 0xe3, 0xf9, 200, this.colour));
         nvgFill(this.vg);
 
-        // Clicks Text
         nvgFontSize(this.vg, 25.0f);
         nvgFontFace(this.vg, FONT_NAME);
         nvgTextAlign(this.vg, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
@@ -87,7 +83,6 @@ public class Hud {
         }
         nvgText(this.vg, 50, window.getHeight() - 87, String.format("%02d", this.counter));
 
-        // Render hour text
         nvgFontSize(this.vg, 40.0f);
         nvgFontFace(this.vg, FONT_NAME);
         nvgTextAlign(this.vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);

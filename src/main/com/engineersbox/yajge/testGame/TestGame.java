@@ -15,9 +15,13 @@ import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.scene.element.Skybox;
 import com.engineersbox.yajge.scene.element.object.composite.Mesh;
 import com.engineersbox.yajge.scene.lighting.SceneLight;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -36,13 +40,14 @@ public class TestGame implements IGameLogic {
     private float rotationInc;
     private boolean firstTime;
     private boolean sceneChanged;
+    private final Map<String, SceneElement> elements = new HashMap<>();
 
     public TestGame() {
         this.renderer = new Renderer();
         this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
-        this.lightAngle = 90;
+        this.lightAngle = 120f;
         this.firstTime = true;
     }
 
@@ -52,11 +57,18 @@ public class TestGame implements IGameLogic {
         this.scene = new Scene();
 
         final Mesh[] houseMesh = StaticMeshesLoader.load("assets/game/models/house/house.obj", "assets/game/models/house");
+//        for (final Mesh mesh : houseMesh) {
+//            mesh.setBoundingRadius(1.6f);
+//        }
         final SceneElement house = new SceneElement(houseMesh);
+        house.setRotation(new Quaternionf().rotateY(-5.5f));
+//        house.setFrustumCulling(true);
+        this.elements.put("house", house);
 
         final Mesh[] terrainMesh = StaticMeshesLoader.load("assets/game/models/terrain/terrain.obj", "assets/game/models/terrain");
         final SceneElement terrain = new SceneElement(terrainMesh);
         terrain.setScale(100.0f);
+        this.elements.put("terrain", terrain);
 
         this.scene.setSceneElements(new SceneElement[]{house, terrain});
         this.scene.setRenderShadows(true);
@@ -84,13 +96,13 @@ public class TestGame implements IGameLogic {
         sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
         sceneLight.setSkyboxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
-        final float lightIntensity = 1.0f;
+        final float lightIntensity = 0.8f;
         final Vector3f lightDirection = new Vector3f(0, 1, 1);
         final DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
         sceneLight.setDirectionalLight(directionalLight);
 
         sceneLight.setPointLights(new PointLight[]{new PointLight(
-                new Vector3f(0.0f, 1.0f, 0.0f),
+                new Vector3f(0.6f, 0.3f, 0.2f),
                 new Vector3f(0.0f, 25.0f, 0.0f),
                 lightIntensity,
                 new Attenuation(1, 0.0f, 0)
@@ -133,11 +145,13 @@ public class TestGame implements IGameLogic {
             this.angleInc = 0;
         }
         if (window.isKeyPressed(GLFW_KEY_UP)) {
+            this.elements.get("house").getRotation().rotateLocalY(0.01f);
             this.sceneChanged = true;
-            this.rotationInc -= 0.05f;
+//            this.rotationInc -= 0.05f;
         } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
+            this.elements.get("house").getRotation().rotateLocalY(-0.01f);
             this.sceneChanged = true;
-            this.rotationInc += 0.05f;
+//            this.rotationInc += 0.05f;
         } else {
             this.rotationInc = 0;
         }

@@ -103,7 +103,7 @@ public class Renderer {
         endLightRendering();
 
         renderFog(window, camera, scene);
-        renderSkyBox(window, camera, scene);
+        renderSkybox(window, camera, scene);
         renderParticles(window, camera, scene);
     }
 
@@ -437,7 +437,7 @@ public class Renderer {
         this.particlesShader.unbind();
     }
 
-    private void renderSkyBox(final Window window,
+    private void renderSkybox(final Window window,
                               final Camera camera,
                               final Scene scene) {
         final Skybox skybox = scene.getSkybox();

@@ -117,6 +117,6 @@ public class SceneElement {
     }
 
     public void setFrustumCulling(final boolean frustumCulling) {
-        this.disableFrustumCulling = frustumCulling;
+        this.disableFrustumCulling = !frustumCulling;
     }    
 }

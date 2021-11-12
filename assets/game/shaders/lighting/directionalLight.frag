@@ -53,8 +53,8 @@ void main() {
     vec4 diffuseC = texture(diffuseText, textCoord);
     vec4 speculrC = texture(specularText, textCoord);
     vec3 normal  = texture(normalsText, textCoord).xyz;
-	float shadowFactor = texture(shadowText, textCoord).r;
-	float reflectance = texture(shadowText, textCoord).g;
+    float shadowFactor = texture(shadowText, textCoord).r;
+    float reflectance = texture(shadowText, textCoord).g;
 
     vec4 diffuseSpecularComp = calcDirectionalLight(diffuseC, speculrC, reflectance, directionalLight, worldPos.xyz, normal.xyz);
 
