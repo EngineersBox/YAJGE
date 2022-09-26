@@ -1,12 +1,13 @@
 package com.engineersbox.yajge.rendering.scene;
 
 import com.engineersbox.yajge.core.window.Window;
+import com.engineersbox.yajge.rendering.RenderingElement;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL30.*;
 
-public class SceneBuffer {
+public class SceneBuffer implements RenderingElement {
 
     private final int bufferId;
     private final int textureId;
@@ -18,18 +19,7 @@ public class SceneBuffer {
         final int[] textureIds = new int[1];
         glGenTextures(textureIds);
         this.textureId = textureIds[0];
-        glBindTexture(GL_TEXTURE_2D, this.textureId);
-        glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RGB32F,
-                window.getWidth(),
-                window.getHeight(),
-                0,
-                GL_RGB,
-                GL_FLOAT,
-                (ByteBuffer) null
-        );
+        update(window);
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -56,5 +46,21 @@ public class SceneBuffer {
         glDeleteFramebuffers(this.bufferId);
 
         glDeleteTextures(this.textureId);
+    }
+
+    @Override
+    public void update(final Window window) {
+        glBindTexture(GL_TEXTURE_2D, this.textureId);
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGB32F,
+                window.getWidth(),
+                window.getHeight(),
+                0,
+                GL_RGB,
+                GL_FLOAT,
+                (ByteBuffer) null
+        );
     }
 }

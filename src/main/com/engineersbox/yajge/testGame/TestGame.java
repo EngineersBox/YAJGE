@@ -161,6 +161,7 @@ public class TestGame implements IGameLogic {
     public void update(final float interval,
                        final MouseInput mouseInput,
                        final Window window) {
+        this.renderer.update(window);
         if (mouseInput.isRightButtonPressed()) {
             final Vector2f rotVec = mouseInput.getDisplayVec();
             this.camera.moveRotation(
@@ -199,6 +200,11 @@ public class TestGame implements IGameLogic {
                 this.scene,
                 this.sceneChanged
         );
+    }
+
+    @Override
+    public void resize(final Window window) {
+        this.renderer.update(window);
     }
 
     @Override

@@ -77,6 +77,11 @@ public class Renderer {
         this.bufferPassMesh = StaticMeshesLoader.load("assets/game/models/buffer_pass_mess.obj", "models")[0];
     }
 
+    public void update(final Window window) {
+        this.gBuffer.update(window);
+        this.sceneBuffer.update(window);
+    }
+
     public void render(final Window window,
                        final Camera camera,
                        final Scene scene,

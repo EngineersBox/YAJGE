@@ -13,19 +13,19 @@
 
 	<properties>
 		<!-- Dependency Versions -->
-		<junit.jupiter.version>5.5.2</junit.jupiter.version>
+		<junit.jupiter.version>5.9.0</junit.jupiter.version>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-		<commons-lang3.version>3.11</commons-lang3.version>
-		<log4j-core.version>2.14.1</log4j-core.version>
+		<commons-lang3.version>3.12.0</commons-lang3.version>
+		<log4j-core.version>2.19.0</log4j-core.version>
 		<maven-shade.version>3.2.4</maven-shade.version>
-		<lwjgl.version>3.2.3</lwjgl.version>
+		<lwjgl.version>3.3.1</lwjgl.version>
 		<joml.version>1.10.2</joml.version>
 		<lwjgl.natives>natives-windows</lwjgl.natives>
-		<jaxb-api.version>2.3.1</jaxb-api.version>
-		<jaxb-runtime.version>3.0.2</jaxb-runtime.version>
+		<jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
+		<jaxb-runtime.version>4.0.0</jaxb-runtime.version>
 		<pngdecoder.version>1.0</pngdecoder.version>
-		<eclipse.colections.version>10.4.0</eclipse.colections.version>
-		<typesafe.version>1.4.1</typesafe.version>
+		<eclipse.colections.version>11.1.0</eclipse.colections.version>
+		<typesafe.version>1.4.2</typesafe.version>
 		<commons-collections.version>4.4</commons-collections.version>
 
 		<!-- Maven Compiler Version -->
@@ -457,7 +457,7 @@
 
 	<build>
 		<sourceDirectory>src/main</sourceDirectory>
-		<testSourceDirectory>src/test</testSourceDirectory>
+<!--		<testSourceDirectory>src/test</testSourceDirectory>-->
 		<plugins>
 			<!-- Surefire plugin to run tests-->
 			<plugin>

@@ -1,6 +1,7 @@
 package com.engineersbox.yajge.rendering.view;
 
 import com.engineersbox.yajge.core.window.Window;
+import com.engineersbox.yajge.rendering.RenderingElement;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
@@ -11,14 +12,14 @@ import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL30.*;
 
-public class GBuffer {
+public class GBuffer implements RenderingElement {
 
     private static final int TOTAL_TEXTURES = 6;
 
     private final int gBufferId;
     private final int[] textureIds;
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
 
     public GBuffer(final Window window)  {
         this.gBufferId = glGenFramebuffers();
@@ -34,33 +35,18 @@ public class GBuffer {
             glBindTexture(GL_TEXTURE_2D, this.textureIds[i]);
             final int attachmentType;
             // Depth component
-            if (i == TOTAL_TEXTURES - 1) {
-                glTexImage2D(
-                        GL_TEXTURE_2D,
-                        0,
-                        GL_DEPTH_COMPONENT32F,
-                        this.width,
-                        this.height,
-                        0,
-                        GL_DEPTH_COMPONENT,
-                        GL_FLOAT,
-                        (ByteBuffer) null
-                );
-                attachmentType = GL_DEPTH_ATTACHMENT;
-            } else {
-                glTexImage2D(
-                        GL_TEXTURE_2D,
-                        0,
-                        GL_RGB32F,
-                        this.width,
-                        this.height,
-                        0,
-                        GL_RGB,
-                        GL_FLOAT,
-                        (ByteBuffer) null
-                );
-                attachmentType = GL_COLOR_ATTACHMENT0 + i;
-            }
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    i == TOTAL_TEXTURES - 1 ? GL_DEPTH_COMPONENT32F : GL_RGB32F,
+                    this.width,
+                    this.height,
+                    0,
+                    i == TOTAL_TEXTURES - 1 ? GL_DEPTH_COMPONENT : GL_RGB,
+                    GL_FLOAT,
+                    (ByteBuffer) null
+            );
+            attachmentType = i == TOTAL_TEXTURES - 1 ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0 + i;
             // Sampling
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -120,6 +106,27 @@ public class GBuffer {
 
         if (this.textureIds != null) {
             Arrays.stream(this.textureIds, 0, TOTAL_TEXTURES).forEach(GL11::glDeleteTextures);
+        }
+    }
+
+    @Override
+    public void update(final Window window) {
+        this.width = window.getWidth();
+        this.height = window.getHeight();
+        for(int i = 0; i < TOTAL_TEXTURES; i++) {
+            glBindTexture(GL_TEXTURE_2D, this.textureIds[i]);
+            // Depth component
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    i == TOTAL_TEXTURES - 1 ? GL_DEPTH_COMPONENT32F : GL_RGB32F,
+                    this.width,
+                    this.height,
+                    0,
+                    i == TOTAL_TEXTURES - 1 ? GL_DEPTH_COMPONENT : GL_RGB,
+                    GL_FLOAT,
+                    (ByteBuffer) null
+            );
         }
     }
 }

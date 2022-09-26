@@ -98,7 +98,7 @@ public class Engine implements Runnable {
     }
 
     protected void init()  {
-        this.window.init();
+        this.window.init((final Window window) -> this.gameLogic.resize(window));
         this.timer.init();
         this.mouseInput.init(this.window);
         this.gameLogic.init(this.window);

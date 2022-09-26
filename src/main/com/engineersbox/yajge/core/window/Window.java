@@ -10,6 +10,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -48,8 +49,8 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         if (this.opts.compatibleProfile()) {
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
         } else {
@@ -58,11 +59,12 @@ public class Window {
         }
     }
 
-    private void configureCallbacks() {
+    private void configureCallbacks(final Consumer<Window> resizeCallback) {
         glfwSetFramebufferSizeCallback(this.windowHandle, (window, width, height) -> {
             this.width = width;
             this.height = height;
             this.setResized(true);
+            resizeCallback.accept(this);
         });
 
         glfwSetKeyCallback(this.windowHandle, (window, key, scancode, action, mods) -> {
@@ -72,7 +74,7 @@ public class Window {
         });
     }
 
-    public void init() {
+    public void init(final Consumer<Window> resizeCallback) {
         LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
 
         if (!glfwInit()) {
@@ -94,7 +96,7 @@ public class Window {
         }
 
         final long monitorId = findMonitorByIndex(ConfigHandler.CONFIG.video.monitor);
-        configureCallbacks();
+        configureCallbacks(resizeCallback);
         if (maximized) {
             glfwMaximizeWindow(this.windowHandle);
         } else {
