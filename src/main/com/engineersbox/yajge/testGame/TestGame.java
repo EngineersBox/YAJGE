@@ -9,6 +9,7 @@ import com.engineersbox.yajge.rendering.scene.lighting.Attenuation;
 import com.engineersbox.yajge.rendering.scene.lighting.DirectionalLight;
 import com.engineersbox.yajge.rendering.scene.lighting.PointLight;
 import com.engineersbox.yajge.rendering.view.Camera;
+import com.engineersbox.yajge.resources.assets.shader.Shader;
 import com.engineersbox.yajge.resources.loader.assimp.StaticMeshesLoader;
 import com.engineersbox.yajge.scene.Scene;
 import com.engineersbox.yajge.scene.element.SceneElement;
@@ -41,6 +42,7 @@ public class TestGame implements IGameLogic {
     private boolean firstTime;
     private boolean sceneChanged;
     private final Map<String, SceneElement> elements = new HashMap<>();
+    private Shader waterShader;
 
     public TestGame() {
         this.renderer = new Renderer();
