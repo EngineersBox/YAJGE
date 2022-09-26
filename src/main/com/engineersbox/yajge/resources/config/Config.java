@@ -10,6 +10,12 @@ public class Config {
     OPENGL,
     VULKAN;
   }
+  // NOTE: incomplete #62 implementation
+  public enum MipMapType {
+    NONE,
+    BILINEAR,
+    TRILINEAR;
+  }
 
   public static class Engine {
     public final Engine.Features features;
@@ -114,6 +120,7 @@ public class Config {
 
   public static class Render {
     public final Render.Camera camera;
+    public final Render.Texture texture;
 
     public static class Camera {
       public final double fov;
@@ -133,6 +140,19 @@ public class Config {
       }
     }
 
+    public static class Texture {
+      public final int lodBias;
+      public final MipMapType mipmaps;
+
+      public Texture(
+          com.typesafe.config.Config c,
+          java.lang.String parentPath,
+          $TsCfgValidator $tsCfgValidator) {
+        this.lodBias = c.hasPathOrNull("lodBias") ? c.getInt("lodBias") : 100;
+        this.mipmaps = MipMapType.valueOf(c.getString("mipmaps"));
+      }
+    }
+
     public Render(
         com.typesafe.config.Config c,
         java.lang.String parentPath,
@@ -143,6 +163,13 @@ public class Config {
               : new Render.Camera(
                   com.typesafe.config.ConfigFactory.parseString("camera{}"),
                   parentPath + "camera.",
+                  $tsCfgValidator);
+      this.texture =
+          c.hasPathOrNull("texture")
+              ? new Render.Texture(c.getConfig("texture"), parentPath + "texture.", $tsCfgValidator)
+              : new Render.Texture(
+                  com.typesafe.config.ConfigFactory.parseString("texture{}"),
+                  parentPath + "texture.",
                   $tsCfgValidator);
     }
   }

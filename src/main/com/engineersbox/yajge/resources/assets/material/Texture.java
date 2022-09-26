@@ -1,5 +1,6 @@
 package com.engineersbox.yajge.resources.assets.material;
 
+import com.engineersbox.yajge.resources.config.io.ConfigHandler;
 import com.engineersbox.yajge.resources.loader.ResourceLoader;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -29,7 +30,7 @@ public class Texture {
         glBindTexture(GL_TEXTURE_2D, this.id);
         glTexImage2D(
                 GL_TEXTURE_2D,
-                0,
+                ConfigHandler.CONFIG.render.texture.lodBias,
                 GL_DEPTH_COMPONENT,
                 this.width,
                 this.height,
@@ -38,10 +39,18 @@ public class Texture {
                 GL_FLOAT,
                 (ByteBuffer) null
         );
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getMipmapType());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getMipmapType());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+
+    private static int getMipmapType() {
+        return switch (ConfigHandler.CONFIG.render.texture.mipmaps) {
+            case NONE -> GL_NEAREST_MIPMAP_NEAREST;
+            case BILINEAR -> GL_LINEAR_MIPMAP_NEAREST;
+            case TRILINEAR -> GL_LINEAR_MIPMAP_LINEAR;
+        };
     }
 
     public Texture(final String fileName,
@@ -73,9 +82,19 @@ public class Texture {
             this.id = glGenTextures();
             glBindTexture(GL_TEXTURE_2D, this.id);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, decodedImage);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getMipmapType());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getMipmapType());
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    ConfigHandler.CONFIG.render.texture.lodBias,
+                    GL_RGBA,
+                    this.width,
+                    this.height,
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    decodedImage
+            );
             glGenerateMipmap(GL_TEXTURE_2D);
             STBImage.stbi_image_free(decodedImage);
         }

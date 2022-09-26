@@ -92,7 +92,7 @@ float calcShadow(vec4 position, int idx) {
     }
     shadowFactor /= 9.0;
 
-    if(projCoords.z > 1.0) {
+    if (projCoords.z > 1.0) {
         shadowFactor = 1.0;
     }
 
