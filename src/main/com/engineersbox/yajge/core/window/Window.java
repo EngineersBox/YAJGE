@@ -32,13 +32,11 @@ public class Window {
     private final Matrix4f projectionMatrix;
 
     public Window(final String title,
-                  final int width,
-                  final int height,
                   final boolean vSync,
                   final WindowOptions opts) {
         this.title = title;
-        this.width = width;
-        this.height = height;
+        this.width = opts.width();
+        this.height = opts.height();
         this.vSync = vSync;
         this.resized = false;
         this.opts = opts;
@@ -90,13 +88,19 @@ public class Window {
             glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             maximized = true;
         }
-        this.windowHandle = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+        final long monitorId = findMonitorByIndex(ConfigHandler.CONFIG.video.monitor);
+        this.windowHandle = glfwCreateWindow(
+                this.width,
+                this.height,
+                this.title,
+                ConfigHandler.CONFIG.video.fullscreen ? monitorId : NULL,
+                NULL
+        );
         if (this.windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-
-        final long monitorId = findMonitorByIndex(ConfigHandler.CONFIG.video.monitor);
         configureCallbacks(resizeCallback);
+
         if (maximized) {
             glfwMaximizeWindow(this.windowHandle);
         } else {

@@ -56,7 +56,10 @@ public class TestGame implements IGameLogic {
         this.renderer.init(window);
         this.scene = new Scene();
 
-        final Mesh[] houseMesh = StaticMeshesLoader.load("assets/game/models/house/house.obj", "assets/game/models/house");
+        final Mesh[] houseMesh = StaticMeshesLoader.load(
+                "assets/game/models/house/house.obj",
+                "assets/game/models/house"
+        );
 //        for (final Mesh mesh : houseMesh) {
 //            mesh.setBoundingRadius(1.6f);
 //        }
@@ -65,19 +68,38 @@ public class TestGame implements IGameLogic {
 //        house.setFrustumCulling(true);
         this.elements.put("house", house);
 
-        final Mesh[] terrainMesh = StaticMeshesLoader.load("assets/game/models/terrain/terrain.obj", "assets/game/models/terrain");
+        final Mesh[] terrainMesh = StaticMeshesLoader.load(
+                "assets/game/models/terrain/terrain.obj",
+                "assets/game/models/terrain"
+        );
         final SceneElement terrain = new SceneElement(terrainMesh);
         terrain.setScale(100.0f);
         this.elements.put("terrain", terrain);
 
-        this.scene.setSceneElements(new SceneElement[]{house, terrain});
+        final Mesh[] bobMesh = StaticMeshesLoader.load(
+                "assets/game/models/bob/boblamp.md5mesh",
+                "assets/game"
+        );
+//        final SceneElement bob = AnimatedMeshesLoader.loadAnimatedSceneElement(
+//                "assets/game/models/bob/boblamp.md5anim",
+//                "assets/game"
+//        );
+        final SceneElement bob = new SceneElement(bobMesh);
+        bob.setPosition(-20, 0, -20);
+        bob.setScale(0.1f);
+        this.elements.put("bob", bob);
+
+        this.scene.setSceneElements(new SceneElement[]{house, terrain, bob});
         this.scene.setRenderShadows(true);
 
         final Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
         this.scene.setFog(new Fog(true, fogColour, 0.02f));
 
         final float skyboxScale = 100.0f;
-        final Skybox skybox = new Skybox("assets/game/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
+        final Skybox skybox = new Skybox(
+                "assets/game/models/skybox.obj",
+                new Vector4f(0.65f, 0.65f, 0.65f, 1.0f)
+        );
         skybox.setScale(skyboxScale);
         this.scene.setSkybox(skybox);
 

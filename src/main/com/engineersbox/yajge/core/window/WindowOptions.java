@@ -7,7 +7,9 @@ public record WindowOptions(boolean cullFace,
                             boolean showFps,
                             boolean compatibleProfile,
                             boolean antialiasing,
-                            boolean frustumCulling) {
+                            boolean frustumCulling,
+                            int width,
+                            int height) {
 
     public static WindowOptions createFromConfig() {
         return new WindowOptions(
@@ -16,7 +18,9 @@ public record WindowOptions(boolean cullFace,
                 ConfigHandler.CONFIG.engine.features.showFPS,
                 ConfigHandler.CONFIG.engine.glOptions.compatProfile,
                 ConfigHandler.CONFIG.engine.glOptions.antialiasing,
-                ConfigHandler.CONFIG.render.camera.frustrumCulling
+                ConfigHandler.CONFIG.render.camera.frustrumCulling,
+                ConfigHandler.CONFIG.video.width,
+                ConfigHandler.CONFIG.video.height
         );
     }
 }

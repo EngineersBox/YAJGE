@@ -44,38 +44,9 @@ public class Engine implements Runnable {
     public Engine(final String windowTitle,
                   final WindowOptions opts,
                   final IGameLogic gameLogic) {
-        this(
-                windowTitle,
-                0,
-                0,
-                opts,
-                gameLogic
-        );
-    }
-
-    public Engine(final String windowTitle,
-                  final int width,
-                  final int height,
-                  final IGameLogic gameLogic) {
-        this(
-                windowTitle,
-                width,
-                height,
-                WindowOptions.createFromConfig(),
-                gameLogic
-        );
-    }
-
-    public Engine(final String windowTitle,
-                  final int width,
-                  final int height,
-                  final WindowOptions opts,
-                  final IGameLogic gameLogic) {
         LoggerCompat.registerGLFWErrorLogger(LOGGER, Level.ERROR);
         this.window = new Window(
                 windowTitle,
-                width,
-                height,
                 ConfigHandler.CONFIG.video.vsync,
                 opts
         );
@@ -98,7 +69,7 @@ public class Engine implements Runnable {
     }
 
     protected void init()  {
-        this.window.init((final Window window) -> this.gameLogic.resize(window));
+        this.window.init(this.gameLogic::resize);
         this.timer.init();
         this.mouseInput.init(this.window);
         this.gameLogic.init(this.window);

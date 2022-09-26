@@ -164,20 +164,26 @@ public class Config {
 
   public static class Video {
     public final int fps;
+    public final boolean fullscreen;
+    public final int height;
     public final int monitor;
     public final boolean showFps;
     public final int ups;
     public final boolean vsync;
+    public final int width;
 
     public Video(
         com.typesafe.config.Config c,
         java.lang.String parentPath,
         $TsCfgValidator $tsCfgValidator) {
       this.fps = c.hasPathOrNull("fps") ? c.getInt("fps") : 60;
+      this.fullscreen = c.hasPathOrNull("fullscreen") && c.getBoolean("fullscreen");
+      this.height = c.hasPathOrNull("height") ? c.getInt("height") : 1080;
       this.monitor = c.hasPathOrNull("monitor") ? c.getInt("monitor") : 0;
       this.showFps = !c.hasPathOrNull("showFps") || c.getBoolean("showFps");
       this.ups = c.hasPathOrNull("ups") ? c.getInt("ups") : 30;
       this.vsync = !c.hasPathOrNull("vsync") || c.getBoolean("vsync");
+      this.width = c.hasPathOrNull("width") ? c.getInt("width") : 1920;
     }
   }
 
