@@ -10,7 +10,6 @@ public class SceneElement {
 
     private boolean selected;
     private Mesh[] meshes;
-    private
     private final Vector3f position;
     private float scale;
     private final Quaternionf rotation;
