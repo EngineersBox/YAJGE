@@ -5,6 +5,7 @@ import com.engineersbox.yajge.resources.assets.material.Texture;
 import com.engineersbox.yajge.scene.element.SceneElement;
 import com.engineersbox.yajge.util.AllocUtils;
 import com.engineersbox.yajge.util.ArrayUtils;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -25,6 +26,10 @@ public class Mesh {
     private final int vertexCount;
     private Material material;
     private float boundingRadius;
+    private final float[] positions;
+    private final float[] texCoords;
+    private final float[] normals;
+    private final int[] indices;
 
     public Mesh(final float[] positions,
                 final float[] texCoords,
@@ -46,6 +51,10 @@ public class Mesh {
                 final int[] indices,
                 final int[] jointIndices,
                 final float[] weights) {
+        this.positions = positions;
+        this.texCoords = texCoords;
+        this.normals = normals;
+        this.indices = indices;
         FloatBuffer posBuffer = null;
         FloatBuffer texCoordsBuffer = null;
         FloatBuffer vecNormalsBuffer = null;
@@ -243,5 +252,35 @@ public class Mesh {
         Arrays.fill(result, defaultValue);
         return result;
     }
+    public List<Vector3f> getGroupedVertices() {
+        final List<Vector3f> vertices = new ArrayList<>();
+        for (int i = 0; i < this.positions.length; i += 3) {
+            vertices.add(new Vector3f(
+                    this.positions[i],
+                    this.positions[i + 1],
+                    this.positions[i + 2]
+            ));
+        }
+        return vertices;
+    }
 
+    public int[] getIndices() {
+        return this.indices;
+    }
+
+    public List<Vector3f> getGroupedNormals() {
+        final List<Vector3f> groupedNormals = new ArrayList<>();
+        for (int i = 0; i < this.normals.length; i += 3) {
+            groupedNormals.add(new Vector3f(
+                    this.normals[i],
+                    this.normals[i + 1],
+                    this.normals[i + 2]
+            ));
+        }
+        return groupedNormals;
+    }
+
+    public int triangleCount() {
+        return this.indices.length / 3;
+    }
 }
